@@ -355,6 +355,30 @@ function allCellSwapMoves(grid) {
   return moves;
 }
 
+function cellName(index) {
+  return `r${Math.floor(index / SIZE) + 1}c${(index % SIZE) + 1}`;
+}
+
+function cellSwapMoveName(a, b) {
+  return `cell ${cellName(a)}<->${cellName(b)}`;
+}
+
+function cellSwapGeometry(a, b) {
+  const first = { row: Math.floor(a / SIZE), col: a % SIZE };
+  const second = { row: Math.floor(b / SIZE), col: b % SIZE };
+  const sameRow = first.row === second.row;
+  const sameCol = first.col === second.col;
+  const sameBox = Math.floor(first.row / BOX) === Math.floor(second.row / BOX)
+    && Math.floor(first.col / BOX) === Math.floor(second.col / BOX);
+
+  if (sameRow && sameBox) return "same row inside box";
+  if (sameCol && sameBox) return "same column inside box";
+  if (sameRow) return "same row across boxes";
+  if (sameCol) return "same column across boxes";
+  if (sameBox) return "same box diagonal";
+  return "different row/column/box";
+}
+
 function movesToNeighborMap(moves) {
   const neighbors = new Map();
   for (const { move, next } of moves) {
@@ -619,6 +643,122 @@ function printForbiddenBridgeReport(families) {
   console.log("");
 }
 
+function invalidityProfile(grid) {
+  const profile = {
+    duplicateRows: 0,
+    duplicateCols: 0,
+    duplicateBoxes: 0,
+    invalidRows: [],
+    invalidCols: [],
+    invalidBoxes: [],
+  };
+
+  for (let index = 0; index < SIZE; index += 1) {
+    if (!isCompleteUnit(grid[index])) {
+      profile.duplicateRows += 1;
+      profile.invalidRows.push(index + 1);
+    }
+
+    const col = grid.map((row) => row[index]);
+    if (!isCompleteUnit(col)) {
+      profile.duplicateCols += 1;
+      profile.invalidCols.push(index + 1);
+    }
+  }
+
+  for (let boxRow = 0; boxRow < SIZE; boxRow += BOX) {
+    for (let boxCol = 0; boxCol < SIZE; boxCol += BOX) {
+      const values = [];
+      for (let row = boxRow; row < boxRow + BOX; row += 1) {
+        for (let col = boxCol; col < boxCol + BOX; col += 1) {
+          values.push(grid[row][col]);
+        }
+      }
+      if (!isCompleteUnit(values)) {
+        profile.duplicateBoxes += 1;
+        profile.invalidBoxes.push(`${boxRow / BOX + 1},${boxCol / BOX + 1}`);
+      }
+    }
+  }
+
+  return profile;
+}
+
+function isCompleteUnit(values) {
+  return [...values].sort((a, b) => a - b).join("") === SYMBOLS.join("");
+}
+
+function invalidityProfileKey(profile) {
+  return [
+    `rows:${profile.duplicateRows}`,
+    `cols:${profile.duplicateCols}`,
+    `boxes:${profile.duplicateBoxes}`,
+  ].join(",");
+}
+
+function collectTwoStepForbiddenBridges(source, targetFamilyMembers) {
+  const targetKeys = new Set(targetFamilyMembers);
+  const bridges = [];
+
+  for (let firstA = 0; firstA < SIZE * SIZE; firstA += 1) {
+    for (let firstB = firstA + 1; firstB < SIZE * SIZE; firstB += 1) {
+      const middle = swapCells(source, firstA, firstB);
+      if (validateGrid(middle)) continue;
+
+      for (let secondA = 0; secondA < SIZE * SIZE; secondA += 1) {
+        for (let secondB = secondA + 1; secondB < SIZE * SIZE; secondB += 1) {
+          const target = swapCells(middle, secondA, secondB);
+          const targetKey = gridKey(target);
+          if (!targetKeys.has(targetKey)) continue;
+
+          bridges.push({
+            firstMove: cellSwapMoveName(firstA, firstB),
+            secondMove: cellSwapMoveName(secondA, secondB),
+            firstGeometry: cellSwapGeometry(firstA, firstB),
+            secondGeometry: cellSwapGeometry(secondA, secondB),
+            middleInvalidity: invalidityProfile(middle),
+            target,
+          });
+        }
+      }
+    }
+  }
+
+  return bridges;
+}
+
+function printForbiddenBridgePatternReport(families) {
+  const bridges = collectTwoStepForbiddenBridges(families[0].representative, families[1].members);
+  const geometryCounts = new Map();
+  const invalidityCounts = new Map();
+  const movePairCounts = new Map();
+
+  for (const bridge of bridges) {
+    const geometryKey = `${bridge.firstGeometry} -> ${bridge.secondGeometry}`;
+    const invalidityKey = invalidityProfileKey(bridge.middleInvalidity);
+    const movePairKey = `${bridge.firstMove}; ${bridge.secondMove}`;
+    geometryCounts.set(geometryKey, (geometryCounts.get(geometryKey) ?? 0) + 1);
+    invalidityCounts.set(invalidityKey, (invalidityCounts.get(invalidityKey) ?? 0) + 1);
+    movePairCounts.set(movePairKey, (movePairCounts.get(movePairKey) ?? 0) + 1);
+  }
+
+  console.log("forbidden bridge pattern summary");
+  console.log("  source family: 1 representative");
+  console.log("  target family: 2");
+  console.log(`  two-step forbidden bridges found: ${bridges.length}`);
+  printCountMap("  geometry patterns", geometryCounts);
+  printCountMap("  middle invalidity patterns", invalidityCounts);
+  printCountMap("  first five bridge move pairs", new Map([...movePairCounts.entries()].slice(0, 5)));
+  console.log("");
+}
+
+function printCountMap(label, map) {
+  console.log(label);
+  for (const [key, count] of [...map.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))) {
+    console.log(`    ${key}: ${count}`);
+  }
+}
+
 function parseGridKey(key) {
   return key.split("/").map((row) => [...row].map(Number));
 }
@@ -667,3 +807,4 @@ printGraphProfile("standard atomic moves", grids, standardAtomicNeighbors, famil
 printGraphProfile("validity-preserving row/column swaps", grids, validityPreservingSwapNeighbors, familyByKey);
 printGraphProfile("validity-preserving cell swaps", grids, validityPreservingCellSwapNeighbors, familyByKey);
 printForbiddenBridgeReport(families);
+printForbiddenBridgePatternReport(families);

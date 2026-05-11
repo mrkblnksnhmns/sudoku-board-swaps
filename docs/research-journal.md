@@ -347,6 +347,36 @@ So the current interpretation is:
 
 This distinction matters because it tells us the separation is not about raw rearrangement difficulty. It is about the constraint that every intermediate step must remain Sudoku-valid.
 
+## Forbidden Bridge Pattern Recognition
+
+We then asked whether the forbidden bridge was just one lucky shortest path, or whether many bridges share recognizable structure.
+
+For the family 1 representative, there are `32` two-step forbidden bridges into family 2.
+
+They split evenly into four geometry patterns:
+
+```text
+same column across boxes -> same column across boxes: 8
+same column inside box -> same column inside box: 8
+same row across boxes -> same row across boxes: 8
+same row inside box -> same row inside box: 8
+```
+
+Their invalid middle states also split evenly:
+
+```text
+rows:0,cols:2,boxes:0: 8
+rows:0,cols:2,boxes:2: 8
+rows:2,cols:0,boxes:0: 8
+rows:2,cols:0,boxes:2: 8
+```
+
+This suggests a pattern:
+
+> A forbidden bridge temporarily breaks one constraint direction, then repairs that same direction with a coordinated second swap.
+
+So we are not only measuring shortest paths. We are also classifying the shape of transformations.
+
 ## Current Status
 
 The project currently has:

@@ -244,6 +244,44 @@ This gives a useful language:
 - forbidden move: temporarily breaks Sudoku validity
 - forbidden bridge: a sequence that crosses families by passing through invalid boards
 
+## 4x4 Forbidden Bridge Patterns
+
+We also counted every two-step forbidden bridge from the family 1 representative into family 2.
+
+Output:
+
+```text
+forbidden bridge pattern summary
+  source family: 1 representative
+  target family: 2
+  two-step forbidden bridges found: 32
+
+  geometry patterns
+    same column across boxes -> same column across boxes: 8
+    same column inside box -> same column inside box: 8
+    same row across boxes -> same row across boxes: 8
+    same row inside box -> same row inside box: 8
+
+  middle invalidity patterns
+    rows:0,cols:2,boxes:0: 8
+    rows:0,cols:2,boxes:2: 8
+    rows:2,cols:0,boxes:0: 8
+    rows:2,cols:0,boxes:2: 8
+```
+
+The bridge patterns are not random. They come in balanced groups:
+
+- row-type bridges break rows in the middle
+- column-type bridges break columns in the middle
+- some bridges also break boxes
+- every first move is repaired by a second move with the same geometry type
+
+So the pattern is:
+
+> Break one constraint direction, then repair that same direction in a coordinated second swap.
+
+This is pattern recognition beyond shortest path length.
+
 ## 4x4 Parity Separator
 
 The two `4x4` families are separated by row-pair and column-pair parity.
