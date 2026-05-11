@@ -17,6 +17,8 @@ node sudoku-4x4.js
 node sudoku-structure.js
 ```
 
+See [RESULTS.md](RESULTS.md) for the current research output.
+
 ## Current Questions
 
 - How many completed boards exist at each size?
@@ -85,6 +87,8 @@ The comparison board does not share that extra column pattern.
 ## Working Notes
 
 `sudoku-4x4.js` enumerates every completed `4x4` Sudoku board and groups them into standard symmetry families.
+
+It also builds swap graphs for `4x4` boards and reports connected components, shortest-path distances, average distance, diameter, and family edge counts.
 
 `sudoku-structure.js` profiles two completed `9x9` boards:
 
