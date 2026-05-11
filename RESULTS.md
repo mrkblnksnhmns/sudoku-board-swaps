@@ -333,3 +333,44 @@ comparison grid:
 ```
 
 The cyclic grid has extra column symmetry. The comparison grid appears closer to the default symmetry floor.
+
+## 9x9 Parity Profile
+
+We applied the `4x4` row-pair/column-pair parity idea to two completed `9x9` boards.
+
+Output:
+
+```text
+base cyclic grid:
+  parity signature: rows even:36,odd:0 | cols even:36,odd:0
+
+comparison grid:
+  parity signature: rows even:16,odd:20 | cols even:16,odd:20
+```
+
+There are `36` row pairs and `36` column pairs in a `9x9` grid.
+
+The cyclic base grid is all-even, just like the highly regular `4x4` family 1 representative. The comparison grid has mixed parity, closer in spirit to the less regular `4x4` family 2.
+
+This suggests that row-pair/column-pair parity may be useful beyond `4x4`, but we have not yet proven a `9x9` separation theorem.
+
+## 9x9 Two-Step Forbidden Bridge Probe
+
+We also tested whether the exact cyclic base grid can reach the exact comparison grid by two arbitrary cell swaps, allowing the intermediate board to be invalid.
+
+Output:
+
+```text
+two-step forbidden bridge profile: base -> comparison
+  bridges found: 0
+  geometry patterns
+    none
+  middle invalidity patterns
+    none
+  examples:
+    none
+```
+
+This negative result is not surprising. The two boards are structurally far apart, not merely one local repair away from each other.
+
+The next `9x9` bridge experiment should not compare two arbitrary distant boards. It should generate boards by applying controlled forbidden two-swap patterns to the cyclic base, then test which valid boards they land on and what parity signatures they produce.

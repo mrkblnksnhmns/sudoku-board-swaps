@@ -113,6 +113,28 @@ Interpretation:
 
 The cyclic grid has extra symmetry, especially across columns. Columns `1,4,7`, `2,5,8`, and `3,6,9` share structural roles. The comparison grid appears closer to the default symmetry floor.
 
+We then added the `4x4` parity signature to the `9x9` profiling script.
+
+Output:
+
+```text
+base cyclic grid:
+  parity signature: rows even:36,odd:0 | cols even:36,odd:0
+
+comparison grid:
+  parity signature: rows even:16,odd:20 | cols even:16,odd:20
+```
+
+So the cyclic `9x9` base grid is all-even, similar to the highly regular `4x4` family 1 representative. The comparison grid has a mixed parity signature.
+
+We also tested whether the exact base grid could reach the exact comparison grid through a two-step forbidden cell-swap bridge:
+
+```text
+bridges found: 0
+```
+
+That negative result is expected. These two selected `9x9` boards are much farther apart than the two `4x4` family representatives. The better next experiment is to generate local forbidden bridges from the base grid and classify the valid boards they produce.
+
 ## Why We Moved to 4x4
 
 We decided to start from smaller boards because `4x4` Sudoku can be fully enumerated.

@@ -240,6 +240,88 @@ function swapDigits(grid, a, b) {
   }));
 }
 
+function swapCells(grid, first, second) {
+  const next = cloneGrid(grid);
+  const firstRow = Math.floor(first / 9);
+  const firstCol = first % 9;
+  const secondRow = Math.floor(second / 9);
+  const secondCol = second % 9;
+  [next[firstRow][firstCol], next[secondRow][secondCol]] = [next[secondRow][secondCol], next[firstRow][firstCol]];
+  return next;
+}
+
+function cellName(index) {
+  return `r${Math.floor(index / 9) + 1}c${(index % 9) + 1}`;
+}
+
+function cellSwapMoveName(a, b) {
+  return `cell ${cellName(a)}<->${cellName(b)}`;
+}
+
+function cellSwapGeometry(a, b) {
+  const first = { row: Math.floor(a / 9), col: a % 9 };
+  const second = { row: Math.floor(b / 9), col: b % 9 };
+  const sameRow = first.row === second.row;
+  const sameCol = first.col === second.col;
+  const sameBox = Math.floor(first.row / 3) === Math.floor(second.row / 3)
+    && Math.floor(first.col / 3) === Math.floor(second.col / 3);
+
+  if (sameRow && sameBox) return "same row inside box";
+  if (sameCol && sameBox) return "same column inside box";
+  if (sameRow) return "same row across boxes";
+  if (sameCol) return "same column across boxes";
+  if (sameBox) return "same box diagonal";
+  return "different row/column/box";
+}
+
+function permutationParity(values) {
+  let inversions = 0;
+  for (let i = 0; i < values.length; i += 1) {
+    for (let j = i + 1; j < values.length; j += 1) {
+      if (values[i] > values[j]) inversions += 1;
+    }
+  }
+  return inversions % 2 === 0 ? "even" : "odd";
+}
+
+function rowPairParity(grid, a, b) {
+  const rowAPositions = new Map(grid[a].map((value, index) => [value, index + 1]));
+  const mapping = grid[b].map((value) => rowAPositions.get(value));
+  return permutationParity(mapping);
+}
+
+function colPairParity(grid, a, b) {
+  const colA = grid.map((row) => row[a]);
+  const colB = grid.map((row) => row[b]);
+  const colAPositions = new Map(colA.map((value, index) => [value, index + 1]));
+  const mapping = colB.map((value) => colAPositions.get(value));
+  return permutationParity(mapping);
+}
+
+function pairParityProfile(grid, axis) {
+  const parityForPair = axis === "row" ? rowPairParity : colPairParity;
+  const profile = { even: 0, odd: 0 };
+
+  for (let a = 0; a < 9; a += 1) {
+    for (let b = a + 1; b < 9; b += 1) {
+      profile[parityForPair(grid, a, b)] += 1;
+    }
+  }
+
+  return profile;
+}
+
+function profileKey(profile) {
+  return `even:${profile.even},odd:${profile.odd}`;
+}
+
+function paritySignature(grid) {
+  return [
+    `rows ${profileKey(pairParityProfile(grid, "row"))}`,
+    `cols ${profileKey(pairParityProfile(grid, "col"))}`,
+  ].join(" | ");
+}
+
 function findValidityPreservingAtomicSwaps(grid) {
   const rowSwaps = [];
   const colSwaps = [];
@@ -254,6 +336,103 @@ function findValidityPreservingAtomicSwaps(grid) {
   }
 
   return { rowSwaps, colSwaps, digitSwaps };
+}
+
+function invalidityProfile(grid) {
+  const profile = {
+    duplicateRows: 0,
+    duplicateCols: 0,
+    duplicateBoxes: 0,
+    invalidRows: [],
+    invalidCols: [],
+    invalidBoxes: [],
+  };
+
+  for (let index = 0; index < 9; index += 1) {
+    if (!isCompleteUnit(grid[index])) {
+      profile.duplicateRows += 1;
+      profile.invalidRows.push(index + 1);
+    }
+
+    const col = grid.map((row) => row[index]);
+    if (!isCompleteUnit(col)) {
+      profile.duplicateCols += 1;
+      profile.invalidCols.push(index + 1);
+    }
+  }
+
+  for (let boxRow = 0; boxRow < 9; boxRow += 3) {
+    for (let boxCol = 0; boxCol < 9; boxCol += 3) {
+      const values = [];
+      for (let row = boxRow; row < boxRow + 3; row += 1) {
+        for (let col = boxCol; col < boxCol + 3; col += 1) {
+          values.push(grid[row][col]);
+        }
+      }
+      if (!isCompleteUnit(values)) {
+        profile.duplicateBoxes += 1;
+        profile.invalidBoxes.push(`${boxRow / 3 + 1},${boxCol / 3 + 1}`);
+      }
+    }
+  }
+
+  return profile;
+}
+
+function isCompleteUnit(values) {
+  return [...values].sort((a, b) => a - b).join("") === "123456789";
+}
+
+function invalidityProfileKey(profile) {
+  return [
+    `rows:${profile.duplicateRows}`,
+    `cols:${profile.duplicateCols}`,
+    `boxes:${profile.duplicateBoxes}`,
+  ].join(",");
+}
+
+function countTwoStepCellSwapBridges(source, target) {
+  const targetKey = gridKey(target);
+  const geometryCounts = new Map();
+  const invalidityCounts = new Map();
+  const exampleBridges = [];
+  let bridgeCount = 0;
+
+  for (let firstA = 0; firstA < 81; firstA += 1) {
+    for (let firstB = firstA + 1; firstB < 81; firstB += 1) {
+      const middle = swapCells(source, firstA, firstB);
+      if (validateGrid(middle)) continue;
+
+      for (let secondA = 0; secondA < 81; secondA += 1) {
+        for (let secondB = secondA + 1; secondB < 81; secondB += 1) {
+          const final = swapCells(middle, secondA, secondB);
+          if (gridKey(final) !== targetKey) continue;
+
+          bridgeCount += 1;
+          const geometryKey = `${cellSwapGeometry(firstA, firstB)} -> ${cellSwapGeometry(secondA, secondB)}`;
+          const invalidityKey = invalidityProfileKey(invalidityProfile(middle));
+          geometryCounts.set(geometryKey, (geometryCounts.get(geometryKey) ?? 0) + 1);
+          invalidityCounts.set(invalidityKey, (invalidityCounts.get(invalidityKey) ?? 0) + 1);
+
+          if (exampleBridges.length < 5) {
+            exampleBridges.push({
+              firstMove: cellSwapMoveName(firstA, firstB),
+              secondMove: cellSwapMoveName(secondA, secondB),
+              middleValid: validateGrid(middle),
+              middleParity: paritySignature(middle),
+              finalParity: paritySignature(final),
+            });
+          }
+        }
+      }
+    }
+  }
+
+  return { bridgeCount, geometryCounts, invalidityCounts, exampleBridges };
+}
+
+function gridKey(grid) {
+  return grid.map((row) => row.join("")).join("/");
 }
 
 function countValidityPreservingPermutations(grid) {
@@ -300,8 +479,38 @@ function summarizeStructuralProfile(name, grid) {
   console.log(`  standard automorphisms: ${countStandardAutomorphisms(grid)}`);
   console.log(`  valid full-row permutations: ${permutationCounts.rowPermutationCount}`);
   console.log(`  valid full-column permutations: ${permutationCounts.colPermutationCount}`);
+  console.log(`  parity signature: ${paritySignature(grid)}`);
   console.log(`  row permutation examples: ${JSON.stringify(permutationCounts.rowExamples)}`);
   console.log(`  column permutation examples: ${JSON.stringify(permutationCounts.colExamples)}`);
+}
+
+function printForbiddenBridgeProfile(sourceName, source, targetName, target) {
+  console.log(`two-step forbidden bridge profile: ${sourceName} -> ${targetName}`);
+  const profile = countTwoStepCellSwapBridges(source, target);
+  console.log(`  bridges found: ${profile.bridgeCount}`);
+  printCountMap("  geometry patterns", profile.geometryCounts);
+  printCountMap("  middle invalidity patterns", profile.invalidityCounts);
+  console.log("  examples:");
+  if (profile.exampleBridges.length === 0) {
+    console.log("    none");
+  }
+  for (const bridge of profile.exampleBridges) {
+    console.log(`    ${bridge.firstMove}; ${bridge.secondMove}`);
+    console.log(`      middle valid: ${bridge.middleValid}`);
+    console.log(`      middle parity: ${bridge.middleParity}`);
+    console.log(`      final parity: ${bridge.finalParity}`);
+  }
+}
+
+function printCountMap(label, map) {
+  console.log(label);
+  if (map.size === 0) {
+    console.log("    none");
+    return;
+  }
+  for (const [key, count] of [...map.entries()].sort((a, b) => b[1] - a[1] || a[0].localeCompare(b[0]))) {
+    console.log(`    ${key}: ${count}`);
+  }
 }
 
 function printSwapMatrix(swaps) {
@@ -370,6 +579,8 @@ function inspectPair(sourceName, source, targetName, target) {
   console.log("");
   summarizeStructuralProfile(sourceName, source);
   summarizeStructuralProfile(targetName, target);
+  console.log("");
+  printForbiddenBridgeProfile(sourceName, source, targetName, target);
 }
 
 printGrid("Base grid", BASE_GRID);
