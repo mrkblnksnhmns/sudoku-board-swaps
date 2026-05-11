@@ -14,12 +14,15 @@ Run:
 
 ```bash
 node sudoku-4x4.js
+node sudoku-9x9-trades.js
 node sudoku-structure.js
 ```
 
 See [RESULTS.md](RESULTS.md) for the current research output.
 
 See [docs/research-journal.md](docs/research-journal.md) for the narrative research log that captures the discussion, hypotheses, experiments, and next steps.
+
+See [docs/paper-draft.md](docs/paper-draft.md) for the working research-paper draft.
 
 ## Current Questions
 

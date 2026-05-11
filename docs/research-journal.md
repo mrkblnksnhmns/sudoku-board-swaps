@@ -155,6 +155,48 @@ This is an important contrast with `4x4`:
 
 This suggests that the first nontrivial forbidden neighborhood for `9x9` is deeper than two cell swaps, or that it requires a more structured move type than arbitrary isolated cell swaps.
 
+We then searched for structured two-symbol trades around the cyclic base grid.
+
+A two-symbol trade chooses two digits and swaps them across a subset of cells while preserving every row, column, and box in the final board.
+
+The scan found:
+
+```text
+total nontrivial trades: 54
+unique valid target boards: 54
+minimum trade size: 6 cells
+minimum forbidden cell-swap depth: 3
+trade size distribution:
+  6: 27
+  12: 27
+```
+
+The minimum six-cell trades all have the same broad shape:
+
+```text
+cells:6,rows:3,cols:3,boxes:3
+rowBands:1,colStacks:3
+```
+
+The minimum digit pairs are:
+
+```text
+1<->4, 1<->7, 2<->5, 2<->8, 3<->6, 3<->9, 4<->7, 5<->8, 6<->9
+```
+
+Each appears three times.
+
+Every nontrivial trade changes the base parity signature:
+
+```text
+before: rows even:36,odd:0  | cols even:36,odd:0
+after:  rows even:18,odd:18 | cols even:18,odd:18
+```
+
+This gives us the first nontrivial forbidden neighborhood result for `9x9`:
+
+> The cyclic `9x9` base grid has no different valid board at forbidden depth `2`, but it does have structured six-cell trades at forbidden depth `3`.
+
 ## Why We Moved to 4x4
 
 We decided to start from smaller boards because `4x4` Sudoku can be fully enumerated.

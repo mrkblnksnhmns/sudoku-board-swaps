@@ -430,3 +430,80 @@ The next local-neighborhood question is:
 > What is the smallest number of forbidden cell swaps that can move the cyclic `9x9` base grid to a different valid completed board?
 
 The obvious next probe is depth `3` or a smarter patterned depth `4`, because exhaustive depth grows quickly.
+
+## 9x9 Two-Symbol Trade Scan
+
+We then searched for structured two-symbol trades around the cyclic base grid.
+
+A two-symbol trade chooses two digits, then swaps those digits across a subset of cells in a way that preserves every row, column, and box in the final board.
+
+Command:
+
+```bash
+node sudoku-9x9-trades.js
+```
+
+Output:
+
+```text
+9x9 two-symbol trade scan: cyclic base
+  valid grid: true
+  starting parity: rows even:36,odd:0 | cols even:36,odd:0
+  total nontrivial trades: 54
+  unique valid target boards: 54
+  minimum trade size: 6 cells
+  minimum forbidden cell-swap depth: 3
+
+  trade size distribution
+    6: 27
+    12: 27
+
+  minimum trade shapes
+    cells:6,rows:3,cols:3,boxes:3: 27
+
+  minimum band/stack shapes
+    rowBands:1,colStacks:3: 27
+
+  minimum digit-pair distribution
+    1<->4: 3
+    1<->7: 3
+    2<->5: 3
+    2<->8: 3
+    3<->6: 3
+    3<->9: 3
+    4<->7: 3
+    5<->8: 3
+    6<->9: 3
+
+  final parity signatures
+    rows even:18,odd:18 | cols even:18,odd:18: 54
+```
+
+Interpretation:
+
+The earlier two-step scan showed that the cyclic base has no nontrivial valid target at depth `2`. This two-symbol trade scan found valid targets at depth `3`.
+
+So for the cyclic `9x9` base grid:
+
+```text
+minimum nontrivial forbidden cell-swap depth: 3
+```
+
+The minimum trades are highly structured:
+
+- exactly `6` cells
+- exactly `3` rows
+- exactly `3` columns
+- exactly `3` boxes
+- contained within `1` row band
+- spread across `3` column stacks
+- digit pairs differ by `3` or `6` in the cyclic pattern
+
+Every nontrivial two-symbol trade moves the parity signature from all-even to balanced mixed parity:
+
+```text
+before: rows even:36,odd:0  | cols even:36,odd:0
+after:  rows even:18,odd:18 | cols even:18,odd:18
+```
+
+This is the strongest `9x9` result so far.
