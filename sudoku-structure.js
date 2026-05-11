@@ -431,6 +431,76 @@ function countTwoStepCellSwapBridges(source, target) {
   return { bridgeCount, geometryCounts, invalidityCounts, exampleBridges };
 }
 
+function collectTwoStepForbiddenNeighborhood(source) {
+  const validTargets = new Map();
+  const sourceKey = gridKey(source);
+  const geometryCounts = new Map();
+  const invalidityCounts = new Map();
+  const parityCounts = new Map();
+  const identityCounts = new Map();
+  const examples = [];
+
+  for (let firstA = 0; firstA < 81; firstA += 1) {
+    for (let firstB = firstA + 1; firstB < 81; firstB += 1) {
+      const middle = swapCells(source, firstA, firstB);
+      if (validateGrid(middle)) continue;
+
+      for (let secondA = 0; secondA < 81; secondA += 1) {
+        for (let secondB = secondA + 1; secondB < 81; secondB += 1) {
+          const final = swapCells(middle, secondA, secondB);
+          if (!validateGrid(final)) continue;
+
+          const finalKey = gridKey(final);
+          const geometryKey = `${cellSwapGeometry(firstA, firstB)} -> ${cellSwapGeometry(secondA, secondB)}`;
+          const invalidityKey = invalidityProfileKey(invalidityProfile(middle));
+          const finalParity = paritySignature(final);
+          const identityStatus = finalKey === sourceKey ? "returns to source" : "different valid board";
+
+          validTargets.set(finalKey, final);
+          geometryCounts.set(geometryKey, (geometryCounts.get(geometryKey) ?? 0) + 1);
+          invalidityCounts.set(invalidityKey, (invalidityCounts.get(invalidityKey) ?? 0) + 1);
+          parityCounts.set(finalParity, (parityCounts.get(finalParity) ?? 0) + 1);
+          identityCounts.set(identityStatus, (identityCounts.get(identityStatus) ?? 0) + 1);
+
+          if (examples.length < 8 && finalKey !== sourceKey) {
+            examples.push({
+              firstMove: cellSwapMoveName(firstA, firstB),
+              secondMove: cellSwapMoveName(secondA, secondB),
+              geometry: geometryKey,
+              middleInvalidity: invalidityKey,
+              finalParity,
+              identityStatus,
+              final,
+            });
+          }
+        }
+      }
+    }
+  }
+
+  const uniqueParityCounts = new Map();
+  const uniqueIdentityCounts = new Map();
+  for (const final of validTargets.values()) {
+    const finalKey = gridKey(final);
+    const finalParity = paritySignature(final);
+    const identityStatus = finalKey === sourceKey ? "source board" : "different valid board";
+    uniqueParityCounts.set(finalParity, (uniqueParityCounts.get(finalParity) ?? 0) + 1);
+    uniqueIdentityCounts.set(identityStatus, (uniqueIdentityCounts.get(identityStatus) ?? 0) + 1);
+  }
+
+  return {
+    bridgeCount: [...geometryCounts.values()].reduce((sum, count) => sum + count, 0),
+    uniqueTargetCount: validTargets.size,
+    geometryCounts,
+    invalidityCounts,
+    parityCounts,
+    identityCounts,
+    uniqueParityCounts,
+    uniqueIdentityCounts,
+    examples,
+  };
+}
+
 function gridKey(grid) {
   return grid.map((row) => row.join("")).join("/");
 }
@@ -500,6 +570,28 @@ function printForbiddenBridgeProfile(sourceName, source, targetName, target) {
     console.log(`      middle parity: ${bridge.middleParity}`);
     console.log(`      final parity: ${bridge.finalParity}`);
   }
+}
+
+function printForbiddenNeighborhoodProfile(name, source) {
+  console.log(`two-step forbidden neighborhood: ${name}`);
+  const profile = collectTwoStepForbiddenNeighborhood(source);
+  console.log(`  bridge sequences found: ${profile.bridgeCount}`);
+  console.log(`  unique valid target boards: ${profile.uniqueTargetCount}`);
+  printCountMap("  sequence geometry patterns", profile.geometryCounts);
+  printCountMap("  sequence middle invalidity patterns", profile.invalidityCounts);
+  printCountMap("  sequence final parity signatures", profile.parityCounts);
+  printCountMap("  sequence identity status", profile.identityCounts);
+  printCountMap("  unique target parity signatures", profile.uniqueParityCounts);
+  printCountMap("  unique target identity status", profile.uniqueIdentityCounts);
+  console.log("  examples:");
+  for (const example of profile.examples) {
+    console.log(`    ${example.firstMove}; ${example.secondMove}`);
+    console.log(`      geometry: ${example.geometry}`);
+    console.log(`      middle invalidity: ${example.middleInvalidity}`);
+    console.log(`      final parity: ${example.finalParity}`);
+    console.log(`      identity status: ${example.identityStatus}`);
+  }
+  console.log("");
 }
 
 function printCountMap(label, map) {
@@ -581,6 +673,8 @@ function inspectPair(sourceName, source, targetName, target) {
   summarizeStructuralProfile(targetName, target);
   console.log("");
   printForbiddenBridgeProfile(sourceName, source, targetName, target);
+  console.log("");
+  printForbiddenNeighborhoodProfile(sourceName, source);
 }
 
 printGrid("Base grid", BASE_GRID);

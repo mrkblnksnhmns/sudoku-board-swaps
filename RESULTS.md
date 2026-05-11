@@ -374,3 +374,59 @@ two-step forbidden bridge profile: base -> comparison
 This negative result is not surprising. The two boards are structurally far apart, not merely one local repair away from each other.
 
 The next `9x9` bridge experiment should not compare two arbitrary distant boards. It should generate boards by applying controlled forbidden two-swap patterns to the cyclic base, then test which valid boards they land on and what parity signatures they produce.
+
+## 9x9 Local Two-Step Forbidden Neighborhood
+
+We generated every two-step arbitrary cell-swap sequence from the cyclic base grid:
+
+```text
+valid base -> invalid middle -> valid final
+```
+
+Output:
+
+```text
+two-step forbidden neighborhood: base
+  bridge sequences found: 2916
+  unique valid target boards: 1
+
+  sequence geometry patterns
+    different row/column/box -> different row/column/box: 2106
+    same column across boxes -> same column across boxes: 243
+    same row across boxes -> same row across boxes: 243
+    same box diagonal -> same box diagonal: 162
+    same column inside box -> same column inside box: 81
+    same row inside box -> same row inside box: 81
+
+  sequence middle invalidity patterns
+    rows:2,cols:2,boxes:2: 2106
+    rows:0,cols:2,boxes:2: 243
+    rows:2,cols:0,boxes:2: 243
+    rows:2,cols:2,boxes:0: 162
+    rows:0,cols:2,boxes:0: 81
+    rows:2,cols:0,boxes:0: 81
+
+  sequence final parity signatures
+    rows even:36,odd:0 | cols even:36,odd:0: 2916
+
+  sequence identity status
+    returns to source: 2916
+
+  unique target parity signatures
+    rows even:36,odd:0 | cols even:36,odd:0: 1
+
+  unique target identity status
+    source board: 1
+```
+
+Interpretation:
+
+Unlike `4x4`, the cyclic `9x9` base grid has no nontrivial two-step forbidden cell-swap neighbor. Every two-step sequence that returns to a valid completed board returns to the original base grid.
+
+So the `4x4` two-step bridge pattern does not immediately scale to `9x9`.
+
+The next local-neighborhood question is:
+
+> What is the smallest number of forbidden cell swaps that can move the cyclic `9x9` base grid to a different valid completed board?
+
+The obvious next probe is depth `3` or a smarter patterned depth `4`, because exhaustive depth grows quickly.

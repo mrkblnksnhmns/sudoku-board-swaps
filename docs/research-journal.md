@@ -135,6 +135,26 @@ bridges found: 0
 
 That negative result is expected. These two selected `9x9` boards are much farther apart than the two `4x4` family representatives. The better next experiment is to generate local forbidden bridges from the base grid and classify the valid boards they produce.
 
+We then generated every two-step arbitrary cell-swap sequence from the cyclic base grid that starts valid, goes invalid, and returns to a valid completed board.
+
+Output:
+
+```text
+bridge sequences found: 2916
+unique valid target boards: 1
+sequence identity status:
+  returns to source: 2916
+```
+
+So every valid endpoint at depth `2` is just the original base grid.
+
+This is an important contrast with `4x4`:
+
+- In `4x4`, two forbidden cell swaps can move from one family to another.
+- In the cyclic `9x9` base grid, two forbidden cell swaps do not reach any different valid board.
+
+This suggests that the first nontrivial forbidden neighborhood for `9x9` is deeper than two cell swaps, or that it requires a more structured move type than arbitrary isolated cell swaps.
+
 ## Why We Moved to 4x4
 
 We decided to start from smaller boards because `4x4` Sudoku can be fully enumerated.
