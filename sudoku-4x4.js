@@ -87,8 +87,59 @@ function swapDigits(grid, a, b) {
   }));
 }
 
+function swapCells(grid, first, second) {
+  const next = cloneGrid(grid);
+  const firstRow = Math.floor(first / SIZE);
+  const firstCol = first % SIZE;
+  const secondRow = Math.floor(second / SIZE);
+  const secondCol = second % SIZE;
+  [next[firstRow][firstCol], next[secondRow][secondCol]] = [next[secondRow][secondCol], next[firstRow][firstCol]];
+  return next;
+}
+
 function swapBands(grid) {
   return grid.slice(BOX).concat(grid.slice(0, BOX));
+}
+
+function permutationParity(values) {
+  let inversions = 0;
+  for (let i = 0; i < values.length; i += 1) {
+    for (let j = i + 1; j < values.length; j += 1) {
+      if (values[i] > values[j]) inversions += 1;
+    }
+  }
+  return inversions % 2 === 0 ? "even" : "odd";
+}
+
+function rowPairParity(grid, a, b) {
+  const rowAPositions = new Map(grid[a].map((value, index) => [value, index + 1]));
+  const mapping = grid[b].map((value) => rowAPositions.get(value));
+  return permutationParity(mapping);
+}
+
+function colPairParity(grid, a, b) {
+  const colA = grid.map((row) => row[a]);
+  const colB = grid.map((row) => row[b]);
+  const colAPositions = new Map(colA.map((value, index) => [value, index + 1]));
+  const mapping = colB.map((value) => colAPositions.get(value));
+  return permutationParity(mapping);
+}
+
+function pairParityProfile(grid, axis) {
+  const parityForPair = axis === "row" ? rowPairParity : colPairParity;
+  const profile = { even: 0, odd: 0 };
+
+  for (let a = 0; a < SIZE; a += 1) {
+    for (let b = a + 1; b < SIZE; b += 1) {
+      profile[parityForPair(grid, a, b)] += 1;
+    }
+  }
+
+  return profile;
+}
+
+function profileKey(profile) {
+  return `even:${profile.even},odd:${profile.odd}`;
 }
 
 function swapStacks(grid) {
@@ -255,6 +306,22 @@ function validityPreservingSwapNeighbors(grid) {
   return neighbors;
 }
 
+function validityPreservingCellSwapNeighbors(grid) {
+  const neighbors = new Map();
+
+  for (let a = 0; a < SIZE * SIZE; a += 1) {
+    for (let b = a + 1; b < SIZE * SIZE; b += 1) {
+      const next = swapCells(grid, a, b);
+      if (!validateGrid(next)) continue;
+      const first = `r${Math.floor(a / SIZE) + 1}c${(a % SIZE) + 1}`;
+      const second = `r${Math.floor(b / SIZE) + 1}c${(b % SIZE) + 1}`;
+      neighbors.set(gridKey(next), `cell ${first}<->${second}`);
+    }
+  }
+
+  return neighbors;
+}
+
 function buildGraph(grids, neighborFactory) {
   const validKeys = new Set(grids.map(gridKey));
   const graph = new Map();
@@ -263,7 +330,7 @@ function buildGraph(grids, neighborFactory) {
   for (const grid of grids) {
     const key = gridKey(grid);
     const neighbors = [...neighborFactory(grid).entries()]
-      .filter(([neighborKey]) => validKeys.has(neighborKey));
+      .filter(([neighborKey]) => neighborKey !== key && validKeys.has(neighborKey));
     graph.set(key, neighbors);
     edgeCount += neighbors.length;
   }
@@ -327,7 +394,7 @@ function graphDistanceProfile(graph) {
   return {
     diameter,
     diameterPair,
-    averageDistance: distanceSum / reachablePairs,
+    averageDistance: reachablePairs === 0 ? 0 : distanceSum / reachablePairs,
     reachablePairs,
   };
 }
@@ -366,7 +433,7 @@ function printGraphProfile(name, grids, neighborFactory, familyByKey) {
   console.log(`  nodes: ${grids.length}`);
   console.log(`  edges: ${edgeCount}`);
   console.log(`  connected components: ${components.length}`);
-  console.log(`  component sizes: ${components.map((component) => component.length).join(", ")}`);
+  console.log(`  component sizes: ${summarizeComponentSizes(components)}`);
   console.log(`  reachable pairs: ${distanceProfile.reachablePairs}`);
   console.log(`  average shortest swap distance: ${distanceProfile.averageDistance.toFixed(3)}`);
   console.log(`  diameter: ${distanceProfile.diameter}`);
@@ -381,6 +448,47 @@ function printGraphProfile(name, grids, neighborFactory, familyByKey) {
   }
 
   console.log("");
+}
+
+function summarizeComponentSizes(components) {
+  const counts = new Map();
+  for (const component of components) {
+    counts.set(component.length, (counts.get(component.length) ?? 0) + 1);
+  }
+
+  return [...counts.entries()]
+    .sort((a, b) => b[0] - a[0])
+    .map(([size, count]) => (count === 1 ? `${size}` : `${size}x${count}`))
+    .join(", ");
+}
+
+function printFamilyParityProfiles(families) {
+  console.log("family parity profiles");
+  families.forEach((family, index) => {
+    const representative = family.representative;
+    const rowProfile = pairParityProfile(representative, "row");
+    const colProfile = pairParityProfile(representative, "col");
+    const memberProfiles = new Map();
+
+    for (const memberKey of family.members) {
+      const grid = parseGridKey(memberKey);
+      const key = [
+        `rows ${profileKey(pairParityProfile(grid, "row"))}`,
+        `cols ${profileKey(pairParityProfile(grid, "col"))}`,
+      ].join(" | ");
+      memberProfiles.set(key, (memberProfiles.get(key) ?? 0) + 1);
+    }
+
+    console.log(`  family ${index + 1}`);
+    console.log(`    representative row-pair parity: ${profileKey(rowProfile)}`);
+    console.log(`    representative col-pair parity: ${profileKey(colProfile)}`);
+    console.log(`    profile distribution: ${JSON.stringify(Object.fromEntries(memberProfiles.entries()))}`);
+  });
+  console.log("");
+}
+
+function parseGridKey(key) {
+  return key.split("/").map((row) => [...row].map(Number));
 }
 
 function printGrid(grid) {
@@ -421,5 +529,7 @@ families.forEach((family, index) => {
   console.log("");
 });
 
+printFamilyParityProfiles(families);
 printGraphProfile("standard atomic moves", grids, standardAtomicNeighbors, familyByKey);
 printGraphProfile("validity-preserving row/column swaps", grids, validityPreservingSwapNeighbors, familyByKey);
+printGraphProfile("validity-preserving cell swaps", grids, validityPreservingCellSwapNeighbors, familyByKey);

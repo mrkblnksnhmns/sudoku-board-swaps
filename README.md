@@ -24,6 +24,8 @@ See [RESULTS.md](RESULTS.md) for the current research output.
 - How many completed boards exist at each size?
 - Which boards are connected by standard Sudoku-preserving transformations?
 - Which boards have extra internal swap freedom?
+- What is the shortest swap distance between connected boards?
+- Which invariants prevent two boards from being connected?
 - What patterns distinguish highly symmetric boards from ordinary boards?
 - What additional transformations would connect more board families?
 
