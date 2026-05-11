@@ -142,6 +142,13 @@ function profileKey(profile) {
   return `even:${profile.even},odd:${profile.odd}`;
 }
 
+function paritySignature(grid) {
+  return [
+    `rows ${profileKey(pairParityProfile(grid, "row"))}`,
+    `cols ${profileKey(pairParityProfile(grid, "col"))}`,
+  ].join(" | ");
+}
+
 function swapStacks(grid) {
   return grid.map((row) => row.slice(BOX).concat(row.slice(0, BOX)));
 }
@@ -257,8 +264,12 @@ function atomicSwapCounts(grid) {
 }
 
 function standardAtomicNeighbors(grid) {
-  const neighbors = new Map();
-  const add = (move, next) => neighbors.set(gridKey(next), move);
+  return movesToNeighborMap(standardAtomicMoves(grid));
+}
+
+function standardAtomicMoves(grid) {
+  const moves = [];
+  const add = (move, next) => moves.push({ move, next });
 
   for (let a = 0; a < SIZE; a += 1) {
     for (let b = a + 1; b < SIZE; b += 1) {
@@ -279,13 +290,17 @@ function standardAtomicNeighbors(grid) {
   add("stack 1<->2", swapStacks(grid));
   add("transpose", transpose(grid));
 
-  return neighbors;
+  return moves;
 }
 
 function validityPreservingSwapNeighbors(grid) {
-  const neighbors = new Map();
+  return movesToNeighborMap(validityPreservingSwapMoves(grid));
+}
+
+function validityPreservingSwapMoves(grid) {
+  const moves = [];
   const addIfValid = (move, next) => {
-    if (validateGrid(next)) neighbors.set(gridKey(next), move);
+    if (validateGrid(next)) moves.push({ move, next });
   };
 
   for (let a = 0; a < SIZE; a += 1) {
@@ -303,11 +318,15 @@ function validityPreservingSwapNeighbors(grid) {
 
   addIfValid("transpose", transpose(grid));
 
-  return neighbors;
+  return moves;
 }
 
 function validityPreservingCellSwapNeighbors(grid) {
-  const neighbors = new Map();
+  return movesToNeighborMap(validityPreservingCellSwapMoves(grid));
+}
+
+function validityPreservingCellSwapMoves(grid) {
+  const moves = [];
 
   for (let a = 0; a < SIZE * SIZE; a += 1) {
     for (let b = a + 1; b < SIZE * SIZE; b += 1) {
@@ -315,10 +334,32 @@ function validityPreservingCellSwapNeighbors(grid) {
       if (!validateGrid(next)) continue;
       const first = `r${Math.floor(a / SIZE) + 1}c${(a % SIZE) + 1}`;
       const second = `r${Math.floor(b / SIZE) + 1}c${(b % SIZE) + 1}`;
-      neighbors.set(gridKey(next), `cell ${first}<->${second}`);
+      moves.push({ move: `cell ${first}<->${second}`, next });
     }
   }
 
+  return moves;
+}
+
+function allCellSwapMoves(grid) {
+  const moves = [];
+
+  for (let a = 0; a < SIZE * SIZE; a += 1) {
+    for (let b = a + 1; b < SIZE * SIZE; b += 1) {
+      const first = `r${Math.floor(a / SIZE) + 1}c${(a % SIZE) + 1}`;
+      const second = `r${Math.floor(b / SIZE) + 1}c${(b % SIZE) + 1}`;
+      moves.push({ move: `cell ${first}<->${second}`, next: swapCells(grid, a, b) });
+    }
+  }
+
+  return moves;
+}
+
+function movesToNeighborMap(moves) {
+  const neighbors = new Map();
+  for (const { move, next } of moves) {
+    neighbors.set(gridKey(next), move);
+  }
   return neighbors;
 }
 
@@ -472,10 +513,7 @@ function printFamilyParityProfiles(families) {
 
     for (const memberKey of family.members) {
       const grid = parseGridKey(memberKey);
-      const key = [
-        `rows ${profileKey(pairParityProfile(grid, "row"))}`,
-        `cols ${profileKey(pairParityProfile(grid, "col"))}`,
-      ].join(" | ");
+      const key = paritySignature(grid);
       memberProfiles.set(key, (memberProfiles.get(key) ?? 0) + 1);
     }
 
@@ -484,6 +522,100 @@ function printFamilyParityProfiles(families) {
     console.log(`    representative col-pair parity: ${profileKey(colProfile)}`);
     console.log(`    profile distribution: ${JSON.stringify(Object.fromEntries(memberProfiles.entries()))}`);
   });
+  console.log("");
+}
+
+function printMovePreservationReport(families) {
+  const moveModels = [
+    ["standard atomic moves", standardAtomicMoves],
+    ["validity-preserving row/column swaps", validityPreservingSwapMoves],
+    ["validity-preserving cell swaps", validityPreservingCellSwapMoves],
+  ];
+
+  console.log("move parity preservation");
+  for (const [name, moveFactory] of moveModels) {
+    const changes = new Map();
+    let totalMoves = 0;
+
+    for (const family of families) {
+      for (const memberKey of family.members) {
+        const grid = parseGridKey(memberKey);
+        const before = paritySignature(grid);
+        for (const { next } of moveFactory(grid)) {
+          totalMoves += 1;
+          const after = paritySignature(next);
+          const key = `${before} -> ${after}`;
+          changes.set(key, (changes.get(key) ?? 0) + 1);
+        }
+      }
+    }
+
+    console.log(`  ${name}`);
+    console.log(`    total directed moves checked: ${totalMoves}`);
+    for (const [change, count] of changes.entries()) {
+      console.log(`    ${change}: ${count}`);
+    }
+  }
+  console.log("");
+}
+
+function findForbiddenBridge(source, targetFamilyMembers, maxDepth) {
+  const targetKeys = new Set(targetFamilyMembers);
+  const startKey = gridKey(source);
+  const queue = [{ grid: source, key: startKey, path: [] }];
+  const seen = new Set([startKey]);
+
+  for (let index = 0; index < queue.length; index += 1) {
+    const current = queue[index];
+    if (current.path.length >= maxDepth) continue;
+
+    for (const { move, next } of allCellSwapMoves(current.grid)) {
+      const nextKey = gridKey(next);
+      if (seen.has(nextKey)) continue;
+
+      const step = {
+        move,
+        validAfterMove: validateGrid(next),
+        parityAfterMove: paritySignature(next),
+        grid: next,
+      };
+      const path = [...current.path, step];
+
+      if (targetKeys.has(nextKey)) return path;
+
+      seen.add(nextKey);
+      queue.push({ grid: next, key: nextKey, path });
+    }
+  }
+
+  return null;
+}
+
+function printForbiddenBridgeReport(families) {
+  const sourceFamily = families[0];
+  const targetFamily = families[1];
+  const source = sourceFamily.representative;
+  const bridge = findForbiddenBridge(source, targetFamily.members, 4);
+
+  console.log("forbidden bridge search");
+  console.log("  move model: arbitrary single-cell swaps, invalid intermediate boards allowed");
+  console.log("  source family: 1");
+  console.log("  target family: 2");
+
+  if (!bridge) {
+    console.log("  no bridge found at depth <= 4");
+    console.log("");
+    return;
+  }
+
+  console.log(`  shortest bridge found: ${bridge.length} cell swap(s)`);
+  bridge.forEach((step, index) => {
+    console.log(`    ${index + 1}. ${step.move}`);
+    console.log(`       valid after move: ${step.validAfterMove}`);
+    console.log(`       parity after move: ${step.parityAfterMove}`);
+  });
+  console.log("  target grid:");
+  printGrid(bridge[bridge.length - 1].grid);
   console.log("");
 }
 
@@ -530,6 +662,8 @@ families.forEach((family, index) => {
 });
 
 printFamilyParityProfiles(families);
+printMovePreservationReport(families);
 printGraphProfile("standard atomic moves", grids, standardAtomicNeighbors, familyByKey);
 printGraphProfile("validity-preserving row/column swaps", grids, validityPreservingSwapNeighbors, familyByKey);
 printGraphProfile("validity-preserving cell swaps", grids, validityPreservingCellSwapNeighbors, familyByKey);
+printForbiddenBridgeReport(families);

@@ -283,6 +283,70 @@ Current hypothesis:
 
 This is the strongest result so far.
 
+## Forbidden Moves
+
+We introduced the phrase "forbidden move" to mean:
+
+> A move that is useful for transforming one completed board into another, but which temporarily breaks Sudoku validity.
+
+Under the graph model where every node must be a valid completed board, forbidden moves are not edges.
+
+For `4x4`, no single cell swap creates a different valid completed board. The only validity-preserving cell swaps are no-op swaps of equal symbols.
+
+But if invalid intermediate boards are allowed, there is a two-step bridge from family 1 to family 2.
+
+Starting board:
+
+```text
+1 2 | 3 4
+3 4 | 1 2
+----+----
+2 1 | 4 3
+4 3 | 2 1
+```
+
+Step 1:
+
+```text
+swap r1c1 <-> r1c2
+```
+
+Intermediate board:
+
+```text
+2 1 | 3 4
+3 4 | 1 2
+----+----
+2 1 | 4 3
+4 3 | 2 1
+```
+
+This is invalid because columns now contain duplicates.
+
+Step 2:
+
+```text
+swap r3c1 <-> r3c2
+```
+
+Final board:
+
+```text
+2 1 | 3 4
+3 4 | 1 2
+----+----
+1 2 | 4 3
+4 3 | 2 1
+```
+
+This is valid and belongs to family 2.
+
+So the current interpretation is:
+
+> The two `4x4` families are separated inside the valid-board graph, but they are close if we allow temporarily invalid states.
+
+This distinction matters because it tells us the separation is not about raw rearrangement difficulty. It is about the constraint that every intermediate step must remain Sudoku-valid.
+
 ## Current Status
 
 The project currently has:
@@ -292,6 +356,7 @@ The project currently has:
 - multiple swap graph models
 - shortest path and diameter computation
 - a documented parity separator
+- a forbidden bridge search
 - preliminary `9x9` structural profiling
 
 Current local commits:
@@ -309,11 +374,10 @@ The next move is not immediately to jump to larger boards. The next move is to m
 Recommended sequence:
 
 1. Prove computationally that each allowed move preserves the parity profile.
-2. Add a script section that prints before/after parity for every move type.
-3. Search for a minimal move that can cross the two families if we allow temporarily invalid intermediate boards.
-4. Then sample `9x9` boards and compute analogous row-pair/column-pair parity profiles.
-5. Compare highly symmetric `9x9` grids against ordinary solved grids.
-6. Only after that, consider `16x16`.
+2. Search for other forbidden bridges and classify the invalidity patterns they use.
+3. Then sample `9x9` boards and compute analogous row-pair/column-pair parity profiles.
+4. Compare highly symmetric `9x9` grids against ordinary solved grids.
+5. Only after that, consider `16x16`.
 
 ## Cloud / Sandbox Notes
 
@@ -333,4 +397,3 @@ For this project, GitHub Codespaces is the recommended cloud sandbox if remote w
 The core idea is:
 
 > Do not assume boards are interchangeable. Build the graph, measure the distances, and look for invariants that explain the disconnected pieces.
-

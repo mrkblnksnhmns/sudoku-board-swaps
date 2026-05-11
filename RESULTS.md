@@ -127,6 +127,34 @@ This is the first important research signal:
 
 > Some completed Sudoku boards remain structurally separated even when we allow every row/column swap that preserves validity at each step.
 
+## 4x4 Move Preservation
+
+We checked whether each allowed move model preserves the row-pair/column-pair parity profile.
+
+Output:
+
+```text
+move parity preservation
+  standard atomic moves
+    total directed moves checked: 3744
+    rows even:6,odd:0 | cols even:6,odd:0 -> rows even:6,odd:0 | cols even:6,odd:0: 1248
+    rows even:2,odd:4 | cols even:2,odd:4 -> rows even:2,odd:4 | cols even:2,odd:4: 2496
+
+  validity-preserving row/column swaps
+    total directed moves checked: 3936
+    rows even:6,odd:0 | cols even:6,odd:0 -> rows even:6,odd:0 | cols even:6,odd:0: 1440
+    rows even:2,odd:4 | cols even:2,odd:4 -> rows even:2,odd:4 | cols even:2,odd:4: 2496
+
+  validity-preserving cell swaps
+    total directed moves checked: 6912
+    rows even:6,odd:0 | cols even:6,odd:0 -> rows even:6,odd:0 | cols even:6,odd:0: 2304
+    rows even:2,odd:4 | cols even:2,odd:4 -> rows even:2,odd:4 | cols even:2,odd:4: 4608
+```
+
+Every checked validity-preserving move keeps the board inside the same parity profile. This supports the parity profile as a real separator.
+
+For cell swaps, the validity-preserving cases are no-op swaps of equal symbols. They do not move to a different completed board.
+
 ### Validity-Preserving Cell Swaps
 
 Allowed move:
@@ -147,6 +175,74 @@ family edge counts: {}
 ```
 
 No single cell swap connects one completed `4x4` board to another completed `4x4` board. Individual cell swaps are too local; they immediately break row, column, or box validity unless they leave the board unchanged.
+
+## 4x4 Forbidden Bridge
+
+We then allowed arbitrary individual cell swaps, even if intermediate boards are invalid.
+
+This answers a different question:
+
+> If we are allowed to temporarily leave the space of valid completed Sudoku boards, how quickly can we cross from one family to the other?
+
+Output:
+
+```text
+forbidden bridge search
+  move model: arbitrary single-cell swaps, invalid intermediate boards allowed
+  source family: 1
+  target family: 2
+  shortest bridge found: 2 cell swap(s)
+    1. cell r1c1<->r1c2
+       valid after move: false
+       parity after move: rows even:3,odd:3 | cols even:1,odd:5
+    2. cell r3c1<->r3c2
+       valid after move: true
+       parity after move: rows even:2,odd:4 | cols even:2,odd:4
+```
+
+Starting board:
+
+```text
+1 2 | 3 4
+3 4 | 1 2
+----+----
+2 1 | 4 3
+4 3 | 2 1
+```
+
+Step 1 swaps cells `r1c1` and `r1c2`:
+
+```text
+2 1 | 3 4
+3 4 | 1 2
+----+----
+2 1 | 4 3
+4 3 | 2 1
+```
+
+This board is invalid because column 1 and column 2 now contain duplicates.
+
+Step 2 swaps cells `r3c1` and `r3c2`:
+
+```text
+2 1 | 3 4
+3 4 | 1 2
+----+----
+1 2 | 4 3
+4 3 | 2 1
+```
+
+This board is valid and belongs to family 2.
+
+Interpretation:
+
+The two families are disconnected only if every intermediate board must remain a valid completed Sudoku. If invalid intermediate states are allowed, a short two-cell-swap bridge exists.
+
+This gives a useful language:
+
+- allowed move: keeps every intermediate board valid
+- forbidden move: temporarily breaks Sudoku validity
+- forbidden bridge: a sequence that crosses families by passing through invalid boards
 
 ## 4x4 Parity Separator
 
