@@ -19,6 +19,8 @@ node sudoku-structure.js
 
 See [RESULTS.md](RESULTS.md) for the current research output.
 
+See [docs/research-journal.md](docs/research-journal.md) for the narrative research log that captures the discussion, hypotheses, experiments, and next steps.
+
 ## Current Questions
 
 - How many completed boards exist at each size?
