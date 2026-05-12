@@ -1,0 +1,102 @@
+{
+  "kind": "trade-adjacency",
+  "runStartedAt": "2026-05-12T11:11:26.365Z",
+  "config": {
+    "sourceCount": 1,
+    "allGeneratedSourceCount": 54,
+    "resume": false
+  },
+  "processedCount": 1,
+  "complete": true,
+  "currentSource": null,
+  "sources": [
+    {
+      "id": "base-trade-1-digits-1-4-mask-63",
+      "label": "1<->4 mask 63",
+      "tradeSize": 6,
+      "outgoingCount": 60,
+      "classCounts": {
+        "self": 0,
+        "base": 1,
+        "knownTradeTarget": 4,
+        "newBoard": 55
+      },
+      "examples": [
+        {
+          "classification": "base",
+          "firstDigit": 1,
+          "secondDigit": 4,
+          "mask": 63,
+          "size": 6,
+          "knownTarget": null
+        },
+        {
+          "classification": "knownTradeTarget",
+          "firstDigit": 1,
+          "secondDigit": 4,
+          "mask": 4032,
+          "size": 6,
+          "knownTarget": "1<->4 mask 4095"
+        },
+        {
+          "classification": "knownTradeTarget",
+          "firstDigit": 1,
+          "secondDigit": 4,
+          "mask": 258048,
+          "size": 6,
+          "knownTarget": "1<->4 mask 258111"
+        },
+        {
+          "classification": "newBoard",
+          "firstDigit": 1,
+          "secondDigit": 7,
+          "mask": 63,
+          "size": 6,
+          "knownTarget": null
+        },
+        {
+          "classification": "newBoard",
+          "firstDigit": 1,
+          "secondDigit": 7,
+          "mask": 4032,
+          "size": 6,
+          "knownTarget": null
+        },
+        {
+          "classification": "newBoard",
+          "firstDigit": 1,
+          "secondDigit": 7,
+          "mask": 258048,
+          "size": 6,
+          "knownTarget": null
+        },
+        {
+          "classification": "newBoard",
+          "firstDigit": 2,
+          "secondDigit": 5,
+          "mask": 63,
+          "size": 6,
+          "knownTarget": null
+        },
+        {
+          "classification": "newBoard",
+          "firstDigit": 2,
+          "secondDigit": 5,
+          "mask": 4032,
+          "size": 6,
+          "knownTarget": null
+        }
+      ]
+    }
+  ],
+  "outputJson": "/home/markblanksonhemans/projects/sudoku-board-swaps/data/trade-adjacency.latest.json",
+  "visualizerJson": "/home/markblanksonhemans/projects/sudoku-board-swaps/visualizer/data/trade-adjacency.latest.json",
+  "visualizerDataJs": "/home/markblanksonhemans/projects/sudoku-board-swaps/visualizer/data/trade-adjacency-data.js",
+  "updatedAt": "2026-05-12T11:11:28.462Z",
+  "summary": {
+    "self": 0,
+    "base": 1,
+    "knownTradeTarget": 4,
+    "newBoard": 55
+  }
+}

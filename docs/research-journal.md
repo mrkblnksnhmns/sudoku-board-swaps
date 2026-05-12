@@ -16,6 +16,20 @@ The project studies:
 - shortest paths as swap distances
 - invariants as properties that prevent two boards from being connected
 
+As of May 12, 2026, the working order is:
+
+1. Study pattern transformations that keep every intermediate board valid.
+2. Build valid-board graphs and look for invariants.
+3. Only then study forbidden bridges and special cases where intermediate boards may be invalid.
+
+This keeps the main object of study clear:
+
+```text
+valid board -> valid board -> valid board
+```
+
+Forbidden bridges remain useful, but they answer a later question.
+
 ## Early Discussion
 
 We first separated several Sudoku questions that are often mixed together:
@@ -154,6 +168,51 @@ This is an important contrast with `4x4`:
 - In the cyclic `9x9` base grid, two forbidden cell swaps do not reach any different valid board.
 
 This suggests that the first nontrivial forbidden neighborhood for `9x9` is deeper than two cell swaps, or that it requires a more structured move type than arbitrary isolated cell swaps.
+
+## Valid-First 9x9 Pattern Step
+
+We then reset the order of investigation: valid transformations first, forbidden/special cases later.
+
+The key distinction is:
+
+- A valid endpoint permutation produces a completed Sudoku board.
+- A stepwise-valid permutation can be reached by single row or column swaps, with every intermediate board remaining a completed Sudoku board.
+
+Running:
+
+```bash
+node sudoku-9x9-valid-patterns.js
+```
+
+gave this result for the cyclic base:
+
+```text
+row patterns:
+  valid endpoint permutations: 1296
+  stepwise-valid reachable permutations: 216
+
+column patterns:
+  valid endpoint permutations: 46656
+  stepwise-valid reachable permutations: 46656
+```
+
+For the comparison grid:
+
+```text
+row patterns:
+  valid endpoint permutations: 1296
+  stepwise-valid reachable permutations: 216
+
+column patterns:
+  valid endpoint permutations: 1296
+  stepwise-valid reachable permutations: 216
+```
+
+This shows that endpoint validity and stepwise validity are not the same. The ordinary `1296` row/column freedom includes whole-band or whole-stack relocation, but single row/column swaps alone only generate `216` permutations.
+
+The cyclic base has an exceptional column pattern: all `46656` valid column endpoints are reachable by valid single-column swaps. This is a stronger result than merely counting valid endpoints.
+
+The parity signature remained fixed across all stepwise-valid row/column permutations checked in this experiment.
 
 We then searched for structured two-symbol trades around the cyclic base grid.
 

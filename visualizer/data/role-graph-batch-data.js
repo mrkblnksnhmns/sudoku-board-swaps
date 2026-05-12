@@ -1,0 +1,190 @@
+window.SUDOKU_ROLE_GRAPH_BATCH = {
+  "runStartedAt": "2026-05-12T09:53:19.172Z",
+  "targetBoardCount": 3,
+  "collectedBoardCount": 3,
+  "progressEvery": 1,
+  "processedCount": 3,
+  "complete": true,
+  "profiles": [
+    {
+      "label": "cyclic base",
+      "source": "seed",
+      "valid": true,
+      "signature": "row:edges:1-2,1-3,2-3,4-5,4-6,5-6,7-8,7-9,8-9;components:123|456|789;degrees:222222222 || col:edges:1-2,1-3,1-4,1-7,2-3,2-5,2-8,3-6,3-9,4-5,4-6,4-7,5-6,5-8,6-9,7-8,7-9,8-9;components:123456789;degrees:444444444",
+      "row": {
+        "roleGraphKey": "edges:1-2,1-3,2-3,4-5,4-6,5-6,7-8,7-9,8-9;components:123|456|789;degrees:222222222",
+        "edgeCount": 9,
+        "componentShape": "3+3+3",
+        "degreeSequence": "2,2,2,2,2,2,2,2,2",
+        "endpointCount": 1296,
+        "singleComponentCount": 6,
+        "singleComponentSizes": "216x6",
+        "singleReachable": 216,
+        "singleIdentityWorstCase": 6,
+        "singleLargestDiameter": 6,
+        "blockComponentCount": 1,
+        "blockComponentSizes": "1296",
+        "blockReachable": 1296,
+        "blockIdentityWorstCase": 8,
+        "blockLargestDiameter": 8
+      },
+      "col": {
+        "roleGraphKey": "edges:1-2,1-3,1-4,1-7,2-3,2-5,2-8,3-6,3-9,4-5,4-6,4-7,5-6,5-8,6-9,7-8,7-9,8-9;components:123456789;degrees:444444444",
+        "edgeCount": 18,
+        "componentShape": "9",
+        "degreeSequence": "4,4,4,4,4,4,4,4,4",
+        "endpointCount": 46656,
+        "singleComponentCount": 1,
+        "singleComponentSizes": "46656",
+        "singleReachable": 46656,
+        "singleIdentityWorstCase": 12,
+        "singleLargestDiameter": null,
+        "blockComponentCount": 1,
+        "blockComponentSizes": "46656",
+        "blockReachable": 46656,
+        "blockIdentityWorstCase": 10,
+        "blockLargestDiameter": null
+      }
+    },
+    {
+      "label": "comparison",
+      "source": "seed",
+      "valid": true,
+      "signature": "row:edges:1-2,1-3,2-3,4-5,4-6,5-6,7-8,7-9,8-9;components:123|456|789;degrees:222222222 || col:edges:1-2,1-3,2-3,4-5,4-6,5-6,7-8,7-9,8-9;components:123|456|789;degrees:222222222",
+      "row": {
+        "roleGraphKey": "edges:1-2,1-3,2-3,4-5,4-6,5-6,7-8,7-9,8-9;components:123|456|789;degrees:222222222",
+        "edgeCount": 9,
+        "componentShape": "3+3+3",
+        "degreeSequence": "2,2,2,2,2,2,2,2,2",
+        "endpointCount": 1296,
+        "singleComponentCount": 6,
+        "singleComponentSizes": "216x6",
+        "singleReachable": 216,
+        "singleIdentityWorstCase": 6,
+        "singleLargestDiameter": 6,
+        "blockComponentCount": 1,
+        "blockComponentSizes": "1296",
+        "blockReachable": 1296,
+        "blockIdentityWorstCase": 8,
+        "blockLargestDiameter": 8
+      },
+      "col": {
+        "roleGraphKey": "edges:1-2,1-3,2-3,4-5,4-6,5-6,7-8,7-9,8-9;components:123|456|789;degrees:222222222",
+        "edgeCount": 9,
+        "componentShape": "3+3+3",
+        "degreeSequence": "2,2,2,2,2,2,2,2,2",
+        "endpointCount": 1296,
+        "singleComponentCount": 6,
+        "singleComponentSizes": "216x6",
+        "singleReachable": 216,
+        "singleIdentityWorstCase": 6,
+        "singleLargestDiameter": 6,
+        "blockComponentCount": 1,
+        "blockComponentSizes": "1296",
+        "blockReachable": 1296,
+        "blockIdentityWorstCase": 8,
+        "blockLargestDiameter": 8
+      }
+    },
+    {
+      "label": "cyclic base transpose",
+      "source": "base-standard",
+      "valid": true,
+      "signature": "row:edges:1-2,1-3,1-4,1-7,2-3,2-5,2-8,3-6,3-9,4-5,4-6,4-7,5-6,5-8,6-9,7-8,7-9,8-9;components:123456789;degrees:444444444 || col:edges:1-2,1-3,2-3,4-5,4-6,5-6,7-8,7-9,8-9;components:123|456|789;degrees:222222222",
+      "row": {
+        "roleGraphKey": "edges:1-2,1-3,1-4,1-7,2-3,2-5,2-8,3-6,3-9,4-5,4-6,4-7,5-6,5-8,6-9,7-8,7-9,8-9;components:123456789;degrees:444444444",
+        "edgeCount": 18,
+        "componentShape": "9",
+        "degreeSequence": "4,4,4,4,4,4,4,4,4",
+        "endpointCount": 46656,
+        "singleComponentCount": 1,
+        "singleComponentSizes": "46656",
+        "singleReachable": 46656,
+        "singleIdentityWorstCase": 12,
+        "singleLargestDiameter": null,
+        "blockComponentCount": 1,
+        "blockComponentSizes": "46656",
+        "blockReachable": 46656,
+        "blockIdentityWorstCase": 10,
+        "blockLargestDiameter": null
+      },
+      "col": {
+        "roleGraphKey": "edges:1-2,1-3,2-3,4-5,4-6,5-6,7-8,7-9,8-9;components:123|456|789;degrees:222222222",
+        "edgeCount": 9,
+        "componentShape": "3+3+3",
+        "degreeSequence": "2,2,2,2,2,2,2,2,2",
+        "endpointCount": 1296,
+        "singleComponentCount": 6,
+        "singleComponentSizes": "216x6",
+        "singleReachable": 216,
+        "singleIdentityWorstCase": 6,
+        "singleLargestDiameter": 6,
+        "blockComponentCount": 1,
+        "blockComponentSizes": "1296",
+        "blockReachable": 1296,
+        "blockIdentityWorstCase": 8,
+        "blockLargestDiameter": 8
+      }
+    }
+  ],
+  "outputJson": "/home/markblanksonhemans/projects/sudoku-board-swaps/data/role-graph-batch.latest.json",
+  "visualizerJson": "/home/markblanksonhemans/projects/sudoku-board-swaps/visualizer/data/role-graph-batch.latest.json",
+  "visualizerDataJs": "/home/markblanksonhemans/projects/sudoku-board-swaps/visualizer/data/role-graph-batch-data.js",
+  "updatedAt": "2026-05-12T09:56:21.774Z",
+  "groups": [
+    {
+      "signature": "row:edges:1-2,1-3,2-3,4-5,4-6,5-6,7-8,7-9,8-9;components:123|456|789;degrees:222222222 || col:edges:1-2,1-3,1-4,1-7,2-3,2-5,2-8,3-6,3-9,4-5,4-6,4-7,5-6,5-8,6-9,7-8,7-9,8-9;components:123456789;degrees:444444444",
+      "count": 1,
+      "examples": [
+        "cyclic base"
+      ],
+      "sources": {
+        "seed": 1
+      },
+      "rowDistanceProfileCount": 1,
+      "colDistanceProfileCount": 1,
+      "rowDistanceProfiles": [
+        "endpoints:1296;single:6/216x6/216/6/6;block:1/1296/1296/8/8"
+      ],
+      "colDistanceProfiles": [
+        "endpoints:46656;single:1/46656/46656/12/null;block:1/46656/46656/10/null"
+      ]
+    },
+    {
+      "signature": "row:edges:1-2,1-3,2-3,4-5,4-6,5-6,7-8,7-9,8-9;components:123|456|789;degrees:222222222 || col:edges:1-2,1-3,2-3,4-5,4-6,5-6,7-8,7-9,8-9;components:123|456|789;degrees:222222222",
+      "count": 1,
+      "examples": [
+        "comparison"
+      ],
+      "sources": {
+        "seed": 1
+      },
+      "rowDistanceProfileCount": 1,
+      "colDistanceProfileCount": 1,
+      "rowDistanceProfiles": [
+        "endpoints:1296;single:6/216x6/216/6/6;block:1/1296/1296/8/8"
+      ],
+      "colDistanceProfiles": [
+        "endpoints:1296;single:6/216x6/216/6/6;block:1/1296/1296/8/8"
+      ]
+    },
+    {
+      "signature": "row:edges:1-2,1-3,1-4,1-7,2-3,2-5,2-8,3-6,3-9,4-5,4-6,4-7,5-6,5-8,6-9,7-8,7-9,8-9;components:123456789;degrees:444444444 || col:edges:1-2,1-3,2-3,4-5,4-6,5-6,7-8,7-9,8-9;components:123|456|789;degrees:222222222",
+      "count": 1,
+      "examples": [
+        "cyclic base transpose"
+      ],
+      "sources": {
+        "base-standard": 1
+      },
+      "rowDistanceProfileCount": 1,
+      "colDistanceProfileCount": 1,
+      "rowDistanceProfiles": [
+        "endpoints:46656;single:1/46656/46656/12/null;block:1/46656/46656/10/null"
+      ],
+      "colDistanceProfiles": [
+        "endpoints:1296;single:6/216x6/216/6/6;block:1/1296/1296/8/8"
+      ]
+    }
+  ]
+};

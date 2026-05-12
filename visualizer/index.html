@@ -1,0 +1,108 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sudoku Transformation Visualizer</title>
+    <link rel="stylesheet" href="styles.css">
+  </head>
+  <body>
+    <main class="app-shell">
+      <aside class="sidebar" aria-label="Controls">
+        <div class="title-block">
+          <h1>Sudoku Transformation Visualizer</h1>
+          <p id="summaryText">Valid swap role graph</p>
+        </div>
+
+        <section class="control-group" aria-label="View">
+          <h2>View</h2>
+          <div class="segmented vertical" data-control="view">
+            <button class="active" type="button" data-view="board">Board View</button>
+            <button type="button" data-view="role-batch">Role Batch</button>
+            <button type="button" data-view="trade-batch">Trade Targets</button>
+            <button type="button" data-view="adjacency-batch">Adjacency Graph</button>
+            <button type="button" data-view="forbidden-batch">Forbidden Neighborhood</button>
+            <button type="button" data-view="bridge-depth">Bridge Depth</button>
+            <button type="button" data-view="test-plan">Test Plan</button>
+          </div>
+        </section>
+
+        <section class="control-group" aria-label="Board">
+          <h2>Board</h2>
+          <div class="segmented" data-control="board">
+            <button class="active" type="button" data-board="base">Cyclic Base</button>
+            <button type="button" data-board="comparison">Comparison</button>
+          </div>
+        </section>
+
+        <section class="control-group" aria-label="Layer">
+          <h2>Layer</h2>
+          <div class="segmented vertical" data-control="layer">
+            <button class="active" type="button" data-layer="columns">Column Swaps</button>
+            <button type="button" data-layer="rows">Row Swaps</button>
+            <button type="button" data-layer="trade">Two-Symbol Trade</button>
+          </div>
+        </section>
+
+        <section class="control-group" aria-label="Display">
+          <h2>Display</h2>
+          <label class="toggle-row">
+            <input id="showDefaultEdges" type="checkbox" checked>
+            <span>Default symmetry edges</span>
+          </label>
+          <label class="toggle-row">
+            <input id="showExtraEdges" type="checkbox" checked>
+            <span>Extra role edges</span>
+          </label>
+          <label class="toggle-row">
+            <input id="showInvalidUnits" type="checkbox" checked>
+            <span>Trade invalid units</span>
+          </label>
+        </section>
+
+        <section class="control-group trade-controls" aria-label="Trade example">
+          <h2>Trade</h2>
+          <select id="tradeSelect" aria-label="Trade example"></select>
+          <div class="segmented" data-control="trade-step">
+            <button class="active" type="button" data-step="start">Start</button>
+            <button type="button" data-step="middle">Invalid Step</button>
+            <button type="button" data-step="final">Final</button>
+          </div>
+        </section>
+
+        <section class="metrics" aria-label="Metrics">
+          <h2>Metrics</h2>
+          <dl id="metricsList"></dl>
+        </section>
+      </aside>
+
+      <section class="workspace" aria-label="Visualization">
+        <div class="viz-header">
+          <div>
+            <h2 id="viewTitle">Column Swaps</h2>
+            <p id="viewSubtitle">Edges show valid swaps from the displayed board.</p>
+          </div>
+          <div class="legend" aria-label="Legend">
+            <span><i class="legend-default"></i>default</span>
+            <span><i class="legend-extra"></i>extra</span>
+            <span><i class="legend-trade"></i>trade</span>
+            <span><i class="legend-invalid"></i>invalid unit</span>
+          </div>
+        </div>
+
+        <div class="board-stage">
+          <svg id="edgeLayer" class="edge-layer" viewBox="0 0 760 760" aria-hidden="true"></svg>
+          <div id="board" class="sudoku-board" aria-label="Sudoku board"></div>
+        </div>
+        <div id="dataPage" class="data-page hidden" aria-live="polite"></div>
+      </section>
+    </main>
+
+    <script src="data/role-graph-batch-data.js"></script>
+    <script src="data/trade-target-batch-data.js"></script>
+    <script src="data/trade-adjacency-data.js"></script>
+    <script src="data/forbidden-neighborhood-data.js"></script>
+    <script src="data/bridge-depth-data.js"></script>
+    <script src="app.js"></script>
+  </body>
+</html>

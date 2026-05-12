@@ -176,6 +176,135 @@ family edge counts: {}
 
 No single cell swap connects one completed `4x4` board to another completed `4x4` board. Individual cell swaps are too local; they immediately break row, column, or box validity unless they leave the board unchanged.
 
+## 9x9 Valid Pattern Transformations
+
+Command:
+
+```bash
+node sudoku-9x9-valid-patterns.js
+```
+
+This script separates two questions:
+
+- Does a row/column permutation have a valid completed-board endpoint?
+- Can that endpoint be reached by single row/column swaps where every intermediate board is also valid?
+
+For the cyclic base grid:
+
+```text
+row patterns:
+  valid single swaps from start: 9
+  valid endpoint permutations: 1296
+  stepwise-valid reachable permutations: 216
+  valid endpoints not reached stepwise: 1080
+  maximum stepwise swap distance from start: 6
+
+column patterns:
+  valid single swaps from start: 18
+  valid endpoint permutations: 46656
+  stepwise-valid reachable permutations: 46656
+  valid endpoints not reached stepwise: 0
+  maximum stepwise swap distance from start: 12
+```
+
+For the comparison grid:
+
+```text
+row patterns:
+  valid single swaps from start: 9
+  valid endpoint permutations: 1296
+  stepwise-valid reachable permutations: 216
+  valid endpoints not reached stepwise: 1080
+  maximum stepwise swap distance from start: 6
+
+column patterns:
+  valid single swaps from start: 9
+  valid endpoint permutations: 1296
+  stepwise-valid reachable permutations: 216
+  valid endpoints not reached stepwise: 1080
+  maximum stepwise swap distance from start: 6
+```
+
+The `1296` endpoint count includes whole-band or whole-stack relocation. Those endpoints are valid, but they are not reachable by swapping one row or one column at a time while keeping every intermediate board valid.
+
+The cyclic base column case is different: all `46656` valid column endpoint permutations are reachable by valid single-column swaps. This confirms that the cyclic grid has extra stepwise column freedom, not just extra endpoint symmetry.
+
+In every checked stepwise-valid row/column path, the parity signature stayed fixed:
+
+```text
+cyclic base: rows even:36,odd:0 | cols even:36,odd:0
+comparison:  rows even:16,odd:20 | cols even:16,odd:20
+```
+
+## 9x9 Optimization Profiles
+
+Command:
+
+```bash
+node sudoku-9x9-optimization.js
+```
+
+This script turns the valid row/column moves into role graphs and worst-case step profiles.
+
+For ordinary row/column structure, the role graph is three disconnected triangles:
+
+```text
+components: [1,2,3] | [4,5,6] | [7,8,9]
+degrees:    2,2,2,2,2,2,2,2,2
+```
+
+Under single valid row/column swaps only:
+
+```text
+valid endpoints:              1296
+components:                   6
+component sizes:              216x6
+identity reachable endpoints: 216
+identity worst-case steps:    6
+exact component diameter:     6
+```
+
+Adding whole-band or whole-stack block swaps changes the same ordinary structure to:
+
+```text
+valid endpoints:              1296
+components:                   1
+component sizes:              1296
+identity reachable endpoints: 1296
+identity worst-case steps:    8
+exact component diameter:     8
+```
+
+This is a clean optimization tradeoff:
+
+- Single swaps give shorter paths inside one component, but leave five endpoint components unreachable.
+- Adding block swaps makes all ordinary `1296` endpoints reachable, with worst-case distance `8`.
+
+The cyclic base column case has a different role graph:
+
+```text
+components: [1,2,3,4,5,6,7,8,9]
+degrees:    4,4,4,4,4,4,4,4,4
+```
+
+For cyclic base columns:
+
+```text
+single valid swaps:
+  valid endpoints:              46656
+  components:                   1
+  identity reachable endpoints: 46656
+  identity worst-case steps:    12
+
+single valid swaps + block swaps:
+  valid endpoints:              46656
+  components:                   1
+  identity reachable endpoints: 46656
+  identity worst-case steps:    10
+```
+
+So block swaps still reduce worst-case distance for the cyclic column pattern, but the major difference is that cyclic columns are already connected under single valid swaps.
+
 ## 4x4 Forbidden Bridge
 
 We then allowed arbitrary individual cell swaps, even if intermediate boards are invalid.
