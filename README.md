@@ -2,7 +2,7 @@
 
 This is a small Node.js lab for investigating whether completed Sudoku boards are just reshufflings of one base solution.
 
-The current priority is valid transformations first: every intermediate step must remain a completed Sudoku board. Forbidden or special-case bridges are recorded separately and come after the valid-board structure is understood.
+The current priority is arbitrary cell-piece transformations first: any cells may be swapped as pieces, but endpoints that are only standard Sudoku symmetries are classified as symmetry-equivalent rather than genuinely new.
 
 The project studies Sudoku as a transformation space:
 
@@ -23,6 +23,7 @@ node sudoku-9x9-trade-target-batch.js
 node sudoku-9x9-trade-adjacency.js
 node sudoku-9x9-forbidden-neighborhood.js
 node sudoku-9x9-bridge-depth.js
+node sudoku-9x9-arbitrary-transformations.js
 node sudoku-9x9-trades.js
 node sudoku-structure.js
 ```
@@ -41,8 +42,41 @@ Then open:
 http://localhost:8080/visualizer/
 ```
 
-When served over HTTP, the visualizer polls `visualizer/data/role-graph-batch.latest.json` every few seconds.
-It also polls `visualizer/data/trade-target-batch.latest.json` when trade-target tests are running.
+The visualizer has local Start/Stop controls for recoverable batch jobs. The loaded job is `Big arbitrary frontier scan`, a serial checkpointed run:
+
+```bash
+node sudoku-9x9-arbitrary-transformations.js --frontier
+```
+
+It scans the seed boards plus the cyclic-base trade-target frontier and saves after each source. If the machine shuts down mid-run, starting the same job again resumes from the last completed source.
+
+It writes its status and log tail to:
+
+- `data/job-status.latest.json`
+- `data/arbitrary-transformations.latest.json`
+- `visualizer/data/arbitrary-transformations.latest.json`
+
+After rebooting, start the server again with `node serve-visualizer.js`; the UI will show the last completed/interrupted job state and can start the loaded job again. Jobs run serially: the server rejects a new start while another job is already running.
+
+When served over HTTP, the visualizer polls `visualizer/data/arbitrary-transformations.latest.json` and the local job-status API for arbitrary cell-swap classification.
+
+Small arbitrary transformation scan:
+
+```bash
+node sudoku-9x9-arbitrary-transformations.js
+```
+
+Big frontier scan:
+
+```bash
+node sudoku-9x9-arbitrary-transformations.js --frontier
+```
+
+Outputs:
+
+- `data/arbitrary-transformations.latest.json`
+- `visualizer/data/arbitrary-transformations.latest.json`
+- `visualizer/data/arbitrary-transformations-data.js`
 
 Batch role-graph tests write resumable/latest output while they run:
 
@@ -129,7 +163,8 @@ See [docs/valid-transformation-agenda.md](docs/valid-transformation-agenda.md) f
 - Which invariants prevent two boards from being connected?
 - What patterns distinguish highly symmetric boards from ordinary boards?
 - What additional transformations would connect more board families?
-- Which valid full row/column permutations can be decomposed into valid single-swap steps?
+- What is the smallest arbitrary cell-swap depth that reaches a genuinely non-symmetrical completed board?
+- Which valid full row/column permutations can be decomposed into valid single-swap steps as a narrower comparison model?
 
 The current script compares:
 
@@ -201,7 +236,9 @@ It also builds swap graphs for `4x4` boards and reports connected components, sh
 
 The first `9x9` observation is that the cyclic grid has extra column symmetry. The comparison grid has only the default column freedom.
 
-`sudoku-9x9-valid-patterns.js` focuses on the valid-first question: which row and column permutations are reachable by single-swap steps where every intermediate board is still a completed Sudoku.
+`sudoku-9x9-arbitrary-transformations.js` focuses on the main transformation question: arbitrary cell-piece swaps, with standard symmetry-equivalent endpoints filtered out.
+
+`sudoku-9x9-valid-patterns.js` focuses on a narrower valid-pattern question: which row and column permutations are reachable by single-swap steps where every intermediate board is still a completed Sudoku.
 
 `sudoku-9x9-optimization.js` turns those valid moves into role graphs, connected components, and worst-case step counts under single-swap and block-swap move vocabularies.
 

@@ -97,9 +97,9 @@ const tradeExamples = [
 ];
 
 const state = {
-  view: "board",
+  view: "arbitrary-transformations",
   board: "base",
-  layer: "columns",
+  layer: "trade",
   tradeStep: "start",
   tradeId: tradeExamples[0].id,
   showDefaultEdges: true,
@@ -110,11 +110,14 @@ const state = {
   adjacencyBatchData: window.SUDOKU_TRADE_ADJACENCY,
   forbiddenBatchData: window.SUDOKU_FORBIDDEN_NEIGHBORHOOD,
   bridgeDepthData: window.SUDOKU_BRIDGE_DEPTH,
+  arbitraryData: window.SUDOKU_ARBITRARY_TRANSFORMATIONS,
+  jobStatus: null,
   batchPollStatus: window.location.protocol === "file:" ? "snapshot" : "waiting",
   tradeBatchPollStatus: window.location.protocol === "file:" ? "snapshot" : "waiting",
   adjacencyBatchPollStatus: window.location.protocol === "file:" ? "snapshot" : "waiting",
   forbiddenBatchPollStatus: window.location.protocol === "file:" ? "snapshot" : "waiting",
   bridgeDepthPollStatus: window.location.protocol === "file:" ? "snapshot" : "waiting",
+  arbitraryPollStatus: window.location.protocol === "file:" ? "snapshot" : "waiting",
 };
 
 const boardEl = document.querySelector("#board");
@@ -123,9 +126,9 @@ const metricsList = document.querySelector("#metricsList");
 const summaryText = document.querySelector("#summaryText");
 const viewTitle = document.querySelector("#viewTitle");
 const viewSubtitle = document.querySelector("#viewSubtitle");
-const tradeSelect = document.querySelector("#tradeSelect");
 const boardStage = document.querySelector(".board-stage");
 const dataPage = document.querySelector("#dataPage");
+const jobList = document.querySelector("#jobList");
 
 function sorted(values) {
   return [...values].sort((a, b) => a - b).join("");
@@ -259,11 +262,7 @@ function render() {
 }
 
 function renderDataPage() {
-  if (state.view === "role-batch") renderRoleBatchPage();
-  if (state.view === "trade-batch") renderTradeBatchPage();
-  if (state.view === "adjacency-batch") renderAdjacencyBatchPage();
-  if (state.view === "forbidden-batch") renderForbiddenNeighborhoodPage();
-  if (state.view === "bridge-depth") renderBridgeDepthPage();
+  if (state.view === "arbitrary-transformations") renderArbitraryTransformationsPage();
   if (state.view === "test-plan") renderTestPlanPage();
 }
 
@@ -406,30 +405,51 @@ function renderBridgeDepthPage() {
   renderMetrics([...bridgeDepthMetrics()]);
 }
 
-function renderTestPlanPage() {
-  summaryText.textContent = "Experiment queue";
-  viewTitle.textContent = "Test Plan";
-  viewSubtitle.textContent = "Commands and outputs for tests that can run independently of this chat.";
+function renderArbitraryTransformationsPage() {
+  const batch = state.arbitraryData;
+  summaryText.textContent = "Arbitrary cell-piece transformations";
+  viewTitle.textContent = "Arbitrary Transforms";
+  viewSubtitle.textContent = "Cell-swap endpoints classified after excluding standard Sudoku symmetries.";
+
+  if (!batch) {
+    dataPage.innerHTML = emptyState("Arbitrary transformation data has not been generated yet.");
+    renderMetrics([...arbitraryMetrics()]);
+    return;
+  }
 
   dataPage.innerHTML = `
     <div class="card-grid">
-      ${statusCard("Role Batch", state.batchData ? `${state.batchData.processedCount}/${state.batchData.collectedBoardCount}` : "not generated", state.batchData?.complete)}
-      ${statusCard("Trade Targets", state.tradeBatchData ? `${state.tradeBatchData.processedCount}/${state.tradeBatchData.config.targetCount}` : "not generated", state.tradeBatchData?.complete)}
-      ${statusCard("Adjacency", state.adjacencyBatchData ? `${state.adjacencyBatchData.processedCount}/${state.adjacencyBatchData.config.sourceCount}` : "not generated", state.adjacencyBatchData?.complete)}
-      ${statusCard("Forbidden", state.forbiddenBatchData ? `${state.forbiddenBatchData.processedCount}/${state.forbiddenBatchData.config.sourceCount}` : "not generated", state.forbiddenBatchData?.complete)}
-      ${statusCard("Bridge Depth", state.bridgeDepthData ? `${state.bridgeDepthData.processedCount}/${state.bridgeDepthData.config.sourceCount}` : "not generated", state.bridgeDepthData?.complete)}
+      ${statusCard("Sources", String(batch.summary?.sources ?? batch.profiles?.length ?? 0), true)}
+      ${statusCard("Genuine at 2 Swaps", String(batch.summary?.genuineAtTwoSwaps ?? 0), true)}
+      ${statusCard("Genuine Trade Sources", String(batch.summary?.genuineInTwoSymbolTrades ?? 0), true)}
+    </div>
+    <div class="data-card">
+      <h3>Definition</h3>
+      <p>${escapeHtml(batch.definition?.transformation ?? "")}</p>
+      <p>${escapeHtml(batch.definition?.excluded ?? "")}</p>
+    </div>
+    ${arbitrarySummaryTable(batch.profiles ?? [])}
+    ${jobLogBlock()}
+  `;
+  renderMetrics([...arbitraryMetrics()]);
+}
+
+function renderTestPlanPage() {
+  summaryText.textContent = "Experiment queue";
+  viewTitle.textContent = "Test Plan";
+  viewSubtitle.textContent = "Commands for the arbitrary cell-swap transformation model.";
+
+  dataPage.innerHTML = `
+    <div class="card-grid">
+      ${statusCard("Arbitrary", state.arbitraryData ? `${state.arbitraryData.profiles.length}/${state.arbitraryData.config.sourceCount}` : "not generated", Boolean(state.arbitraryData))}
     </div>
     <div class="data-card command-list">
       <h3>Runnable Tests</h3>
       ${commandItem("Visualizer server", "node serve-visualizer.js", "Serves the dashboard and polls saved JSON data.")}
-      ${commandItem("Role graph batch", "node sudoku-9x9-role-graph-batch.js --limit=12 --progress=1", "Profiles selected completed boards and groups role graph signatures.")}
-      ${commandItem("Trade target batch", "node sudoku-9x9-trade-target-batch.js", "Profiles all 54 cyclic-base two-symbol trade targets and resumes by stable target ID.")}
-      ${commandItem("Trade adjacency", "node sudoku-9x9-trade-adjacency.js", "Tests whether trade targets connect to each other by additional structured trades.")}
-      ${commandItem("Forbidden neighborhood", "node sudoku-9x9-forbidden-neighborhood.js --limit=4 --progress=1", "Profiles seed boards and a small trade-target frontier with checkpointed trade-neighborhood scans.")}
-      ${commandItem("Bridge depth", "node sudoku-9x9-bridge-depth.js --limit=12", "Searches depth-2 forbidden bridges for seeds and a small trade frontier.")}
+      ${commandItem("Big frontier scan", "node sudoku-9x9-arbitrary-transformations.js --frontier", "Serial, checkpointed scan over the seed boards plus cyclic-base trade-target frontier.")}
     </div>
   `;
-  renderMetrics([...batchMetrics()]);
+  renderMetrics([...arbitraryMetrics()]);
 }
 
 function statusCard(label, value, complete) {
@@ -559,6 +579,43 @@ function bridgeDepthSummaryTable(sources = []) {
         ${rows || "<tr><td colspan=\"6\">No bridge-depth data yet.</td></tr>"}
       </tbody>
     </table>
+  `;
+}
+
+function arbitrarySummaryTable(profiles = []) {
+  const rows = profiles.map((profile) => `
+    <tr>
+      <td>${escapeHtml(profile.label)}</td>
+      <td>${profile.oneSwap.uniqueTargets}</td>
+      <td>${profile.oneSwap.classCounts.genuine}</td>
+      <td>${profile.twoSwap.uniqueTargets}</td>
+      <td>${profile.twoSwap.classCounts.genuine}</td>
+      <td>${profile.twoSymbolTrades.scanned ? profile.twoSymbolTrades.uniqueTargets : "not scanned"}</td>
+      <td>${profile.twoSymbolTrades.scanned ? profile.twoSymbolTrades.classCounts.genuine : "not scanned"}</td>
+      <td>${profile.twoSymbolTrades.scanned ? profile.twoSymbolTrades.minimumGenuineSwapDepth : "not scanned"}</td>
+    </tr>
+  `).join("");
+
+  return `
+    <table class="data-table">
+      <thead><tr><th colspan="8">Arbitrary transformation summary</th></tr></thead>
+      <tbody>
+        <tr><th>Source</th><th>1-Swap Targets</th><th>1-Swap Genuine</th><th>2-Swap Targets</th><th>2-Swap Genuine</th><th>Trade Targets</th><th>Trade Genuine</th><th>Min Trade Depth</th></tr>
+        ${rows || "<tr><td colspan=\"8\">No arbitrary transformation data yet.</td></tr>"}
+      </tbody>
+    </table>
+  `;
+}
+
+function jobLogBlock() {
+  const job = primaryJob();
+  if (!job?.logTail?.length) return "";
+
+  return `
+    <div class="data-card command-list">
+      <h3>Job Log</h3>
+      ${job.logTail.slice(-8).map((line) => `<code>${escapeHtml(line)}</code>`).join("")}
+    </div>
   `;
 }
 
@@ -758,13 +815,11 @@ function boardToStage(col, row) {
 function renderText(boardInfo, trade, grid) {
   const activeBoard = state.layer === "trade" ? boards[trade.board] : boardInfo;
   const valid = validateGrid(grid);
-  const layerLabel = state.layer === "columns" ? "Column Swaps" : state.layer === "rows" ? "Row Swaps" : "Two-Symbol Trade";
-
   summaryText.textContent = `${activeBoard.name} - ${valid ? "valid" : "invalid intermediate"}`;
-  viewTitle.textContent = layerLabel;
+  viewTitle.textContent = "Operation View";
   viewSubtitle.textContent = state.layer === "trade"
     ? `${trade.label}; step: ${state.tradeStep}`
-    : "Edges show swaps that keep the displayed board valid.";
+    : "Arbitrary cell swaps that produce completed Sudoku endpoints.";
 
   if (state.layer === "trade") {
     renderMetrics([
@@ -772,7 +827,7 @@ function renderText(boardInfo, trade, grid) {
       ["Step valid", valid ? "yes" : "no"],
       ["Swap pairs", trade.swaps.length],
       ["Highlighted cells", new Set(trade.swaps.flat().map(([row, col]) => `${row},${col}`)).size],
-      ...batchMetrics(),
+      ...arbitraryMetrics(),
     ]);
     return;
   }
@@ -806,6 +861,7 @@ function batchMetrics() {
     ...adjacencyBatchMetrics(),
     ...forbiddenBatchMetrics(),
     ...bridgeDepthMetrics(),
+    ...arbitraryMetrics(),
   ];
 }
 
@@ -854,6 +910,22 @@ function bridgeDepthMetrics() {
     ["Bridge complete", batch.complete ? "yes" : "no"],
     ["Bridge current", current],
     ["Bridge mode", state.bridgeDepthPollStatus],
+  ];
+}
+
+function arbitraryMetrics() {
+  const batch = state.arbitraryData;
+  if (!batch) return [["Arbitrary data", "not generated"]];
+  const job = primaryJob();
+
+  return [
+    ["Processed sources", `${batch.processedCount ?? batch.profiles.length}/${batch.config.sourceCount}`],
+    ["Source mode", batch.config.sourceMode ?? "unknown"],
+    ["Batch complete", batch.complete ? "yes" : "no"],
+    ["Genuine 2-swap sources", batch.summary?.genuineAtTwoSwaps ?? 0],
+    ["Genuine trade sources", batch.summary?.genuineInTwoSymbolTrades ?? 0],
+    ["Batch job", job ? job.state : "unknown"],
+    ["Arbitrary mode", state.arbitraryPollStatus],
   ];
 }
 
@@ -938,16 +1010,77 @@ function startBatchPolling() {
     }
   }
 
-  pollRoleBatch();
-  pollTradeBatch();
-  pollAdjacencyBatch();
-  pollForbiddenBatch();
-  pollBridgeDepthBatch();
-  window.setInterval(pollRoleBatch, 3000);
-  window.setInterval(pollTradeBatch, 3000);
-  window.setInterval(pollAdjacencyBatch, 3000);
-  window.setInterval(pollForbiddenBatch, 3000);
-  window.setInterval(pollBridgeDepthBatch, 3000);
+  async function pollArbitraryTransformations() {
+    try {
+      state.arbitraryData = await pollJson("data/arbitrary-transformations.latest.json");
+      state.arbitraryPollStatus = "live complete";
+      render();
+    } catch {
+      state.arbitraryPollStatus = "waiting for JSON";
+      render();
+    }
+  }
+
+  async function pollJobs() {
+    try {
+      const response = await fetch(`/api/jobs?ts=${Date.now()}`, { cache: "no-store" });
+      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+      state.jobStatus = await response.json();
+      renderJobStatus();
+      render();
+    } catch {
+      state.jobStatus = null;
+      renderJobStatus();
+    }
+  }
+
+  pollArbitraryTransformations();
+  pollJobs();
+  window.setInterval(pollArbitraryTransformations, 3000);
+  window.setInterval(pollJobs, 3000);
+}
+
+function primaryJob() {
+  const jobs = state.jobStatus?.jobs ?? {};
+  return jobs["arbitrary-frontier"] ?? Object.values(jobs)[0] ?? null;
+}
+
+async function runJobAction(jobId, action) {
+  try {
+    const response = await fetch(`/api/jobs/${jobId}/${action}`, { method: "POST" });
+    if (!response.ok) throw new Error(`HTTP ${response.status}`);
+    state.jobStatus = await response.json();
+    renderJobStatus();
+    render();
+  } catch {
+    renderJobStatus("server unavailable");
+  }
+}
+
+function renderJobStatus(message = null) {
+  const jobs = Object.values(state.jobStatus?.jobs ?? {});
+  if (message) {
+    jobList.innerHTML = `<p class="job-status">${escapeHtml(message)}</p>`;
+    return;
+  }
+
+  if (jobs.length === 0) {
+    jobList.innerHTML = "<p class=\"job-status\">No jobs loaded.</p>";
+    return;
+  }
+
+  jobList.innerHTML = jobs.map((job) => `
+    <div class="job-row">
+      <div>
+        <strong>${escapeHtml(job.label)}</strong>
+        <span>${escapeHtml(job.state)}</span>
+      </div>
+      <div class="job-actions">
+        <button type="button" data-job-action="start" data-job-id="${escapeHtml(job.id)}" ${job.state === "running" ? "disabled" : ""}>Start</button>
+        <button type="button" data-job-action="stop" data-job-id="${escapeHtml(job.id)}" ${job.state !== "running" ? "disabled" : ""}>Stop</button>
+      </div>
+    </div>
+  `).join("");
 }
 
 function renderMetrics(items) {
@@ -976,20 +1109,15 @@ function syncControls() {
   document.querySelectorAll("[data-step]").forEach((button) => {
     button.classList.toggle("active", button.dataset.step === state.tradeStep);
   });
-  document.querySelector("#showDefaultEdges").checked = state.showDefaultEdges;
-  document.querySelector("#showExtraEdges").checked = state.showExtraEdges;
-  document.querySelector("#showInvalidUnits").checked = state.showInvalidUnits;
-  tradeSelect.value = state.tradeId;
+  const showDefaultEdges = document.querySelector("#showDefaultEdges");
+  const showExtraEdges = document.querySelector("#showExtraEdges");
+  const showInvalidUnits = document.querySelector("#showInvalidUnits");
+  if (showDefaultEdges) showDefaultEdges.checked = state.showDefaultEdges;
+  if (showExtraEdges) showExtraEdges.checked = state.showExtraEdges;
+  if (showInvalidUnits) showInvalidUnits.checked = state.showInvalidUnits;
 }
 
 function setupControls() {
-  for (const trade of tradeExamples) {
-    const option = document.createElement("option");
-    option.value = trade.id;
-    option.textContent = trade.label;
-    tradeSelect.appendChild(option);
-  }
-
   document.querySelectorAll("[data-board]").forEach((button) => {
     button.addEventListener("click", () => {
       state.board = button.dataset.board;
@@ -1018,23 +1146,22 @@ function setupControls() {
     });
   });
 
-  tradeSelect.addEventListener("change", () => {
-    state.tradeId = tradeSelect.value;
-    state.layer = "trade";
-    render();
-  });
-
-  document.querySelector("#showDefaultEdges").addEventListener("change", (event) => {
+  document.querySelector("#showDefaultEdges")?.addEventListener("change", (event) => {
     state.showDefaultEdges = event.target.checked;
     render();
   });
-  document.querySelector("#showExtraEdges").addEventListener("change", (event) => {
+  document.querySelector("#showExtraEdges")?.addEventListener("change", (event) => {
     state.showExtraEdges = event.target.checked;
     render();
   });
-  document.querySelector("#showInvalidUnits").addEventListener("change", (event) => {
+  document.querySelector("#showInvalidUnits")?.addEventListener("change", (event) => {
     state.showInvalidUnits = event.target.checked;
     render();
+  });
+  jobList.addEventListener("click", (event) => {
+    const button = event.target.closest("[data-job-action]");
+    if (!button) return;
+    runJobAction(button.dataset.jobId, button.dataset.jobAction);
   });
 }
 

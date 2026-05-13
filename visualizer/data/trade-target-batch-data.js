@@ -1,19 +1,19 @@
 window.SUDOKU_TRADE_TARGET_BATCH = {
   "kind": "cyclic-base-two-symbol-trade-targets",
-  "runStartedAt": "2026-05-12T11:03:58.188Z",
+  "runStartedAt": "2026-05-12T16:46:39.683Z",
   "config": {
     "targetCount": 54,
     "allGeneratedTargetCount": 54,
     "exactDiameterLimit": 1500,
     "resume": true
   },
-  "processedCount": 30,
+  "processedCount": 33,
   "complete": false,
   "currentTarget": {
-    "index": 31,
+    "index": 34,
     "count": 54,
-    "id": "digits-1-7-mask-4095",
-    "label": "1<->7 mask 4095"
+    "id": "digits-2-5-mask-4095",
+    "label": "2<->5 mask 4095"
   },
   "profiles": [
     {
@@ -2715,16 +2715,367 @@ window.SUDOKU_TRADE_TARGET_BATCH = {
         "blockIdentityWorstCase": 10,
         "blockLargestDiameter": null
       }
+    },
+    {
+      "id": "digits-1-7-mask-4095",
+      "label": "1<->7 mask 4095",
+      "valid": true,
+      "paritySignature": "rows even:18,odd:18 | cols even:18,odd:18",
+      "signature": "row:edges:1-2,1-3,2-3,4-5,4-6,5-6,7-8,7-9,8-9;components:123|456|789;degrees:222222222 || col:edges:1-2,1-3,1-4,1-7,2-3,2-5,2-8,3-6,3-9,4-5,4-6,4-7,5-6,5-8,6-9,7-8,7-9,8-9;components:123456789;degrees:444444444",
+      "trade": {
+        "firstDigit": 1,
+        "secondDigit": 7,
+        "mask": 4095,
+        "size": 12,
+        "shape": {
+          "cellCount": 12,
+          "rowCount": 6,
+          "colCount": 6,
+          "boxCount": 6,
+          "rowBandCount": 2,
+          "colStackCount": 3
+        },
+        "cells": [
+          {
+            "row": 1,
+            "col": 1,
+            "value": 1
+          },
+          {
+            "row": 1,
+            "col": 7,
+            "value": 7
+          },
+          {
+            "row": 2,
+            "col": 4,
+            "value": 7
+          },
+          {
+            "row": 2,
+            "col": 7,
+            "value": 1
+          },
+          {
+            "row": 3,
+            "col": 1,
+            "value": 7
+          },
+          {
+            "row": 3,
+            "col": 4,
+            "value": 1
+          },
+          {
+            "row": 4,
+            "col": 6,
+            "value": 7
+          },
+          {
+            "row": 4,
+            "col": 9,
+            "value": 1
+          },
+          {
+            "row": 5,
+            "col": 3,
+            "value": 7
+          },
+          {
+            "row": 5,
+            "col": 6,
+            "value": 1
+          },
+          {
+            "row": 6,
+            "col": 3,
+            "value": 1
+          },
+          {
+            "row": 6,
+            "col": 9,
+            "value": 7
+          }
+        ]
+      },
+      "row": {
+        "roleGraphKey": "edges:1-2,1-3,2-3,4-5,4-6,5-6,7-8,7-9,8-9;components:123|456|789;degrees:222222222",
+        "edgeCount": 9,
+        "componentShape": "3+3+3",
+        "degreeSequence": "2,2,2,2,2,2,2,2,2",
+        "endpointCount": 1296,
+        "singleComponentCount": 6,
+        "singleComponentSizes": "216x6",
+        "singleReachable": 216,
+        "singleIdentityWorstCase": 6,
+        "singleLargestDiameter": 6,
+        "blockComponentCount": 1,
+        "blockComponentSizes": "1296",
+        "blockReachable": 1296,
+        "blockIdentityWorstCase": 8,
+        "blockLargestDiameter": 8
+      },
+      "col": {
+        "roleGraphKey": "edges:1-2,1-3,1-4,1-7,2-3,2-5,2-8,3-6,3-9,4-5,4-6,4-7,5-6,5-8,6-9,7-8,7-9,8-9;components:123456789;degrees:444444444",
+        "edgeCount": 18,
+        "componentShape": "9",
+        "degreeSequence": "4,4,4,4,4,4,4,4,4",
+        "endpointCount": 46656,
+        "singleComponentCount": 1,
+        "singleComponentSizes": "46656",
+        "singleReachable": 46656,
+        "singleIdentityWorstCase": 12,
+        "singleLargestDiameter": null,
+        "blockComponentCount": 1,
+        "blockComponentSizes": "46656",
+        "blockReachable": 46656,
+        "blockIdentityWorstCase": 10,
+        "blockLargestDiameter": null
+      }
+    },
+    {
+      "id": "digits-1-7-mask-258111",
+      "label": "1<->7 mask 258111",
+      "valid": true,
+      "paritySignature": "rows even:18,odd:18 | cols even:18,odd:18",
+      "signature": "row:edges:1-2,1-3,2-3,4-5,4-6,5-6,7-8,7-9,8-9;components:123|456|789;degrees:222222222 || col:edges:1-2,1-3,1-4,1-7,2-3,2-5,2-8,3-6,3-9,4-5,4-6,4-7,5-6,5-8,6-9,7-8,7-9,8-9;components:123456789;degrees:444444444",
+      "trade": {
+        "firstDigit": 1,
+        "secondDigit": 7,
+        "mask": 258111,
+        "size": 12,
+        "shape": {
+          "cellCount": 12,
+          "rowCount": 6,
+          "colCount": 6,
+          "boxCount": 6,
+          "rowBandCount": 2,
+          "colStackCount": 3
+        },
+        "cells": [
+          {
+            "row": 1,
+            "col": 1,
+            "value": 1
+          },
+          {
+            "row": 1,
+            "col": 7,
+            "value": 7
+          },
+          {
+            "row": 2,
+            "col": 4,
+            "value": 7
+          },
+          {
+            "row": 2,
+            "col": 7,
+            "value": 1
+          },
+          {
+            "row": 3,
+            "col": 1,
+            "value": 7
+          },
+          {
+            "row": 3,
+            "col": 4,
+            "value": 1
+          },
+          {
+            "row": 7,
+            "col": 5,
+            "value": 7
+          },
+          {
+            "row": 7,
+            "col": 8,
+            "value": 1
+          },
+          {
+            "row": 8,
+            "col": 2,
+            "value": 7
+          },
+          {
+            "row": 8,
+            "col": 5,
+            "value": 1
+          },
+          {
+            "row": 9,
+            "col": 2,
+            "value": 1
+          },
+          {
+            "row": 9,
+            "col": 8,
+            "value": 7
+          }
+        ]
+      },
+      "row": {
+        "roleGraphKey": "edges:1-2,1-3,2-3,4-5,4-6,5-6,7-8,7-9,8-9;components:123|456|789;degrees:222222222",
+        "edgeCount": 9,
+        "componentShape": "3+3+3",
+        "degreeSequence": "2,2,2,2,2,2,2,2,2",
+        "endpointCount": 1296,
+        "singleComponentCount": 6,
+        "singleComponentSizes": "216x6",
+        "singleReachable": 216,
+        "singleIdentityWorstCase": 6,
+        "singleLargestDiameter": 6,
+        "blockComponentCount": 1,
+        "blockComponentSizes": "1296",
+        "blockReachable": 1296,
+        "blockIdentityWorstCase": 8,
+        "blockLargestDiameter": 8
+      },
+      "col": {
+        "roleGraphKey": "edges:1-2,1-3,1-4,1-7,2-3,2-5,2-8,3-6,3-9,4-5,4-6,4-7,5-6,5-8,6-9,7-8,7-9,8-9;components:123456789;degrees:444444444",
+        "edgeCount": 18,
+        "componentShape": "9",
+        "degreeSequence": "4,4,4,4,4,4,4,4,4",
+        "endpointCount": 46656,
+        "singleComponentCount": 1,
+        "singleComponentSizes": "46656",
+        "singleReachable": 46656,
+        "singleIdentityWorstCase": 12,
+        "singleLargestDiameter": null,
+        "blockComponentCount": 1,
+        "blockComponentSizes": "46656",
+        "blockReachable": 46656,
+        "blockIdentityWorstCase": 10,
+        "blockLargestDiameter": null
+      }
+    },
+    {
+      "id": "digits-1-7-mask-262080",
+      "label": "1<->7 mask 262080",
+      "valid": true,
+      "paritySignature": "rows even:18,odd:18 | cols even:18,odd:18",
+      "signature": "row:edges:1-2,1-3,2-3,4-5,4-6,5-6,7-8,7-9,8-9;components:123|456|789;degrees:222222222 || col:edges:1-2,1-3,1-4,1-7,2-3,2-5,2-8,3-6,3-9,4-5,4-6,4-7,5-6,5-8,6-9,7-8,7-9,8-9;components:123456789;degrees:444444444",
+      "trade": {
+        "firstDigit": 1,
+        "secondDigit": 7,
+        "mask": 262080,
+        "size": 12,
+        "shape": {
+          "cellCount": 12,
+          "rowCount": 6,
+          "colCount": 6,
+          "boxCount": 6,
+          "rowBandCount": 2,
+          "colStackCount": 3
+        },
+        "cells": [
+          {
+            "row": 4,
+            "col": 6,
+            "value": 7
+          },
+          {
+            "row": 4,
+            "col": 9,
+            "value": 1
+          },
+          {
+            "row": 5,
+            "col": 3,
+            "value": 7
+          },
+          {
+            "row": 5,
+            "col": 6,
+            "value": 1
+          },
+          {
+            "row": 6,
+            "col": 3,
+            "value": 1
+          },
+          {
+            "row": 6,
+            "col": 9,
+            "value": 7
+          },
+          {
+            "row": 7,
+            "col": 5,
+            "value": 7
+          },
+          {
+            "row": 7,
+            "col": 8,
+            "value": 1
+          },
+          {
+            "row": 8,
+            "col": 2,
+            "value": 7
+          },
+          {
+            "row": 8,
+            "col": 5,
+            "value": 1
+          },
+          {
+            "row": 9,
+            "col": 2,
+            "value": 1
+          },
+          {
+            "row": 9,
+            "col": 8,
+            "value": 7
+          }
+        ]
+      },
+      "row": {
+        "roleGraphKey": "edges:1-2,1-3,2-3,4-5,4-6,5-6,7-8,7-9,8-9;components:123|456|789;degrees:222222222",
+        "edgeCount": 9,
+        "componentShape": "3+3+3",
+        "degreeSequence": "2,2,2,2,2,2,2,2,2",
+        "endpointCount": 1296,
+        "singleComponentCount": 6,
+        "singleComponentSizes": "216x6",
+        "singleReachable": 216,
+        "singleIdentityWorstCase": 6,
+        "singleLargestDiameter": 6,
+        "blockComponentCount": 1,
+        "blockComponentSizes": "1296",
+        "blockReachable": 1296,
+        "blockIdentityWorstCase": 8,
+        "blockLargestDiameter": 8
+      },
+      "col": {
+        "roleGraphKey": "edges:1-2,1-3,1-4,1-7,2-3,2-5,2-8,3-6,3-9,4-5,4-6,4-7,5-6,5-8,6-9,7-8,7-9,8-9;components:123456789;degrees:444444444",
+        "edgeCount": 18,
+        "componentShape": "9",
+        "degreeSequence": "4,4,4,4,4,4,4,4,4",
+        "endpointCount": 46656,
+        "singleComponentCount": 1,
+        "singleComponentSizes": "46656",
+        "singleReachable": 46656,
+        "singleIdentityWorstCase": 12,
+        "singleLargestDiameter": null,
+        "blockComponentCount": 1,
+        "blockComponentSizes": "46656",
+        "blockReachable": 46656,
+        "blockIdentityWorstCase": 10,
+        "blockLargestDiameter": null
+      }
     }
   ],
   "outputJson": "/home/markblanksonhemans/projects/sudoku-board-swaps/data/trade-target-batch.latest.json",
   "visualizerJson": "/home/markblanksonhemans/projects/sudoku-board-swaps/visualizer/data/trade-target-batch.latest.json",
   "visualizerDataJs": "/home/markblanksonhemans/projects/sudoku-board-swaps/visualizer/data/trade-target-batch-data.js",
-  "updatedAt": "2026-05-12T11:08:04.139Z",
+  "updatedAt": "2026-05-12T16:53:50.259Z",
   "groups": [
     {
       "signature": "row:edges:1-2,1-3,2-3,4-5,4-6,5-6,7-8,7-9,8-9;components:123|456|789;degrees:222222222 || col:edges:1-2,1-3,1-4,1-7,2-3,2-5,2-8,3-6,3-9,4-5,4-6,4-7,5-6,5-8,6-9,7-8,7-9,8-9;components:123456789;degrees:444444444",
-      "count": 30,
+      "count": 33,
       "examples": [
         "1<->4 mask 63",
         "1<->4 mask 4032",
@@ -2735,10 +3086,10 @@ window.SUDOKU_TRADE_TARGET_BATCH = {
       ],
       "sizes": {
         "6": 27,
-        "12": 3
+        "12": 6
       },
       "paritySignatures": {
-        "rows even:18,odd:18 | cols even:18,odd:18": 30
+        "rows even:18,odd:18 | cols even:18,odd:18": 33
       }
     }
   ]

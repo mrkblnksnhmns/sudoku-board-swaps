@@ -1,0 +1,25 @@
+{
+  "updatedAt": "2026-05-12T18:40:43.666Z",
+  "jobs": {
+    "arbitrary-frontier": {
+      "id": "arbitrary-frontier",
+      "label": "Big arbitrary frontier scan",
+      "state": "stopped",
+      "pid": null,
+      "startedAt": "2026-05-12T18:39:51.120Z",
+      "stoppedAt": "2026-05-12T18:40:14.147Z",
+      "exitCode": null,
+      "signal": "SIGINT",
+      "logTail": [
+        "started 2026-05-12T18:39:51.120Z",
+        "9x9 arbitrary transformation scan",
+        "source mode: frontier",
+        "source count: 56",
+        "already processed: 0",
+        "scanning 1/56: cyclic base",
+        "stop requested 2026-05-12T18:40:14.139Z",
+        "exited code=null signal=SIGINT"
+      ]
+    }
+  }
+}

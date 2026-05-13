@@ -234,6 +234,10 @@ select {
   display: none !important;
 }
 
+.legacy-control {
+  display: none;
+}
+
 .data-page {
   display: grid;
   gap: 16px;
@@ -244,6 +248,69 @@ select {
   display: grid;
   grid-template-columns: repeat(3, minmax(0, 1fr));
   gap: 14px;
+}
+
+.operations-grid {
+  grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+}
+
+.operation-card ol {
+  margin: 0;
+  padding-left: 20px;
+}
+
+.operation-card code {
+  font-size: 13px;
+}
+
+.job-status {
+  margin: 0;
+  color: var(--muted);
+  font-size: 14px;
+}
+
+.job-list {
+  display: grid;
+  gap: 10px;
+}
+
+.job-row {
+  display: grid;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+}
+
+.job-row strong,
+.job-row span {
+  display: block;
+}
+
+.job-row span {
+  margin-top: 4px;
+  color: var(--muted);
+  font-size: 13px;
+}
+
+.job-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 6px;
+}
+
+.job-actions button {
+  min-height: 34px;
+  border: 1px solid var(--line);
+  border-radius: 6px;
+  background: var(--button);
+  cursor: pointer;
+}
+
+.job-actions button:disabled {
+  opacity: 0.5;
+  cursor: default;
 }
 
 .data-card {
