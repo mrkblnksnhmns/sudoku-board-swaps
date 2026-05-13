@@ -24,11 +24,20 @@ node sudoku-9x9-trade-adjacency.js
 node sudoku-9x9-forbidden-neighborhood.js
 node sudoku-9x9-bridge-depth.js
 node sudoku-9x9-arbitrary-transformations.js
+node sudoku-9x9-raw-cell-swap-depth.js
 node sudoku-9x9-trades.js
 node sudoku-structure.js
 ```
 
-Open `visualizer/index.html` in a browser to inspect row/column role edges and two-symbol trade examples visually.
+Open `visualizer/index.html` in a browser to inspect board-to-board swap sequences visually.
+
+The visualizer now starts from the current research loop:
+
+- compare a completed source board with a completed target board
+- switch between a Sudoku-preserving path and an invalid-intermediate path when both are known
+- step through the moves on the board
+- track how many swaps were used and whether the current intermediate board is still valid
+- click through precomputed raw cell-swap records from `data/raw-cell-swap-depth.latest.json`
 
 For live batch updates, serve the repo over localhost and open the visualizer route:
 
@@ -42,7 +51,7 @@ Then open:
 http://localhost:8080/visualizer/
 ```
 
-The visualizer has local Start/Stop controls for recoverable batch jobs. The loaded job is `Big arbitrary frontier scan`, a serial checkpointed run:
+The batch scripts are still useful for generating research data. The large arbitrary frontier scan is a serial checkpointed run:
 
 ```bash
 node sudoku-9x9-arbitrary-transformations.js --frontier
@@ -56,9 +65,7 @@ It writes its status and log tail to:
 - `data/arbitrary-transformations.latest.json`
 - `visualizer/data/arbitrary-transformations.latest.json`
 
-After rebooting, start the server again with `node serve-visualizer.js`; the UI will show the last completed/interrupted job state and can start the loaded job again. Jobs run serially: the server rejects a new start while another job is already running.
-
-When served over HTTP, the visualizer polls `visualizer/data/arbitrary-transformations.latest.json` and the local job-status API for arbitrary cell-swap classification.
+After rebooting, start the server again with `node serve-visualizer.js` if you want the local job API available. The current simple visualizer does not require the batch logs to render.
 
 Small arbitrary transformation scan:
 
@@ -78,6 +85,31 @@ Outputs:
 - `visualizer/data/arbitrary-transformations.latest.json`
 - `visualizer/data/arbitrary-transformations-data.js`
 
+Raw cell-swap depth scan:
+
+```bash
+node sudoku-9x9-raw-cell-swap-depth.js --source=cyclic-base --max-depth=2 --no-guided-depth3
+```
+
+This writes only genuine non-symmetry endpoints to JSONL and stores small summaries for the visualizer:
+
+- `data/raw-cell-swap-depth.latest.json`
+- `data/raw-cell-swap-depth.latest.jsonl`
+- `visualizer/data/raw-cell-swap-depth.latest.json`
+- `visualizer/data/raw-cell-swap-depth-data.js`
+
+Coordinates use chess-like notation: `A1` is the top-left cell, `I9` is the bottom-right cell, and a swap is written as `A1<->D1`.
+
+The exact depth-2 scan is practical for individual source boards. A naive exact depth-3 scan is roughly `2916` times larger than depth 2, so the script keeps depth 3 behind the guided two-symbol trade mode:
+
+```bash
+node sudoku-9x9-raw-cell-swap-depth.js --source=cyclic-base --max-depth=3 --guided-depth3
+```
+
+Run one source board at a time with `--source=cyclic-base` or `--source=comparison`. Use `--source=all` only when you deliberately want to rebuild a combined offline snapshot.
+
+For the high-to-low visualizer ladder, the clean strict swap-set maximum is `floor(81 / 2) = 40`, meaning each cell is used at most once and one cell is left unused. The larger `choose(81, 2) = 3240` number is the distinct cell-pair ceiling if reused cells are allowed in a sequence.
+
 Batch role-graph tests write resumable/latest output while they run:
 
 ```bash
@@ -90,7 +122,7 @@ Outputs:
 - `visualizer/data/role-graph-batch.latest.json`
 - `visualizer/data/role-graph-batch-data.js`
 
-The visualizer reads `visualizer/data/role-graph-batch-data.js`, so the latest saved batch summary is available without Codex running.
+The generated `visualizer/data/role-graph-batch-data.js` mirror remains available for future visualizer views or standalone inspection.
 
 Trade target batch:
 
@@ -153,6 +185,8 @@ See [docs/research-journal.md](docs/research-journal.md) for the narrative resea
 See [docs/paper-draft.md](docs/paper-draft.md) for the working research-paper draft.
 
 See [docs/valid-transformation-agenda.md](docs/valid-transformation-agenda.md) for the current valid-first research agenda.
+
+See [docs/swap-pair-conventions.md](docs/swap-pair-conventions.md) for the `9x9` cell coordinate and swap-pair definitions used by the raw depth search.
 
 ## Current Questions
 

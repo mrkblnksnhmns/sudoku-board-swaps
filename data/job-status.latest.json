@@ -1,24 +1,36 @@
 {
-  "updatedAt": "2026-05-12T18:40:43.666Z",
+  "updatedAt": "2026-05-13T14:32:22.518Z",
   "jobs": {
     "arbitrary-frontier": {
       "id": "arbitrary-frontier",
       "label": "Big arbitrary frontier scan",
-      "state": "stopped",
+      "state": "complete",
       "pid": null,
-      "startedAt": "2026-05-12T18:39:51.120Z",
-      "stoppedAt": "2026-05-12T18:40:14.147Z",
-      "exitCode": null,
-      "signal": "SIGINT",
+      "startedAt": "2026-05-13T13:56:59.079Z",
+      "stoppedAt": "2026-05-13T14:08:53.203Z",
+      "exitCode": 0,
+      "signal": null,
       "logTail": [
-        "started 2026-05-12T18:39:51.120Z",
-        "9x9 arbitrary transformation scan",
-        "source mode: frontier",
-        "source count: 56",
-        "already processed: 0",
-        "scanning 1/56: cyclic base",
-        "stop requested 2026-05-12T18:40:14.139Z",
-        "exited code=null signal=SIGINT"
+        "processed 52/56",
+        "  one-swap targets: 1 {\"identity\":1,\"standard-symmetry\":0,\"genuine\":0}",
+        "  two-swap targets: 1 {\"identity\":1,\"standard-symmetry\":0,\"genuine\":0}",
+        "scanning 53/56: trade target 51: 5<->8 mask 4095",
+        "processed 53/56",
+        "  one-swap targets: 1 {\"identity\":1,\"standard-symmetry\":0,\"genuine\":0}",
+        "  two-swap targets: 1 {\"identity\":1,\"standard-symmetry\":0,\"genuine\":0}",
+        "scanning 54/56: trade target 52: 6<->9 mask 258111",
+        "processed 54/56",
+        "  one-swap targets: 1 {\"identity\":1,\"standard-symmetry\":0,\"genuine\":0}",
+        "  two-swap targets: 1 {\"identity\":1,\"standard-symmetry\":0,\"genuine\":0}",
+        "scanning 55/56: trade target 53: 6<->9 mask 262080",
+        "processed 55/56",
+        "  one-swap targets: 1 {\"identity\":1,\"standard-symmetry\":0,\"genuine\":0}",
+        "  two-swap targets: 1 {\"identity\":1,\"standard-symmetry\":0,\"genuine\":0}",
+        "scanning 56/56: trade target 54: 6<->9 mask 4095",
+        "processed 56/56",
+        "  one-swap targets: 1 {\"identity\":1,\"standard-symmetry\":0,\"genuine\":0}",
+        "  two-swap targets: 1 {\"identity\":1,\"standard-symmetry\":0,\"genuine\":0}",
+        "exited code=0 signal=none"
       ]
     }
   }

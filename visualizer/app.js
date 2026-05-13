@@ -1,640 +1,145 @@
 const SIZE = 9;
-const BOX = 3;
-const STAGE_SIZE = 760;
-const BOARD_INSET = 92;
-const BOARD_SIZE = STAGE_SIZE - BOARD_INSET * 2;
-const CELL_SIZE = BOARD_SIZE / SIZE;
-
-const boards = {
-  base: {
-    name: "Cyclic Base",
-    grid: [
-      [1, 2, 3, 4, 5, 6, 7, 8, 9],
-      [4, 5, 6, 7, 8, 9, 1, 2, 3],
-      [7, 8, 9, 1, 2, 3, 4, 5, 6],
-      [2, 3, 4, 5, 6, 7, 8, 9, 1],
-      [5, 6, 7, 8, 9, 1, 2, 3, 4],
-      [8, 9, 1, 2, 3, 4, 5, 6, 7],
-      [3, 4, 5, 6, 7, 8, 9, 1, 2],
-      [6, 7, 8, 9, 1, 2, 3, 4, 5],
-      [9, 1, 2, 3, 4, 5, 6, 7, 8],
-    ],
-    endpointCounts: {
-      rows: 1296,
-      columns: 46656,
-    },
-    stepwiseCounts: {
-      rows: 216,
-      columns: 46656,
-    },
-    worstCase: {
-      rows: "6 single, 8 with block swaps",
-      columns: "12 single, 10 with block swaps",
-    },
-  },
-  comparison: {
-    name: "Comparison",
-    grid: [
-      [5, 3, 4, 6, 7, 8, 9, 1, 2],
-      [6, 7, 2, 1, 9, 5, 3, 4, 8],
-      [1, 9, 8, 3, 4, 2, 5, 6, 7],
-      [8, 5, 9, 7, 6, 1, 4, 2, 3],
-      [4, 2, 6, 8, 5, 3, 7, 9, 1],
-      [7, 1, 3, 9, 2, 4, 8, 5, 6],
-      [9, 6, 1, 5, 3, 7, 2, 8, 4],
-      [2, 8, 7, 4, 1, 9, 6, 3, 5],
-      [3, 4, 5, 2, 8, 6, 1, 7, 9],
-    ],
-    endpointCounts: {
-      rows: 1296,
-      columns: 1296,
-    },
-    stepwiseCounts: {
-      rows: 216,
-      columns: 216,
-    },
-    worstCase: {
-      rows: "6 single, 8 with block swaps",
-      columns: "6 single, 8 with block swaps",
-    },
-  },
-};
-
-const tradeExamples = [
-  {
-    id: "base-1-4-top",
-    board: "base",
-    label: "Base trade 1<->4, top band",
-    swaps: [
-      [[0, 0], [0, 3]],
-      [[1, 6], [1, 0]],
-      [[2, 3], [2, 6]],
-    ],
-    middleSwapIndex: 0,
-  },
-  {
-    id: "base-1-7-top",
-    board: "base",
-    label: "Base trade 1<->7, top band",
-    swaps: [
-      [[0, 0], [0, 6]],
-      [[1, 6], [1, 3]],
-      [[2, 3], [2, 0]],
-    ],
-    middleSwapIndex: 0,
-  },
-  {
-    id: "base-2-5-middle",
-    board: "base",
-    label: "Base trade 2<->5, middle band",
-    swaps: [
-      [[3, 0], [3, 3]],
-      [[4, 6], [4, 0]],
-      [[5, 3], [5, 6]],
-    ],
-    middleSwapIndex: 0,
-  },
-];
+const MAX_DISJOINT_SWAPS = Math.floor((SIZE * SIZE) / 2);
+const rawData = window.SUDOKU_RAW_CELL_SWAP_DEPTH;
 
 const state = {
-  view: "arbitrary-transformations",
-  board: "base",
-  layer: "trade",
-  tradeStep: "start",
-  tradeId: tradeExamples[0].id,
-  showDefaultEdges: true,
-  showExtraEdges: true,
-  showInvalidUnits: true,
-  batchData: window.SUDOKU_ROLE_GRAPH_BATCH,
-  tradeBatchData: window.SUDOKU_TRADE_TARGET_BATCH,
-  adjacencyBatchData: window.SUDOKU_TRADE_ADJACENCY,
-  forbiddenBatchData: window.SUDOKU_FORBIDDEN_NEIGHBORHOOD,
-  bridgeDepthData: window.SUDOKU_BRIDGE_DEPTH,
-  arbitraryData: window.SUDOKU_ARBITRARY_TRANSFORMATIONS,
-  jobStatus: null,
-  batchPollStatus: window.location.protocol === "file:" ? "snapshot" : "waiting",
-  tradeBatchPollStatus: window.location.protocol === "file:" ? "snapshot" : "waiting",
-  adjacencyBatchPollStatus: window.location.protocol === "file:" ? "snapshot" : "waiting",
-  forbiddenBatchPollStatus: window.location.protocol === "file:" ? "snapshot" : "waiting",
-  bridgeDepthPollStatus: window.location.protocol === "file:" ? "snapshot" : "waiting",
-  arbitraryPollStatus: window.location.protocol === "file:" ? "snapshot" : "waiting",
+  sourceId: rawData?.sources?.[0]?.id ?? null,
 };
 
-const boardEl = document.querySelector("#board");
-const edgeLayer = document.querySelector("#edgeLayer");
-const metricsList = document.querySelector("#metricsList");
-const summaryText = document.querySelector("#summaryText");
-const viewTitle = document.querySelector("#viewTitle");
-const viewSubtitle = document.querySelector("#viewSubtitle");
-const boardStage = document.querySelector(".board-stage");
-const dataPage = document.querySelector("#dataPage");
-const jobList = document.querySelector("#jobList");
+const sourceSelect = document.querySelector("#sourceSelect");
+const boardTitle = document.querySelector("#boardTitle");
+const boardMeta = document.querySelector("#boardMeta");
+const board = document.querySelector("#board");
+const frontierText = document.querySelector("#frontierText");
+const resultList = document.querySelector("#resultList");
+const depthList = document.querySelector("#depthList");
 
-function sorted(values) {
-  return [...values].sort((a, b) => a - b).join("");
+function currentSource() {
+  return rawData?.sources?.find((source) => source.id === state.sourceId) ?? rawData?.sources?.[0] ?? null;
 }
 
-function validateGrid(grid) {
-  const expected = "123456789";
-  for (let index = 0; index < SIZE; index += 1) {
-    if (sorted(grid[index]) !== expected) return false;
-    if (sorted(grid.map((row) => row[index])) !== expected) return false;
-  }
-
-  for (let row = 0; row < SIZE; row += BOX) {
-    for (let col = 0; col < SIZE; col += BOX) {
-      const values = [];
-      for (let r = row; r < row + BOX; r += 1) {
-        for (let c = col; c < col + BOX; c += 1) values.push(grid[r][c]);
-      }
-      if (sorted(values) !== expected) return false;
-    }
-  }
-
-  return true;
+function boardValues(boardString) {
+  return [...boardString].map(Number);
 }
 
-function cloneGrid(grid) {
-  return grid.map((row) => [...row]);
+function depthByNumber(source) {
+  const map = new Map();
+  for (const depth of source?.depths ?? []) map.set(depth.depth, depth);
+  return map;
 }
 
-function swapRows(grid, a, b) {
-  const next = cloneGrid(grid);
-  [next[a], next[b]] = [next[b], next[a]];
-  return next;
-}
-
-function swapCols(grid, a, b) {
-  const next = cloneGrid(grid);
-  for (const row of next) [row[a], row[b]] = [row[b], row[a]];
-  return next;
-}
-
-function applyCellSwap(grid, first, second) {
-  const next = cloneGrid(grid);
-  const [r1, c1] = first;
-  const [r2, c2] = second;
-  [next[r1][c1], next[r2][c2]] = [next[r2][c2], next[r1][c1]];
-  return next;
-}
-
-function applyTradeStep(grid, trade, step) {
-  if (step === "start") return cloneGrid(grid);
-
-  let next = cloneGrid(grid);
-  const swapLimit = step === "middle" ? trade.middleSwapIndex + 1 : trade.swaps.length;
-  for (let index = 0; index < swapLimit; index += 1) {
-    next = applyCellSwap(next, trade.swaps[index][0], trade.swaps[index][1]);
-  }
-  return next;
-}
-
-function validSwapEdges(grid, axis) {
-  const edges = [];
-  for (let a = 0; a < SIZE; a += 1) {
-    for (let b = a + 1; b < SIZE; b += 1) {
-      const next = axis === "rows" ? swapRows(grid, a, b) : swapCols(grid, a, b);
-      if (!validateGrid(next)) continue;
-      edges.push({
-        a,
-        b,
-        kind: defaultSymmetryEdge(a, b) ? "default" : "extra",
-      });
-    }
-  }
-  return edges;
-}
-
-function defaultSymmetryEdge(a, b) {
-  return Math.floor(a / BOX) === Math.floor(b / BOX);
-}
-
-function currentTrade() {
-  return tradeExamples.find((trade) => trade.id === state.tradeId) ?? tradeExamples[0];
-}
-
-function invalidUnits(grid) {
-  const units = { rows: new Set(), cols: new Set(), boxes: new Set() };
-  const expected = "123456789";
-
-  for (let index = 0; index < SIZE; index += 1) {
-    if (sorted(grid[index]) !== expected) units.rows.add(index);
-    if (sorted(grid.map((row) => row[index])) !== expected) units.cols.add(index);
-  }
-
-  for (let row = 0; row < SIZE; row += BOX) {
-    for (let col = 0; col < SIZE; col += BOX) {
-      const values = [];
-      for (let r = row; r < row + BOX; r += 1) {
-        for (let c = col; c < col + BOX; c += 1) values.push(grid[r][c]);
-      }
-      if (sorted(values) !== expected) units.boxes.add(`${row / BOX},${col / BOX}`);
-    }
-  }
-
-  return units;
+function renderSourceOptions() {
+  sourceSelect.innerHTML = (rawData?.sources ?? []).map((source) => (
+    `<option value="${source.id}">${escapeHtml(source.label)}</option>`
+  )).join("");
+  sourceSelect.value = state.sourceId ?? "";
 }
 
 function render() {
-  if (state.view !== "board") {
-    boardStage.classList.add("hidden");
-    dataPage.classList.remove("hidden");
-    edgeLayer.innerHTML = "";
-    renderDataPage();
-    syncControls();
+  const source = currentSource();
+  if (!source) {
+    boardTitle.textContent = "No Data";
+    boardMeta.textContent = "Run the raw cell-swap scan first.";
     return;
   }
 
-  boardStage.classList.remove("hidden");
-  dataPage.classList.add("hidden");
+  sourceSelect.value = source.id;
+  boardTitle.textContent = source.label;
+  boardMeta.textContent = "Source board currently being scanned";
 
-  const boardInfo = boards[state.board];
-  const trade = currentTrade();
-  const boardKey = state.layer === "trade" ? trade.board : state.board;
-  const baseGrid = boards[boardKey].grid;
-  const grid = state.layer === "trade" ? applyTradeStep(baseGrid, trade, state.tradeStep) : baseGrid;
-  const invalid = invalidUnits(grid);
-
-  renderBoard(grid, invalid);
-  renderEdges(grid, trade, invalid);
-  renderText(boardInfo, trade, grid);
-  syncControls();
+  renderBoard(source.board);
+  renderResults(source);
+  renderDepthProgress(source);
 }
 
-function renderDataPage() {
-  if (state.view === "arbitrary-transformations") renderArbitraryTransformationsPage();
-  if (state.view === "test-plan") renderTestPlanPage();
-}
-
-function renderRoleBatchPage() {
-  const batch = state.batchData;
-  summaryText.textContent = "Role graph batch";
-  viewTitle.textContent = "Role Batch";
-  viewSubtitle.textContent = "Saved profiles for board-specific row and column role graphs.";
-
-  if (!batch) {
-    dataPage.innerHTML = emptyState("Role batch data has not been generated yet.");
-    renderMetrics([...batchMetrics()]);
-    return;
+function renderBoard(boardString) {
+  board.innerHTML = "";
+  for (const value of boardValues(boardString)) {
+    const cell = document.createElement("div");
+    cell.className = "cell";
+    cell.textContent = value;
+    board.appendChild(cell);
   }
-
-  dataPage.innerHTML = `
-    <div class="card-grid">
-      ${statusCard("Processed", `${batch.processedCount}/${batch.collectedBoardCount}`, batch.complete)}
-      ${statusCard("Signature Groups", String(batch.groups.length), batch.complete)}
-      ${statusCard("Updated", shortDate(batch.updatedAt), batch.complete)}
-    </div>
-    ${progressBlock(batch.processedCount, batch.collectedBoardCount)}
-    ${groupTable(batch.groups, "Role graph signature groups")}
-  `;
-  renderMetrics([...batchMetrics()]);
 }
 
-function renderTradeBatchPage() {
-  const batch = state.tradeBatchData;
-  summaryText.textContent = "Trade target batch";
-  viewTitle.textContent = "Trade Targets";
-  viewSubtitle.textContent = "Structured forbidden move endpoints generated from cyclic-base two-symbol trades.";
+function renderResults(source) {
+  const frontier = source.frontier ?? summarizeFrontier(source.depths ?? []);
+  const exactDepths = (source.depths ?? []).filter((depth) => depth.exhaustive);
+  const guidedDepths = (source.depths ?? []).filter((depth) => !depth.exhaustive);
+  const exactGenuine = exactDepths.reduce((sum, depth) => sum + depth.genuine.uniqueTargets, 0);
+  const guidedGenuine = guidedDepths.reduce((sum, depth) => sum + depth.genuine.uniqueTargets, 0);
+  const allGenuine = (source.depths ?? []).reduce((sum, depth) => sum + depth.genuine.uniqueTargets, 0);
 
-  if (!batch) {
-    dataPage.innerHTML = emptyState("Trade target data has not been generated yet.");
-    renderMetrics([...tradeBatchMetrics()]);
-    return;
-  }
+  frontierText.textContent = frontier.firstGenuineDepth
+    ? `First tested genuine depth: ${frontier.firstGenuineDepth}`
+    : "No genuine endpoint found in computed depths";
 
-  const current = batch.currentTarget
-    ? `${batch.currentTarget.index}/${batch.currentTarget.count}: ${escapeHtml(batch.currentTarget.label)}`
-    : "idle";
+  const rows = [
+    ["First genuine depth", frontier.firstGenuineDepth ?? "none yet"],
+    ["Deepest computed depth", frontier.deepestComputedDepth ?? "none"],
+    ["Deepest exact depth", frontier.deepestExactDepth ?? "none"],
+    ["Computed rule", "non-repeated pairs"],
+    ["Depth ladder max", "40 disjoint swaps"],
+    ["Exact genuine results", exactGenuine],
+    ["Guided genuine results", guidedGenuine],
+    ["Total genuine records", allGenuine],
+    ["Raw file records", rawDataRecordHint()],
+  ];
 
-  dataPage.innerHTML = `
-    <div class="card-grid">
-      ${statusCard("Processed", `${batch.processedCount}/${batch.config.targetCount}`, batch.complete)}
-      ${statusCard("Signature Groups", String(batch.groups.length), batch.complete)}
-      ${statusCard("Current Target", current, batch.complete)}
+  resultList.innerHTML = rows.map(([label, value]) => `
+    <div>
+      <dt>${escapeHtml(label)}</dt>
+      <dd>${escapeHtml(value)}</dd>
     </div>
-    ${progressBlock(batch.processedCount, batch.config.targetCount)}
-    ${tradeProfileTable(batch.profiles ?? [])}
-    ${groupTable(batch.groups, "Trade target signature groups")}
-  `;
-  renderMetrics([...batchMetrics()]);
-}
-
-function renderAdjacencyBatchPage() {
-  const batch = state.adjacencyBatchData;
-  summaryText.textContent = "Trade adjacency batch";
-  viewTitle.textContent = "Adjacency Graph";
-  viewSubtitle.textContent = "Structured trade-to-trade connectivity for cyclic-base trade targets.";
-
-  if (!batch) {
-    dataPage.innerHTML = emptyState("Trade adjacency data has not been generated yet.");
-    renderMetrics([...adjacencyBatchMetrics()]);
-    return;
-  }
-
-  const current = batch.currentSource
-    ? `${batch.currentSource.index}/${batch.currentSource.count}: ${escapeHtml(batch.currentSource.label)}`
-    : "idle";
-
-  dataPage.innerHTML = `
-    <div class="card-grid">
-      ${statusCard("Processed", `${batch.processedCount}/${batch.config.sourceCount}`, batch.complete)}
-      ${statusCard("Current Source", current, batch.complete)}
-      ${statusCard("Summary", `${batch.summary.self} / ${batch.summary.base} / ${batch.summary.knownTradeTarget} / ${batch.summary.newBoard}`, batch.complete)}
-    </div>
-    ${progressBlock(batch.processedCount, batch.config.sourceCount)}
-    ${adjacencySummaryTable(batch.sources ?? [])}
-  `;
-  renderMetrics([...adjacencyBatchMetrics()]);
-}
-
-function renderForbiddenNeighborhoodPage() {
-  const batch = state.forbiddenBatchData;
-  summaryText.textContent = "Forbidden neighborhood batch";
-  viewTitle.textContent = "Forbidden Neighborhood";
-  viewSubtitle.textContent = "Structured trade neighborhoods around seed boards and trade targets.";
-
-  if (!batch) {
-    dataPage.innerHTML = emptyState("Forbidden neighborhood data has not been generated yet.");
-    renderMetrics([...forbiddenBatchMetrics()]);
-    return;
-  }
-
-  const current = batch.currentSource
-    ? `${batch.currentSource.index}/${batch.currentSource.count}: ${escapeHtml(batch.currentSource.label)}`
-    : "idle";
-
-  dataPage.innerHTML = `
-    <div class="card-grid">
-      ${statusCard("Processed", `${batch.processedCount}/${batch.config.sourceCount}`, batch.complete)}
-      ${statusCard("Current Source", current, batch.complete)}
-      ${statusCard("Total Trades", String(batch.summary?.totalTrades ?? 0), batch.complete)}
-    </div>
-    ${progressBlock(batch.processedCount, batch.config.sourceCount)}
-    ${forbiddenNeighborhoodSummaryTable(batch.sources ?? [])}
-    ${groupTable(batch.groups ?? [], "Forbidden neighborhood signature groups")}
-  `;
-  renderMetrics([...forbiddenBatchMetrics()]);
-}
-
-function renderBridgeDepthPage() {
-  const batch = state.bridgeDepthData;
-  summaryText.textContent = "Bridge depth batch";
-  viewTitle.textContent = "Bridge Depth";
-  viewSubtitle.textContent = "Depth-2 forbidden bridges across seed boards and a small trade frontier.";
-
-  if (!batch) {
-    dataPage.innerHTML = emptyState("Bridge depth data has not been generated yet.");
-    renderMetrics([...bridgeDepthMetrics()]);
-    return;
-  }
-
-  const current = batch.currentSource
-    ? `${batch.currentSource.index}/${batch.currentSource.count}: ${escapeHtml(batch.currentSource.label)}`
-    : "idle";
-
-  dataPage.innerHTML = `
-    <div class="card-grid">
-      ${statusCard("Processed", `${batch.processedCount}/${batch.config.sourceCount}`, batch.complete)}
-      ${statusCard("Current Source", current, batch.complete)}
-      ${statusCard("Nontrivial Sources", String(batch.summary?.nontrivialSources ?? 0), batch.complete)}
-    </div>
-    ${progressBlock(batch.processedCount, batch.config.sourceCount)}
-    ${bridgeDepthSummaryTable(batch.sources ?? [])}
-    ${groupTable(batch.groups ?? [], "Bridge depth signature groups")}
-  `;
-  renderMetrics([...bridgeDepthMetrics()]);
-}
-
-function renderArbitraryTransformationsPage() {
-  const batch = state.arbitraryData;
-  summaryText.textContent = "Arbitrary cell-piece transformations";
-  viewTitle.textContent = "Arbitrary Transforms";
-  viewSubtitle.textContent = "Cell-swap endpoints classified after excluding standard Sudoku symmetries.";
-
-  if (!batch) {
-    dataPage.innerHTML = emptyState("Arbitrary transformation data has not been generated yet.");
-    renderMetrics([...arbitraryMetrics()]);
-    return;
-  }
-
-  dataPage.innerHTML = `
-    <div class="card-grid">
-      ${statusCard("Sources", String(batch.summary?.sources ?? batch.profiles?.length ?? 0), true)}
-      ${statusCard("Genuine at 2 Swaps", String(batch.summary?.genuineAtTwoSwaps ?? 0), true)}
-      ${statusCard("Genuine Trade Sources", String(batch.summary?.genuineInTwoSymbolTrades ?? 0), true)}
-    </div>
-    <div class="data-card">
-      <h3>Definition</h3>
-      <p>${escapeHtml(batch.definition?.transformation ?? "")}</p>
-      <p>${escapeHtml(batch.definition?.excluded ?? "")}</p>
-    </div>
-    ${arbitrarySummaryTable(batch.profiles ?? [])}
-    ${jobLogBlock()}
-  `;
-  renderMetrics([...arbitraryMetrics()]);
-}
-
-function renderTestPlanPage() {
-  summaryText.textContent = "Experiment queue";
-  viewTitle.textContent = "Test Plan";
-  viewSubtitle.textContent = "Commands for the arbitrary cell-swap transformation model.";
-
-  dataPage.innerHTML = `
-    <div class="card-grid">
-      ${statusCard("Arbitrary", state.arbitraryData ? `${state.arbitraryData.profiles.length}/${state.arbitraryData.config.sourceCount}` : "not generated", Boolean(state.arbitraryData))}
-    </div>
-    <div class="data-card command-list">
-      <h3>Runnable Tests</h3>
-      ${commandItem("Visualizer server", "node serve-visualizer.js", "Serves the dashboard and polls saved JSON data.")}
-      ${commandItem("Big frontier scan", "node sudoku-9x9-arbitrary-transformations.js --frontier", "Serial, checkpointed scan over the seed boards plus cyclic-base trade-target frontier.")}
-    </div>
-  `;
-  renderMetrics([...arbitraryMetrics()]);
-}
-
-function statusCard(label, value, complete) {
-  const statusClass = complete ? "" : " running";
-  const statusText = complete ? "complete" : "running";
-  return `
-    <div class="data-card">
-      <h3>${escapeHtml(label)}</h3>
-      <div class="metric-large">${escapeHtml(value)}</div>
-      <span class="status-pill${statusClass}">${statusText}</span>
-    </div>
-  `;
-}
-
-function progressBlock(done, total) {
-  const percent = total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0;
-  return `
-    <div class="data-card">
-      <h3>Progress</h3>
-      <div class="progress-track"><div class="progress-fill" style="width:${percent}%"></div></div>
-      <p>${done}/${total} (${percent}%)</p>
-    </div>
-  `;
-}
-
-function groupTable(groups = [], title) {
-  const rows = groups.slice(0, 12).map((group, index) => `
-    <tr>
-      <td>${index + 1}</td>
-      <td>${group.count}</td>
-      <td>${escapeHtml((group.examples ?? []).join("; "))}</td>
-    </tr>
   `).join("");
-
-  return `
-    <table class="data-table">
-      <thead><tr><th colspan="3">${escapeHtml(title)}</th></tr></thead>
-      <tbody>
-        <tr><th>#</th><th>Boards</th><th>Examples</th></tr>
-        ${rows || "<tr><td colspan=\"3\">No groups yet.</td></tr>"}
-      </tbody>
-    </table>
-  `;
 }
 
-function tradeProfileTable(profiles = []) {
-  const rows = profiles.slice(-8).reverse().map((profile) => `
-    <tr>
-      <td>${escapeHtml(profile.label)}</td>
-      <td>${profile.trade.size}</td>
-      <td>${escapeHtml(profile.paritySignature)}</td>
-      <td>${profile.row.edgeCount}/${profile.col.edgeCount}</td>
-    </tr>
-  `).join("");
+function summarizeFrontier(depths) {
+  const computedDepths = depths.map((depth) => depth.depth);
+  const exactDepths = depths.filter((depth) => depth.exhaustive).map((depth) => depth.depth);
+  const genuineDepths = depths
+    .filter((depth) => depth.genuine.uniqueTargets > 0)
+    .map((depth) => depth.depth);
 
-  return `
-    <table class="data-table">
-      <thead><tr><th colspan="4">Latest processed trade targets</th></tr></thead>
-      <tbody>
-        <tr><th>Target</th><th>Cells</th><th>Parity</th><th>Row/Col Edges</th></tr>
-        ${rows || "<tr><td colspan=\"4\">No processed targets yet.</td></tr>"}
-      </tbody>
-    </table>
-  `;
+  return {
+    firstGenuineDepth: genuineDepths.length ? Math.min(...genuineDepths) : null,
+    deepestComputedDepth: computedDepths.length ? Math.max(...computedDepths) : null,
+    deepestExactDepth: exactDepths.length ? Math.max(...exactDepths) : null,
+  };
 }
 
-function adjacencySummaryTable(sources = []) {
-  const rows = sources.slice(-10).reverse().map((source) => `
-    <tr>
-      <td>${escapeHtml(source.label)}</td>
-      <td>${source.outgoingCount ?? 0}</td>
-      <td>${escapeHtml(JSON.stringify(source.classCounts ?? {}))}</td>
-    </tr>
-  `).join("");
-
-  return `
-    <table class="data-table">
-      <thead><tr><th colspan="3">Latest adjacency sources</th></tr></thead>
-      <tbody>
-        <tr><th>Source</th><th>Outgoing</th><th>Classes</th></tr>
-        ${rows || "<tr><td colspan=\"3\">No adjacency data yet.</td></tr>"}
-      </tbody>
-    </table>
-  `;
+function rawDataRecordHint() {
+  const total = (rawData?.sources ?? []).reduce((sourceSum, source) => (
+    sourceSum + (source.depths ?? []).reduce((depthSum, depth) => (
+      depthSum + depth.genuine.recordsWritten
+    ), 0)
+  ), 0);
+  return total;
 }
 
-function forbiddenNeighborhoodSummaryTable(sources = []) {
-  const rows = sources.slice(-10).reverse().map((source) => `
-    <tr>
-      <td>${escapeHtml(source.label)}</td>
-      <td>${escapeHtml(source.sourceKind ?? "seed")}</td>
-      <td>${source.totalTrades ?? 0}</td>
-      <td>${source.uniqueTargetCount ?? 0}</td>
-      <td>${source.minimumSize ?? 0}</td>
-      <td>${source.minimumSwapDepth ?? 0}</td>
-    </tr>
-  `).join("");
+function renderDepthProgress(source) {
+  const depths = depthByNumber(source);
+  const items = [];
 
-  return `
-    <table class="data-table">
-      <thead><tr><th colspan="6">Latest forbidden-neighborhood sources</th></tr></thead>
-      <tbody>
-        <tr><th>Source</th><th>Kind</th><th>Trades</th><th>Unique Targets</th><th>Min Size</th><th>Min Depth</th></tr>
-        ${rows || "<tr><td colspan=\"6\">No forbidden-neighborhood data yet.</td></tr>"}
-      </tbody>
-    </table>
-  `;
+  for (let depth = MAX_DISJOINT_SWAPS; depth >= 1; depth -= 1) {
+    const data = depths.get(depth);
+    const status = depthStatus(data);
+    items.push(`
+      <button class="depth-row ${status.className}" type="button" ${data ? "" : "disabled"}>
+        <span class="depth-number">N=${depth}</span>
+        <span class="depth-status">${escapeHtml(status.label)}</span>
+        <strong>${data ? `${data.genuine.uniqueTargets} genuine` : "-"}</strong>
+      </button>
+    `);
+  }
+
+  depthList.innerHTML = items.join("");
 }
 
-function bridgeDepthSummaryTable(sources = []) {
-  const rows = sources.slice(-10).reverse().map((source) => `
-    <tr>
-      <td>${escapeHtml(source.label)}</td>
-      <td>${escapeHtml(source.sourceKind ?? "seed")}</td>
-      <td>${source.bridgeCount ?? 0}</td>
-      <td>${source.uniqueTargetCount ?? 0}</td>
-      <td>${source.nontrivialTargetCount ?? 0}</td>
-      <td>${source.hasNontrivialBridge ? "yes" : "no"}</td>
-    </tr>
-  `).join("");
-
-  return `
-    <table class="data-table">
-      <thead><tr><th colspan="6">Latest bridge-depth sources</th></tr></thead>
-      <tbody>
-        <tr><th>Source</th><th>Kind</th><th>Bridges</th><th>Targets</th><th>Nontrivial</th><th>Has Bridge</th></tr>
-        ${rows || "<tr><td colspan=\"6\">No bridge-depth data yet.</td></tr>"}
-      </tbody>
-    </table>
-  `;
-}
-
-function arbitrarySummaryTable(profiles = []) {
-  const rows = profiles.map((profile) => `
-    <tr>
-      <td>${escapeHtml(profile.label)}</td>
-      <td>${profile.oneSwap.uniqueTargets}</td>
-      <td>${profile.oneSwap.classCounts.genuine}</td>
-      <td>${profile.twoSwap.uniqueTargets}</td>
-      <td>${profile.twoSwap.classCounts.genuine}</td>
-      <td>${profile.twoSymbolTrades.scanned ? profile.twoSymbolTrades.uniqueTargets : "not scanned"}</td>
-      <td>${profile.twoSymbolTrades.scanned ? profile.twoSymbolTrades.classCounts.genuine : "not scanned"}</td>
-      <td>${profile.twoSymbolTrades.scanned ? profile.twoSymbolTrades.minimumGenuineSwapDepth : "not scanned"}</td>
-    </tr>
-  `).join("");
-
-  return `
-    <table class="data-table">
-      <thead><tr><th colspan="8">Arbitrary transformation summary</th></tr></thead>
-      <tbody>
-        <tr><th>Source</th><th>1-Swap Targets</th><th>1-Swap Genuine</th><th>2-Swap Targets</th><th>2-Swap Genuine</th><th>Trade Targets</th><th>Trade Genuine</th><th>Min Trade Depth</th></tr>
-        ${rows || "<tr><td colspan=\"8\">No arbitrary transformation data yet.</td></tr>"}
-      </tbody>
-    </table>
-  `;
-}
-
-function jobLogBlock() {
-  const job = primaryJob();
-  if (!job?.logTail?.length) return "";
-
-  return `
-    <div class="data-card command-list">
-      <h3>Job Log</h3>
-      ${job.logTail.slice(-8).map((line) => `<code>${escapeHtml(line)}</code>`).join("")}
-    </div>
-  `;
-}
-
-function commandItem(title, command, description) {
-  return `
-    <div class="command-item">
-      <h3>${escapeHtml(title)}</h3>
-      <p>${escapeHtml(description)}</p>
-      <code>${escapeHtml(command)}</code>
-    </div>
-  `;
-}
-
-function emptyState(message) {
-  return `<div class="data-card"><h3>No Data</h3><p>${escapeHtml(message)}</p></div>`;
-}
-
-function shortDate(value) {
-  return value ? new Date(value).toLocaleTimeString() : "unknown";
+function depthStatus(depth) {
+  if (!depth) return { className: "not-run", label: "not run" };
+  if (depth.exhaustive) return { className: "exact", label: `${depth.strategy}; exact` };
+  return { className: "guided", label: `${depth.strategy}; guided` };
 }
 
 function escapeHtml(value) {
@@ -646,525 +151,10 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-function renderBoard(grid, invalid) {
-  const trade = currentTrade();
-  const tradeCells = new Set(trade.swaps.flat().map(([row, col]) => `${row},${col}`));
-
-  boardEl.innerHTML = "";
-  for (let row = 0; row < SIZE; row += 1) {
-    for (let col = 0; col < SIZE; col += 1) {
-      const cell = document.createElement("div");
-      cell.className = "cell";
-      cell.textContent = grid[row][col];
-
-      if (state.layer !== "trade") {
-        const linked = cellHasVisibleRoleEdge(row, col);
-        if (linked === "extra") cell.classList.add("extra-linked");
-        if (linked === "default") cell.classList.add("default-linked");
-      }
-
-      if (state.layer === "trade" && tradeCells.has(`${row},${col}`)) {
-        cell.classList.add(state.tradeStep === "final" ? "final-cell" : "trade-cell");
-      }
-
-      if (
-        state.layer === "trade"
-        && state.showInvalidUnits
-        && (invalid.rows.has(row) || invalid.cols.has(col) || invalid.boxes.has(`${Math.floor(row / BOX)},${Math.floor(col / BOX)}`))
-      ) {
-        cell.classList.add("invalid-unit");
-      }
-
-      boardEl.appendChild(cell);
-    }
-  }
-}
-
-function cellHasVisibleRoleEdge(row, col) {
-  const axis = state.layer;
-  if (axis !== "rows" && axis !== "columns") return null;
-
-  const edges = validSwapEdges(boards[state.board].grid, axis);
-  const index = axis === "rows" ? row : col;
-  const matching = edges.filter((edge) => edge.a === index || edge.b === index);
-  if (state.showExtraEdges && matching.some((edge) => edge.kind === "extra")) return "extra";
-  if (state.showDefaultEdges && matching.some((edge) => edge.kind === "default")) return "default";
-  return null;
-}
-
-function renderEdges(grid, trade, invalid) {
-  edgeLayer.innerHTML = "";
-
-  if (state.layer === "trade") {
-    if (state.showInvalidUnits) renderInvalidUnitLines(invalid);
-    renderTradeEdges(trade);
-    renderAxisNodes();
-    return;
-  }
-
-  const edges = validSwapEdges(grid, state.layer);
-  for (const edge of edges) {
-    if (edge.kind === "default" && !state.showDefaultEdges) continue;
-    if (edge.kind === "extra" && !state.showExtraEdges) continue;
-    drawRoleEdge(edge.a, edge.b, state.layer, edge.kind);
-  }
-  renderAxisNodes();
-}
-
-function renderAxisNodes() {
-  for (let index = 0; index < SIZE; index += 1) {
-    const top = boardToStage(index, -0.58);
-    const left = boardToStage(-0.58, index);
-    drawNode(top.x, top.y, `C${index + 1}`);
-    drawNode(left.x, left.y, `R${index + 1}`);
-  }
-}
-
-function renderInvalidUnitLines(invalid) {
-  for (const row of invalid.rows) {
-    const start = boardToStage(-0.1, row);
-    const end = boardToStage(9.1, row);
-    drawLine(start, end, "invalid-unit-line");
-  }
-
-  for (const col of invalid.cols) {
-    const start = boardToStage(col, -0.1);
-    const end = boardToStage(col, 9.1);
-    drawLine(start, end, "invalid-unit-line");
-  }
-}
-
-function renderTradeEdges(trade) {
-  const visibleSwaps = state.tradeStep === "middle"
-    ? trade.swaps.slice(0, trade.middleSwapIndex + 1)
-    : trade.swaps;
-
-  if (state.tradeStep === "start") return;
-
-  for (const [first, second] of visibleSwaps) {
-    const start = cellCenter(first[0], first[1]);
-    const end = cellCenter(second[0], second[1]);
-    drawCurve(start, end, "trade", 0.18);
-  }
-}
-
-function drawRoleEdge(a, b, axis, kind) {
-  const horizontalOffset = kind === "extra" ? 0.38 : 0.18;
-  const verticalOffset = kind === "extra" ? 0.38 : 0.18;
-
-  if (axis === "columns") {
-    const start = boardToStage(a, -0.58);
-    const end = boardToStage(b, -0.58);
-    drawCurve(start, end, kind, -verticalOffset);
-  } else {
-    const start = boardToStage(-0.58, a);
-    const end = boardToStage(-0.58, b);
-    drawCurve(start, end, kind, horizontalOffset);
-  }
-}
-
-function drawNode(x, y, label) {
-  const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-  const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-  const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-  circle.setAttribute("class", "axis-node");
-  circle.setAttribute("cx", x);
-  circle.setAttribute("cy", y);
-  circle.setAttribute("r", 18);
-  text.setAttribute("class", "axis-label");
-  text.setAttribute("x", x);
-  text.setAttribute("y", y + 1);
-  text.textContent = label;
-  group.append(circle, text);
-  edgeLayer.appendChild(group);
-}
-
-function drawLine(start, end, kind) {
-  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  path.setAttribute("class", `edge ${kind}`);
-  path.setAttribute("d", `M ${start.x} ${start.y} L ${end.x} ${end.y}`);
-  edgeLayer.prepend(path);
-}
-
-function drawCurve(start, end, kind, lift) {
-  const dx = end.x - start.x;
-  const dy = end.y - start.y;
-  const distance = Math.sqrt(dx * dx + dy * dy);
-  const normal = Math.abs(dx) > Math.abs(dy)
-    ? { x: 0, y: lift * distance }
-    : { x: lift * distance, y: 0 };
-  const cx = (start.x + end.x) / 2 + normal.x;
-  const cy = (start.y + end.y) / 2 + normal.y;
-  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  path.setAttribute("class", `edge ${kind}`);
-  path.setAttribute("d", `M ${start.x} ${start.y} Q ${cx} ${cy} ${end.x} ${end.y}`);
-  edgeLayer.appendChild(path);
-}
-
-function cellCenter(row, col) {
-  return boardToStage(col, row);
-}
-
-function boardToStage(col, row) {
-  return {
-    x: BOARD_INSET + CELL_SIZE * (col + 0.5),
-    y: BOARD_INSET + CELL_SIZE * (row + 0.5),
-  };
-}
-
-function renderText(boardInfo, trade, grid) {
-  const activeBoard = state.layer === "trade" ? boards[trade.board] : boardInfo;
-  const valid = validateGrid(grid);
-  summaryText.textContent = `${activeBoard.name} - ${valid ? "valid" : "invalid intermediate"}`;
-  viewTitle.textContent = "Operation View";
-  viewSubtitle.textContent = state.layer === "trade"
-    ? `${trade.label}; step: ${state.tradeStep}`
-    : "Arbitrary cell swaps that produce completed Sudoku endpoints.";
-
-  if (state.layer === "trade") {
-    renderMetrics([
-      ["Board", activeBoard.name],
-      ["Step valid", valid ? "yes" : "no"],
-      ["Swap pairs", trade.swaps.length],
-      ["Highlighted cells", new Set(trade.swaps.flat().map(([row, col]) => `${row},${col}`)).size],
-      ...arbitraryMetrics(),
-    ]);
-    return;
-  }
-
-  const edges = validSwapEdges(activeBoard.grid, state.layer);
-  const defaultEdges = edges.filter((edge) => edge.kind === "default").length;
-  const extraEdges = edges.filter((edge) => edge.kind === "extra").length;
-
-  renderMetrics([
-    ["Board", activeBoard.name],
-    ["Valid swaps", edges.length],
-    ["Default edges", defaultEdges],
-    ["Extra edges", extraEdges],
-    ["Valid endpoints", activeBoard.endpointCounts[state.layer]],
-    ["Stepwise endpoints", activeBoard.stepwiseCounts[state.layer]],
-    ["Worst case", activeBoard.worstCase[state.layer]],
-    ...batchMetrics(),
-  ]);
-}
-
-function batchMetrics() {
-  const batch = state.batchData;
-  if (!batch) return [["Batch data", "not generated"]];
-
-  return [
-    ["Batch processed", `${batch.processedCount}/${batch.collectedBoardCount}`],
-    ["Batch complete", batch.complete ? "yes" : "no"],
-    ["Signature groups", batch.groups.length],
-    ["Data mode", state.batchPollStatus],
-    ...tradeBatchMetrics(),
-    ...adjacencyBatchMetrics(),
-    ...forbiddenBatchMetrics(),
-    ...bridgeDepthMetrics(),
-    ...arbitraryMetrics(),
-  ];
-}
-
-function adjacencyBatchMetrics() {
-  const batch = state.adjacencyBatchData;
-  if (!batch) return [["Adjacency batch", "not generated"]];
-
-  const current = batch.currentSource
-    ? `${batch.currentSource.index}/${batch.currentSource.count}`
-    : "idle";
-
-  return [
-    ["Adjacency processed", `${batch.processedCount}/${batch.config.sourceCount}`],
-    ["Adjacency complete", batch.complete ? "yes" : "no"],
-    ["Adjacency current", current],
-    ["Adjacency mode", state.adjacencyBatchPollStatus],
-  ];
-}
-
-function forbiddenBatchMetrics() {
-  const batch = state.forbiddenBatchData;
-  if (!batch) return [["Forbidden batch", "not generated"]];
-
-  const current = batch.currentSource
-    ? `${batch.currentSource.index}/${batch.currentSource.count}`
-    : "idle";
-
-  return [
-    ["Forbidden processed", `${batch.processedCount}/${batch.config.sourceCount}`],
-    ["Forbidden complete", batch.complete ? "yes" : "no"],
-    ["Forbidden current", current],
-    ["Forbidden mode", state.forbiddenBatchPollStatus],
-  ];
-}
-
-function bridgeDepthMetrics() {
-  const batch = state.bridgeDepthData;
-  if (!batch) return [["Bridge batch", "not generated"]];
-
-  const current = batch.currentSource
-    ? `${batch.currentSource.index}/${batch.currentSource.count}`
-    : "idle";
-
-  return [
-    ["Bridge processed", `${batch.processedCount}/${batch.config.sourceCount}`],
-    ["Bridge complete", batch.complete ? "yes" : "no"],
-    ["Bridge current", current],
-    ["Bridge mode", state.bridgeDepthPollStatus],
-  ];
-}
-
-function arbitraryMetrics() {
-  const batch = state.arbitraryData;
-  if (!batch) return [["Arbitrary data", "not generated"]];
-  const job = primaryJob();
-
-  return [
-    ["Processed sources", `${batch.processedCount ?? batch.profiles.length}/${batch.config.sourceCount}`],
-    ["Source mode", batch.config.sourceMode ?? "unknown"],
-    ["Batch complete", batch.complete ? "yes" : "no"],
-    ["Genuine 2-swap sources", batch.summary?.genuineAtTwoSwaps ?? 0],
-    ["Genuine trade sources", batch.summary?.genuineInTwoSymbolTrades ?? 0],
-    ["Batch job", job ? job.state : "unknown"],
-    ["Arbitrary mode", state.arbitraryPollStatus],
-  ];
-}
-
-function tradeBatchMetrics() {
-  const batch = state.tradeBatchData;
-  if (!batch) return [["Trade batch", "not generated"]];
-
-  const current = batch.currentTarget
-    ? `${batch.currentTarget.index}/${batch.currentTarget.count}`
-    : "idle";
-
-  return [
-    ["Trade processed", `${batch.processedCount}/${batch.config.targetCount}`],
-    ["Trade complete", batch.complete ? "yes" : "no"],
-    ["Trade groups", batch.groups.length],
-    ["Trade current", current],
-    ["Trade mode", state.tradeBatchPollStatus],
-  ];
-}
-
-function startBatchPolling() {
-  if (window.location.protocol === "file:") return;
-
-  async function pollJson(url) {
-    const response = await fetch(`${url}?ts=${Date.now()}`, { cache: "no-store" });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return response.json();
-  }
-
-  async function pollRoleBatch() {
-    try {
-      state.batchData = await pollJson("data/role-graph-batch.latest.json");
-      state.batchPollStatus = state.batchData.complete ? "live complete" : "live updating";
-      render();
-    } catch {
-      state.batchPollStatus = "waiting for JSON";
-      render();
-    }
-  }
-
-  async function pollTradeBatch() {
-    try {
-      state.tradeBatchData = await pollJson("data/trade-target-batch.latest.json");
-      state.tradeBatchPollStatus = state.tradeBatchData.complete ? "live complete" : "live updating";
-      render();
-    } catch {
-      state.tradeBatchPollStatus = "waiting for JSON";
-      render();
-    }
-  }
-
-  async function pollAdjacencyBatch() {
-    try {
-      state.adjacencyBatchData = await pollJson("data/trade-adjacency.latest.json");
-      state.adjacencyBatchPollStatus = state.adjacencyBatchData.complete ? "live complete" : "live updating";
-      render();
-    } catch {
-      state.adjacencyBatchPollStatus = "waiting for JSON";
-      render();
-    }
-  }
-
-  async function pollForbiddenBatch() {
-    try {
-      state.forbiddenBatchData = await pollJson("data/forbidden-neighborhood.latest.json");
-      state.forbiddenBatchPollStatus = state.forbiddenBatchData.complete ? "live complete" : "live updating";
-      render();
-    } catch {
-      state.forbiddenBatchPollStatus = "waiting for JSON";
-      render();
-    }
-  }
-
-  async function pollBridgeDepthBatch() {
-    try {
-      state.bridgeDepthData = await pollJson("data/bridge-depth.latest.json");
-      state.bridgeDepthPollStatus = state.bridgeDepthData.complete ? "live complete" : "live updating";
-      render();
-    } catch {
-      state.bridgeDepthPollStatus = "waiting for JSON";
-      render();
-    }
-  }
-
-  async function pollArbitraryTransformations() {
-    try {
-      state.arbitraryData = await pollJson("data/arbitrary-transformations.latest.json");
-      state.arbitraryPollStatus = "live complete";
-      render();
-    } catch {
-      state.arbitraryPollStatus = "waiting for JSON";
-      render();
-    }
-  }
-
-  async function pollJobs() {
-    try {
-      const response = await fetch(`/api/jobs?ts=${Date.now()}`, { cache: "no-store" });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      state.jobStatus = await response.json();
-      renderJobStatus();
-      render();
-    } catch {
-      state.jobStatus = null;
-      renderJobStatus();
-    }
-  }
-
-  pollArbitraryTransformations();
-  pollJobs();
-  window.setInterval(pollArbitraryTransformations, 3000);
-  window.setInterval(pollJobs, 3000);
-}
-
-function primaryJob() {
-  const jobs = state.jobStatus?.jobs ?? {};
-  return jobs["arbitrary-frontier"] ?? Object.values(jobs)[0] ?? null;
-}
-
-async function runJobAction(jobId, action) {
-  try {
-    const response = await fetch(`/api/jobs/${jobId}/${action}`, { method: "POST" });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    state.jobStatus = await response.json();
-    renderJobStatus();
-    render();
-  } catch {
-    renderJobStatus("server unavailable");
-  }
-}
-
-function renderJobStatus(message = null) {
-  const jobs = Object.values(state.jobStatus?.jobs ?? {});
-  if (message) {
-    jobList.innerHTML = `<p class="job-status">${escapeHtml(message)}</p>`;
-    return;
-  }
-
-  if (jobs.length === 0) {
-    jobList.innerHTML = "<p class=\"job-status\">No jobs loaded.</p>";
-    return;
-  }
-
-  jobList.innerHTML = jobs.map((job) => `
-    <div class="job-row">
-      <div>
-        <strong>${escapeHtml(job.label)}</strong>
-        <span>${escapeHtml(job.state)}</span>
-      </div>
-      <div class="job-actions">
-        <button type="button" data-job-action="start" data-job-id="${escapeHtml(job.id)}" ${job.state === "running" ? "disabled" : ""}>Start</button>
-        <button type="button" data-job-action="stop" data-job-id="${escapeHtml(job.id)}" ${job.state !== "running" ? "disabled" : ""}>Stop</button>
-      </div>
-    </div>
-  `).join("");
-}
-
-function renderMetrics(items) {
-  metricsList.innerHTML = "";
-  for (const [label, value] of items) {
-    const row = document.createElement("div");
-    const dt = document.createElement("dt");
-    const dd = document.createElement("dd");
-    dt.textContent = label;
-    dd.textContent = value;
-    row.append(dt, dd);
-    metricsList.appendChild(row);
-  }
-}
-
-function syncControls() {
-  document.querySelectorAll("[data-view]").forEach((button) => {
-    button.classList.toggle("active", button.dataset.view === state.view);
-  });
-  document.querySelectorAll("[data-board]").forEach((button) => {
-    button.classList.toggle("active", button.dataset.board === state.board);
-  });
-  document.querySelectorAll("[data-layer]").forEach((button) => {
-    button.classList.toggle("active", button.dataset.layer === state.layer);
-  });
-  document.querySelectorAll("[data-step]").forEach((button) => {
-    button.classList.toggle("active", button.dataset.step === state.tradeStep);
-  });
-  const showDefaultEdges = document.querySelector("#showDefaultEdges");
-  const showExtraEdges = document.querySelector("#showExtraEdges");
-  const showInvalidUnits = document.querySelector("#showInvalidUnits");
-  if (showDefaultEdges) showDefaultEdges.checked = state.showDefaultEdges;
-  if (showExtraEdges) showExtraEdges.checked = state.showExtraEdges;
-  if (showInvalidUnits) showInvalidUnits.checked = state.showInvalidUnits;
-}
-
-function setupControls() {
-  document.querySelectorAll("[data-board]").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.board = button.dataset.board;
-      render();
-    });
-  });
-
-  document.querySelectorAll("[data-view]").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.view = button.dataset.view;
-      render();
-    });
-  });
-
-  document.querySelectorAll("[data-layer]").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.layer = button.dataset.layer;
-      render();
-    });
-  });
-
-  document.querySelectorAll("[data-step]").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.tradeStep = button.dataset.step;
-      render();
-    });
-  });
-
-  document.querySelector("#showDefaultEdges")?.addEventListener("change", (event) => {
-    state.showDefaultEdges = event.target.checked;
-    render();
-  });
-  document.querySelector("#showExtraEdges")?.addEventListener("change", (event) => {
-    state.showExtraEdges = event.target.checked;
-    render();
-  });
-  document.querySelector("#showInvalidUnits")?.addEventListener("change", (event) => {
-    state.showInvalidUnits = event.target.checked;
-    render();
-  });
-  jobList.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-job-action]");
-    if (!button) return;
-    runJobAction(button.dataset.jobId, button.dataset.jobAction);
-  });
-}
-
-setupControls();
+sourceSelect.addEventListener("change", (event) => {
+  state.sourceId = event.target.value;
+  render();
+});
+
+renderSourceOptions();
 render();
-startBatchPolling();

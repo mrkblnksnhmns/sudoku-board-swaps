@@ -3,53 +3,71 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Sudoku Transformation Visualizer</title>
+    <title>Sudoku Strict Swap Scan</title>
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
-    <main class="app-shell">
-      <aside class="sidebar" aria-label="Controls">
-        <div class="title-block">
-          <h1>Sudoku Transformation Visualizer</h1>
-          <p id="summaryText">Arbitrary cell-swap transformations</p>
+    <main class="app">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Strict raw cell swaps</p>
+          <h1>Sudoku Swap Scan</h1>
         </div>
+        <label class="source-picker">
+          <span>Board</span>
+          <select id="sourceSelect"></select>
+        </label>
+      </header>
 
-        <section class="control-group" aria-label="View">
-          <h2>View</h2>
-          <div class="segmented vertical" data-control="view">
-            <button class="active" type="button" data-view="arbitrary-transformations">Arbitrary Transforms</button>
-            <button type="button" data-view="test-plan">Test Plan</button>
+      <section class="dashboard">
+        <div class="board-panel">
+          <div class="panel-heading">
+            <h2 id="boardTitle">Board</h2>
+            <p id="boardMeta">Current source board</p>
           </div>
-        </section>
-
-        <section class="control-group" aria-label="Batch jobs">
-          <h2>Batch Jobs</h2>
-          <div id="jobList" class="job-list" aria-live="polite"></div>
-        </section>
-
-        <section class="metrics" aria-label="Metrics">
-          <h2>Metrics</h2>
-          <dl id="metricsList"></dl>
-        </section>
-      </aside>
-
-      <section class="workspace" aria-label="Visualization">
-        <div class="viz-header">
-          <div>
-            <h2 id="viewTitle">Arbitrary Transforms</h2>
-            <p id="viewSubtitle">Cell-swap endpoints classified after excluding standard Sudoku symmetries.</p>
-          </div>
+          <div id="board" class="sudoku-board" aria-label="Current Sudoku board"></div>
         </div>
 
-        <div class="board-stage hidden">
-          <svg id="edgeLayer" class="edge-layer" viewBox="0 0 760 760" aria-hidden="true"></svg>
-          <div id="board" class="sudoku-board" aria-label="Sudoku board"></div>
-        </div>
-        <div id="dataPage" class="data-page hidden" aria-live="polite"></div>
+        <aside class="scan-panel">
+          <section class="summary-grid" aria-label="Strict swap limits">
+            <div>
+              <span>Max Disjoint</span>
+              <strong>40</strong>
+            </div>
+            <div>
+              <span>Cells</span>
+              <strong>81</strong>
+            </div>
+            <div>
+              <span>Cell Pairs</span>
+              <strong>3240</strong>
+            </div>
+            <div>
+              <span>Effective Source Pairs</span>
+              <strong>2916</strong>
+            </div>
+          </section>
+
+          <section class="results-panel">
+            <div class="panel-heading">
+              <h2>Results</h2>
+              <p id="frontierText">Computed strict depths</p>
+            </div>
+            <dl id="resultList" class="result-list"></dl>
+          </section>
+
+          <section class="depth-panel">
+            <div class="panel-heading">
+              <h2>Depth Progress</h2>
+              <p>Shown from highest disjoint swap-set count down to one. Computed rows are labeled exact or guided.</p>
+            </div>
+            <div id="depthList" class="depth-list"></div>
+          </section>
+        </aside>
       </section>
     </main>
 
-    <script src="data/arbitrary-transformations-data.js"></script>
+    <script src="data/raw-cell-swap-depth-data.js"></script>
     <script src="app.js"></script>
   </body>
 </html>
