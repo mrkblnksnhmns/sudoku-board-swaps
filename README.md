@@ -107,10 +107,16 @@ node sudoku-9x9-asymmetric-sequences.js --source=sample
 
 The first offline version separates board finding from pattern finding. The board-finding phase creates a reproducible local sample of solved boards. The pattern-finding phase scans operation families on those boards, generates only disjoint square-pair matchings, collapses forward/backward sequence descriptions, and rejects direct whole-board symmetry aggregates before counting asymmetric types.
 
-Current shuffle names:
+N-th pair shuffle names:
 
 - **One-pair shuffle:** one square-pair trades values.
 - **Two-pair shuffle:** two square-pairs trade values; four cells are touched and no cell repeats.
+- **Three-pair shuffle:** planned next scan; three square-pairs trade values, so six cells are touched and no cell repeats.
+
+The raw three-pair search is `4,868,103,240` disjoint candidates per source board, about `975x` the two-pair search. It should be filtered before broad runs.
+
+Interesting shuffle category:
+
 - **Repeated number-pair shuffle:** several square-pairs reuse the same number pair, then the scanner studies the shuffle location shape.
 
 It is resumable at the source/family level. If the computer turns off, run the same command again and completed source/family records are reused:
@@ -259,7 +265,11 @@ build solved board sample -> scan patterns on source boards -> inspect discoveri
 
 The visualizer intentionally focuses on this path. The cyclic base and older raw-depth outputs are not part of the main UI.
 
-The latest local board sample stores `100` solved boards when built through the UI's `Build Boards` button. The pattern scanner is configured to use that sample by default.
+The latest local board sample stores `100` solved boards when built through the UI's `Build Boards` button. For the current practical workflow, scan jobs are capped to the first `3` boards from that sample. This keeps the research focused on pattern behavior we can actually inspect on this hardware, while leaving the larger stored sample available for later scaling.
+
+The next frontend step is a board browser that can show source boards from the solved-board sample even before they have scan output, then launch scans for selected boards.
+
+Use standard-symmetry representatives as the first safe reduction. True shuffle-disjoint families should be treated as a discovery from scans or pairwise board-to-board backtracking, not as something assumed before the search.
 
 ## Working Notes
 

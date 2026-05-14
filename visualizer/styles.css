@@ -115,8 +115,24 @@ select {
 .job-controls {
   min-height: 40px;
   display: flex;
-  align-items: center;
+  align-items: flex-start;
   gap: 8px;
+}
+
+.job-action {
+  max-width: 190px;
+  display: grid;
+  gap: 5px;
+}
+
+.job-action.compact {
+  max-width: 160px;
+}
+
+.job-action small {
+  color: var(--muted);
+  font-size: 0.76rem;
+  line-height: 1.25;
 }
 
 .job-controls button,
@@ -130,22 +146,36 @@ select {
   font-weight: 750;
 }
 
-.job-controls button:first-child {
+.job-controls button[data-state="offline"],
+.job-controls button[data-state="idle"] {
+  border-color: var(--line);
+  background: #fff;
+  color: var(--ink);
+}
+
+.job-controls button[data-state="complete"] {
   border-color: #97c0a6;
   background: var(--soft-green);
   color: var(--green);
 }
 
-.job-controls button:nth-child(2) {
+.job-controls button[data-state="running"] {
   border-color: #a7c8e4;
   background: var(--soft-blue);
   color: var(--blue);
 }
 
-.job-controls button:nth-child(3) {
+.job-controls button[data-state="failed"],
+.job-controls button[data-state="stopped"],
+.job-controls button[data-state="error"] {
   border-color: #dfbf8b;
   background: var(--soft-amber);
   color: var(--amber);
+}
+
+.job-controls button:disabled {
+  cursor: default;
+  opacity: 0.58;
 }
 
 #jobStatusText {
@@ -164,7 +194,7 @@ select {
 
 .workflow-panel {
   display: grid;
-  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr);
   gap: 14px;
   padding: 18px 24px 0;
 }
@@ -357,7 +387,7 @@ select {
 }
 
 .summary-grid div {
-  min-height: 74px;
+  min-height: 118px;
   display: grid;
   align-content: center;
   gap: 6px;
@@ -377,10 +407,18 @@ select {
   line-height: 1;
 }
 
+.summary-grid p {
+  color: var(--muted);
+  font-size: 0.84rem;
+  line-height: 1.35;
+}
+
 .results-panel,
-.depth-panel,
-.progress-panel,
+.nth-panel,
+.two-pair-panel,
 .interesting-panel,
+.large-panel,
+.jobs-panel,
 .replay-panel {
   display: grid;
   gap: 12px;
@@ -399,6 +437,13 @@ select {
   align-items: center;
   gap: 8px;
   flex-wrap: wrap;
+}
+
+.board-controls {
+  padding: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfdfc;
 }
 
 .replay-controls strong {
@@ -528,12 +573,12 @@ select {
   transition: width 180ms ease;
 }
 
-.interesting-list {
+.research-card-list {
   display: grid;
   gap: 10px;
 }
 
-.interesting-card {
+.research-card {
   display: grid;
   gap: 8px;
   border: 1px solid var(--line);
@@ -542,26 +587,240 @@ select {
   padding: 12px;
 }
 
-.interesting-card div {
+.research-card div {
   display: flex;
   align-items: baseline;
   justify-content: space-between;
   gap: 10px;
 }
 
-.interesting-card strong {
+.research-card strong {
   font-size: 0.98rem;
 }
 
-.interesting-card span {
+.research-card span {
   color: var(--blue);
   font-size: 0.82rem;
   font-weight: 800;
 }
 
-.interesting-card p {
+.research-card p {
   color: var(--muted);
   line-height: 1.42;
+}
+
+.mini-progress {
+  height: 8px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: var(--soft-gray);
+}
+
+.mini-progress span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, var(--green), var(--blue));
+  transition: width 180ms ease;
+}
+
+.card-stat-list {
+  display: grid;
+  grid-template-columns: repeat(5, minmax(0, 1fr));
+  gap: 6px;
+}
+
+.card-stat-list div {
+  min-width: 0;
+  display: grid;
+  gap: 2px;
+  border: 1px solid #e7eeee;
+  border-radius: 6px;
+  background: #fff;
+  padding: 6px;
+}
+
+.card-stat-list dt {
+  color: var(--muted);
+  font-size: 0.72rem;
+}
+
+.card-stat-list dd {
+  min-width: 0;
+  margin: 0;
+  font-size: 0.82rem;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+  overflow-wrap: anywhere;
+}
+
+.section-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.section-actions button {
+  min-height: 36px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fff;
+  padding: 0 11px;
+  font-weight: 800;
+}
+
+.section-actions button[data-state="complete"] {
+  border-color: #97c0a6;
+  background: var(--soft-green);
+  color: var(--green);
+}
+
+.section-actions button[data-state="running"] {
+  border-color: #a7c8e4;
+  background: var(--soft-blue);
+  color: var(--blue);
+}
+
+.section-actions button[data-state="failed"],
+.section-actions button[data-state="stopped"],
+.section-actions button[data-state="error"] {
+  border-color: #dfbf8b;
+  background: var(--soft-amber);
+  color: var(--amber);
+}
+
+.section-actions button:disabled {
+  cursor: default;
+  opacity: 0.58;
+}
+
+.evidence-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.evidence-card {
+  display: grid;
+  gap: 10px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfdfc;
+  padding: 12px;
+}
+
+.evidence-card h3 {
+  margin: 0;
+  font-size: 0.98rem;
+}
+
+.evidence-card dl {
+  display: grid;
+  gap: 7px;
+}
+
+.evidence-card dl div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: baseline;
+  border-bottom: 1px solid #e7eeee;
+  padding-bottom: 7px;
+}
+
+.evidence-card dt {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.evidence-card dd {
+  margin: 0;
+  font-weight: 850;
+  font-variant-numeric: tabular-nums;
+  text-align: right;
+}
+
+.current-scan-list {
+  display: grid;
+  gap: 7px;
+}
+
+.current-scan-list div {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 12px;
+  align-items: baseline;
+  border-bottom: 1px solid #e7eeee;
+  padding-bottom: 7px;
+}
+
+.current-scan-list dt {
+  color: var(--muted);
+  font-size: 0.86rem;
+}
+
+.current-scan-list dd {
+  min-width: 0;
+  margin: 0;
+  font-weight: 850;
+  text-align: right;
+  overflow-wrap: anywhere;
+}
+
+.job-overview-list {
+  display: grid;
+  gap: 8px;
+}
+
+.job-overview-list > p {
+  color: var(--muted);
+}
+
+.job-row {
+  display: grid;
+  gap: 6px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: #fbfdfc;
+  padding: 10px;
+}
+
+.job-row div {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 10px;
+}
+
+.job-row strong {
+  font-size: 0.94rem;
+}
+
+.job-row span {
+  color: var(--muted);
+  font-size: 0.82rem;
+  font-weight: 850;
+}
+
+.job-row[data-state="running"] {
+  border-color: #a7c8e4;
+  background: var(--soft-blue);
+}
+
+.job-row[data-state="complete"] {
+  border-color: #97c0a6;
+  background: var(--soft-green);
+}
+
+.job-row[data-state="failed"],
+.job-row[data-state="stopped"],
+.job-row[data-state="interrupted"] {
+  border-color: #dfbf8b;
+  background: var(--soft-amber);
+}
+
+.job-row p {
+  color: var(--muted);
+  line-height: 1.35;
 }
 
 .result-list {
@@ -668,6 +927,7 @@ select {
 
 @media (max-width: 560px) {
   .summary-grid,
+  .card-stat-list,
   .discovery-detail-grid,
   .depth-row,
   .discovery-row {
@@ -685,5 +945,11 @@ select {
   .job-controls {
     width: 100%;
     flex-wrap: wrap;
+  }
+
+  .job-action,
+  .job-action.compact {
+    max-width: none;
+    width: 100%;
   }
 }

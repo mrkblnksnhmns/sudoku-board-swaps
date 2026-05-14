@@ -20,25 +20,16 @@
             <small>A solved board from the board-finding sample. Cyclic baseline boards are documented in the paper, not shown here.</small>
           </label>
           <div class="job-controls" aria-label="Scan controls">
-            <button id="startBoardJobButton" type="button">Build Boards</button>
-            <button id="startScanButton" type="button">Scan Shuffles</button>
-            <button id="stopScanButton" type="button">Stop</button>
+            <div class="job-action compact">
+              <button id="stopScanButton" type="button">Stop Active Scan</button>
+              <small>Stops the selected-board scan currently running.</small>
+            </div>
             <span id="jobStatusText">offline</span>
           </div>
         </div>
       </header>
 
-      <section class="workflow-panel" aria-label="Research workflow">
-        <article>
-          <span>Phase 1</span>
-          <h2>Board Finding</h2>
-          <p id="boardSampleText">Create a local set of solved boards. These boards do not need to be reachable from each other.</p>
-        </article>
-        <article>
-          <span>Phase 2</span>
-          <h2>Pattern Finding</h2>
-          <p id="patternFindingText">Scan each source board for shuffle patterns that end on solved boards.</p>
-        </article>
+      <section class="workflow-panel recovery-only" aria-label="Recovery warning">
         <article>
           <span>Recovery</span>
           <h2>Checkpointed Runs</h2>
@@ -52,6 +43,13 @@
             <h2 id="boardTitle">Board</h2>
             <p id="boardMeta">Current source board</p>
           </div>
+          <div class="replay-controls board-controls">
+            <button id="playDiscoveriesButton" type="button">Play</button>
+            <button id="prevMoveButton" type="button">Prev</button>
+            <button id="nextMoveButton" type="button">Next</button>
+            <button id="resetMoveButton" type="button">Reset</button>
+            <strong id="moveStepText">0 / 0</strong>
+          </div>
           <div id="board" class="sudoku-board" aria-label="Current Sudoku board"></div>
 
           <section class="replay-panel">
@@ -60,15 +58,20 @@
               <p id="replayMeta">A discovery is one shuffle pattern that reached a solved endpoint. Colors show the shuffle locations.</p>
             </div>
             <div id="discoveryDetails" class="discovery-details" aria-label="Selected discovery details"></div>
-            <div class="replay-controls">
-              <button id="playDiscoveriesButton" type="button">Play</button>
-              <button id="prevMoveButton" type="button">Prev</button>
-              <button id="nextMoveButton" type="button">Next</button>
-              <button id="resetMoveButton" type="button">Reset</button>
-              <strong id="moveStepText">0 / 0</strong>
-            </div>
             <div id="discoveryList" class="discovery-list" aria-label="Discovered examples"></div>
             <div id="moveList" class="move-list"></div>
+          </section>
+
+          <section class="jobs-panel">
+            <div class="panel-heading">
+              <h2>Current Jobs</h2>
+              <p>Selected-board scan state only. Each row is data for this board.</p>
+            </div>
+            <dl id="currentScanList" class="current-scan-list"></dl>
+            <div class="progress-track" aria-label="Selected board scan progress">
+              <span id="runProgressBar"></span>
+            </div>
+            <div id="jobOverviewList" class="job-overview-list"></div>
           </section>
         </div>
 
@@ -76,39 +79,51 @@
           <section id="summaryGrid" class="summary-grid" aria-label="Shuffle scan summary">
           </section>
 
-          <section class="progress-panel">
+          <section class="nth-panel">
             <div class="panel-heading">
-              <h2>Run Progress</h2>
-              <p id="runProgressText">Latest offline output</p>
+              <h2>N-th Pair Shuffles</h2>
+              <p>Size-based scans. N means how many separate square-pairs trade values.</p>
             </div>
-            <div class="progress-track" aria-label="Current scan progress">
-              <span id="runProgressBar"></span>
+            <div class="section-actions">
+              <button id="startOnePairButton" type="button">Scan Selected One-Pair</button>
+              <button id="stopOnePairButton" type="button">Stop One-Pair</button>
+              <button id="startTwoPairButton" type="button">Scan Selected Two-Pair</button>
+              <button id="stopTwoPairButton" type="button">Stop Two-Pair</button>
             </div>
+            <div id="nthShuffleList" class="research-card-list"></div>
           </section>
 
           <section class="interesting-panel">
             <div class="panel-heading">
               <h2>Interesting Shuffles</h2>
-              <p>Patterns worth tracking as research ideas, separate from raw progress counters.</p>
+              <p>Pattern ideas worth tracking separately from simple size counts.</p>
             </div>
-            <div id="interestingSwapList" class="interesting-list"></div>
+            <div class="section-actions">
+              <button id="startRepeatedPairButton" type="button">Scan Selected Repeated Number-Pair</button>
+              <button id="stopRepeatedPairButton" type="button">Stop Repeated Number-Pair Scan</button>
+            </div>
+            <div id="interestingSwapList" class="research-card-list"></div>
           </section>
 
-          <section class="results-panel">
+          <section class="large-panel">
             <div class="panel-heading">
-              <h2>Results</h2>
-              <p id="frontierText">Computed strict depths</p>
+              <h2>Large Structured Shuffles</h2>
+              <p>High-N scans near the disjoint limit. These must be generated from structure, not brute force.</p>
             </div>
-            <dl id="resultList" class="result-list"></dl>
+            <div class="section-actions">
+              <button type="button" disabled>Large Structured Scan Not Built Yet</button>
+            </div>
+            <div id="largeShuffleList" class="research-card-list"></div>
           </section>
 
-          <section class="depth-panel">
+          <section class="backtracking-panel">
             <div class="panel-heading">
-              <h2 id="progressTitle">Shuffle Type Progress</h2>
-              <p id="progressHelp">A pair means two board squares trading values.</p>
+              <h2>Board-to-Board Backtracking</h2>
+              <p>Planned comparison mode for learning movement between two solved boards.</p>
             </div>
-            <div id="depthList" class="depth-list"></div>
+            <div id="backtrackingList" class="research-card-list"></div>
           </section>
+
         </aside>
       </section>
     </main>

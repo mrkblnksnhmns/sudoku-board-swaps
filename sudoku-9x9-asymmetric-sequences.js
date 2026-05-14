@@ -1005,13 +1005,15 @@ function loadSampleSources(sourceFile) {
   });
 }
 
-function buildSources(sourceArg, sourceFile) {
-  const sources = sourceArg === "sample"
+function buildSources(sourceArg, sourceFile, sourceLimit) {
+  const sources = sourceArg === "sample" || sourceArg === "known" || sourceArg === "all"
     ? loadSampleSources(sourceFile)
-    : builtInSources();
+    : [...loadSampleSources(sourceFile), ...builtInSources()];
 
-  if (sourceArg === "sample" || sourceArg === "known" || sourceArg === "all") return sources;
-  return sources.filter((source) => source.id === sourceArg || source.label === sourceArg);
+  const selected = sourceArg === "sample" || sourceArg === "known" || sourceArg === "all"
+    ? sources
+    : sources.filter((source) => source.id === sourceArg || source.label === sourceArg);
+  return sourceLimit ? selected.slice(0, sourceLimit) : selected;
 }
 
 function dedupeEquivalentSources(sources) {
@@ -1073,16 +1075,17 @@ function writeOutput(output) {
   fs.writeFileSync(VISUALIZER_DATA_JS, `window.SUDOKU_ASYMMETRIC_SEQUENCES = ${JSON.stringify(output, null, 2)};\n`);
 }
 
-function sameConfig(existing, config) {
+function sameSourceSet(existing, config) {
   return existing?.schema === "asymmetric-sequence-v1"
-    && JSON.stringify(existing.config) === JSON.stringify(config);
+    && existing.config?.sourceFile === config.sourceFile
+    && existing.config?.dedupeEquivalentSources === config.dedupeEquivalentSources;
 }
 
 function loadExistingOutput(config) {
   if (!flagEnabled("resume", true) || !fs.existsSync(OUTPUT_JSON)) return null;
   try {
     const parsed = JSON.parse(fs.readFileSync(OUTPUT_JSON, "utf8"));
-    return sameConfig(parsed, config) ? parsed : null;
+    return sameSourceSet(parsed, config) ? parsed : null;
   } catch {
     return null;
   }
@@ -1090,7 +1093,7 @@ function loadExistingOutput(config) {
 
 function familyDefinitions(config) {
   const families = [];
-  for (let depth = 1; depth <= config.maxExactDepth; depth += 1) {
+  for (let depth = config.minExactDepth; depth <= config.maxExactDepth; depth += 1) {
     families.push({
       id: `exact-disjoint-cell-swap-depth-${depth}`,
       label: depth === 1 ? "One-pair shuffle" : `${depth}-pair shuffle`,
@@ -1115,17 +1118,30 @@ function familyDefinitions(config) {
 
 function sourceOutputFor(source, existingSource, familyDefs) {
   const existingFamilies = new Map((existingSource?.operationFamilies ?? []).map((family) => [family.id, family]));
+  const requestedIds = new Set(familyDefs.map((definition) => definition.id));
+  const preservedFamilies = (existingSource?.operationFamilies ?? [])
+    .filter((family) => family.status === "complete" && !requestedIds.has(family.id));
   return {
     id: source.id,
     label: source.label,
     board: source.board,
     equivalentSourceSkipped: false,
-    operationFamilies: familyDefs.map((definition) => {
-      const existing = existingFamilies.get(definition.id);
-      return existing?.status === "complete"
-        ? existing
-        : emptyFamilySummary(definition);
-    }),
+    operationFamilies: [
+      ...preservedFamilies,
+      ...familyDefs.map((definition) => {
+        const existing = existingFamilies.get(definition.id);
+        return existing?.status === "complete"
+          ? existing
+          : emptyFamilySummary(definition);
+      }),
+    ],
+  };
+}
+
+function preserveCompletedSourceOutput(source) {
+  return {
+    ...source,
+    operationFamilies: (source.operationFamilies ?? []).filter((family) => family.status === "complete"),
   };
 }
 
@@ -1181,6 +1197,8 @@ function main() {
   const config = {
     source: readArg("source", "sample"),
     sourceFile: readArg("source-file", SOLVED_BOARD_SAMPLE_JSON),
+    sourceLimit: Number(readArg("source-limit", "0")),
+    minExactDepth: Number(readArg("min-exact-depth", "1")),
     maxExactDepth: Number(readArg("max-exact-depth", "2")),
     includeTwoSymbolTrades: flagEnabled("two-symbol-trades", true),
     dedupeEquivalentSources: flagEnabled("dedupe-sources", false),
@@ -1190,11 +1208,20 @@ function main() {
   };
   const checkpointEvery = Number(readArg("checkpoint-every", "100000"));
   const exampleLimit = Number(readArg("example-limit", "3"));
+  if (!Number.isInteger(config.sourceLimit) || config.sourceLimit < 0) {
+    throw new Error("--source-limit must be a non-negative integer");
+  }
+  if (!Number.isInteger(config.minExactDepth) || config.minExactDepth < 1 || config.minExactDepth > 2) {
+    throw new Error("--min-exact-depth currently supports 1 or 2");
+  }
   if (!Number.isInteger(config.maxExactDepth) || config.maxExactDepth < 0 || config.maxExactDepth > 2) {
     throw new Error("--max-exact-depth currently supports 0, 1, or 2");
   }
+  if (config.maxExactDepth > 0 && config.minExactDepth > config.maxExactDepth) {
+    throw new Error("--min-exact-depth cannot be greater than --max-exact-depth");
+  }
 
-  const requestedSources = buildSources(config.source, config.sourceFile);
+  const requestedSources = buildSources(config.source, config.sourceFile, config.sourceLimit);
   if (requestedSources.length === 0) {
     throw new Error(`unknown source '${config.source}'. Use known, sample, cyclic-base, or comparison.`);
   }
@@ -1204,6 +1231,11 @@ function main() {
   const familyDefs = familyDefinitions(config);
   const existing = loadExistingOutput(config);
   const existingBySource = new Map((existing?.sources ?? []).map((source) => [source.id, source]));
+  const requestedSourceIds = new Set(sources.map((source) => source.id));
+  const preservedSources = (existing?.sources ?? [])
+    .filter((source) => !requestedSourceIds.has(source.id))
+    .map(preserveCompletedSourceOutput)
+    .filter((source) => source.operationFamilies.length > 0);
 
   const output = {
     kind: "asymmetric-sequences",
@@ -1227,7 +1259,10 @@ function main() {
     },
     skippedSources: skipped,
     current: null,
-    sources: sources.map((source) => sourceOutputFor(source, existingBySource.get(source.id), familyDefs)),
+    sources: [
+      ...sources.map((source) => sourceOutputFor(source, existingBySource.get(source.id), familyDefs)),
+      ...preservedSources,
+    ],
     summary: null,
   };
   writeOutput(output);

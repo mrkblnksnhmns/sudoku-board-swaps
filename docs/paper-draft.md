@@ -74,11 +74,27 @@ visualizer/data/asymmetric-sequences.latest.json
 visualizer/data/asymmetric-sequences-data.js
 ```
 
-The current shuffle types are:
+### N-th Pair Shuffles
+
+The basic size-count scans are N-th pair shuffles. Here, `N` means how many separate square-pairs trade values:
 
 - **One-pair shuffle:** try every single square-pair trade that changes two different numbers.
 - **Two-pair shuffle:** try two square-pair trades where no square is used twice.
-- **Repeated number-pair shuffle:** reuse one number pair across several shuffle locations, then classify the shuffle location shape that lets the endpoint remain solved.
+- **Three-pair shuffle:** planned next scan; try three square-pair trades, touching six cells total, with no square reused.
+
+The repeated number-pair shuffle belongs under **Interesting Shuffle Types** because it is not just a size count. It is a pattern category: several square-pairs reuse the same two numbers, and the important discovery is the shuffle location shape that lets the endpoint remain solved.
+
+The raw three-pair search space is `4,868,103,240` disjoint candidates per source board. That is about `975x` the two-pair search space of `4,991,220` candidates. A native three-pair scan should therefore use balance filters and finer checkpoints before running broadly across the board sample.
+
+### Three Scan Lanes
+
+The next scanner work should split into three lanes:
+
+- **Small N-th pair shuffles:** one-pair and two-pair are active; three-pair is next. This lane is size based and uses disjoint square-pair matchings.
+- **Repeated number-pair shuffles:** keep using the guided number-pair search because it cuts the search space from all cells to cells containing one selected number pair.
+- **Large structured shuffles:** search near the disjoint limit by generating balanced location rules first. This lane must reject standard Sudoku symmetries before counting a result as genuine.
+
+The implementation order should be: first add the filtered three-pair scan, then improve repeated number-pair classification, then add large structured shuffles as a separate generator rather than brute-forcing high-N matchings.
 
 The scanner is checkpointed at the source/type level. If power is lost, completed source/type records are reused when the same run starts again. An unfinished shuffle type restarts.
 
@@ -122,6 +138,15 @@ solved boards: 100
 exact unique boards: 100
 parity profile groups: 13
 ```
+
+Current pattern scans use a deliberately small working set:
+
+```text
+working scan boards: 3
+reason: practical pattern development before broad random-board indexing
+```
+
+The `3` board working set should be interpreted against the total Sudoku solution space as a small experimental lens, not as representative coverage. The point at this stage is to make precise inferences about the observed sources, compare possible reachable and unreachable targets, and keep the path open for larger samples when compute allows.
 
 The latest completed pattern output contains preliminary seed-board results:
 
@@ -189,14 +214,16 @@ Next work should stay separated by phase.
 
 Board-finding next steps:
 
-- generate larger local samples, starting around `100` solved boards
+- keep the current `100` board sample as a stored pool while scanning only `3` boards during pattern development
 - record exact board keys and structural profile tags
+- add a visual board browser so sample boards can be inspected before they have pattern output
 - add standard-symmetry grouping as an optional reduction pass
+- treat true shuffle-disjoint families as a later discovery, not an assumption made during board finding
 - keep boards even if they are not reachable from current sources
 
 Pattern-finding next steps:
 
-- run the current shuffle types against the local sample
+- run the current shuffle types against the `3` board working set
 - implement the planned three-pair shuffle with balance filters
 - classify every discovery by number-pair repetition and shuffle location shape
 - compare which source boards produce genuine endpoints quickly
@@ -217,3 +244,4 @@ Longer-term theory questions:
 - Which boards appear isolated under shallow disjoint swap scans?
 - Do asymmetric shuffle types form reusable families across unrelated solved boards?
 - Can source-board sampling and pattern scanning reveal disconnected regions of the solved-board space?
+- Can pairwise backtracking between two completed boards explain movement paths without assuming the boards are already in connected or disjoint families?

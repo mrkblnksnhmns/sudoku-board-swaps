@@ -17,25 +17,26 @@ const state = {
 };
 
 const sourceSelect = document.querySelector("#sourceSelect");
-const boardSampleText = document.querySelector("#boardSampleText");
-const patternFindingText = document.querySelector("#patternFindingText");
 const recoveryText = document.querySelector("#recoveryText");
 const boardTitle = document.querySelector("#boardTitle");
 const boardMeta = document.querySelector("#boardMeta");
 const board = document.querySelector("#board");
 const summaryGrid = document.querySelector("#summaryGrid");
-const frontierText = document.querySelector("#frontierText");
-const resultList = document.querySelector("#resultList");
-const depthList = document.querySelector("#depthList");
-const progressTitle = document.querySelector("#progressTitle");
-const progressHelp = document.querySelector("#progressHelp");
-const runProgressText = document.querySelector("#runProgressText");
 const runProgressBar = document.querySelector("#runProgressBar");
+const currentScanList = document.querySelector("#currentScanList");
+const nthShuffleList = document.querySelector("#nthShuffleList");
 const interestingSwapList = document.querySelector("#interestingSwapList");
+const largeShuffleList = document.querySelector("#largeShuffleList");
+const backtrackingList = document.querySelector("#backtrackingList");
+const jobOverviewList = document.querySelector("#jobOverviewList");
 const jobStatusText = document.querySelector("#jobStatusText");
-const startBoardJobButton = document.querySelector("#startBoardJobButton");
-const startScanButton = document.querySelector("#startScanButton");
 const stopScanButton = document.querySelector("#stopScanButton");
+const startOnePairButton = document.querySelector("#startOnePairButton");
+const stopOnePairButton = document.querySelector("#stopOnePairButton");
+const startTwoPairButton = document.querySelector("#startTwoPairButton");
+const stopTwoPairButton = document.querySelector("#stopTwoPairButton");
+const startRepeatedPairButton = document.querySelector("#startRepeatedPairButton");
+const stopRepeatedPairButton = document.querySelector("#stopRepeatedPairButton");
 const discoveryDetails = document.querySelector("#discoveryDetails");
 const discoveryList = document.querySelector("#discoveryList");
 const replayMeta = document.querySelector("#replayMeta");
@@ -53,7 +54,19 @@ function isCyclicSource(source) {
 function visibleSources() {
   const sources = asymmetricData?.sources ?? [];
   const nonCyclic = sources.filter((source) => !isCyclicSource(source));
-  return nonCyclic.length ? nonCyclic : sources;
+  return sortSources(nonCyclic.length ? nonCyclic : sources);
+}
+
+function sortSources(sources) {
+  return [...sources].sort((first, second) => {
+    const firstLabel = displaySourceLabel(first);
+    const secondLabel = displaySourceLabel(second);
+    const firstIsComparison = first?.id === "comparison" || first?.id === "seed-comparison";
+    const secondIsComparison = second?.id === "comparison" || second?.id === "seed-comparison";
+    if (firstIsComparison !== secondIsComparison) return firstIsComparison ? -1 : 1;
+    return firstLabel.localeCompare(secondLabel, undefined, { numeric: true, sensitivity: "base" })
+      || String(first?.id ?? "").localeCompare(String(second?.id ?? ""), undefined, { numeric: true, sensitivity: "base" });
+  });
 }
 
 function currentSource() {
@@ -62,15 +75,17 @@ function currentSource() {
 }
 
 function setDefaultSource() {
-  state.sourceId = currentSource()?.id ?? null;
+  const sources = visibleSources();
+  if (state.sourceId && sources.some((source) => source.id === state.sourceId)) return;
+  state.sourceId = sources[0]?.id ?? null;
 }
 
 function renderSourceOptions() {
   const sources = visibleSources();
+  setDefaultSource();
   sourceSelect.innerHTML = sources.map((source) => (
     `<option value="${source.id}">${escapeHtml(displaySourceLabel(source))}</option>`
   )).join("");
-  setDefaultSource();
   sourceSelect.value = state.sourceId ?? "";
 }
 
@@ -92,13 +107,13 @@ function render() {
 
   if (!source) {
     boardTitle.textContent = "No Pattern Output";
-    boardMeta.textContent = "Build boards, then scan patterns.";
+    boardMeta.textContent = "Load a solved board, then scan it case by case.";
     summaryGrid.innerHTML = "";
-    resultList.innerHTML = "";
-    depthList.innerHTML = "";
+    jobOverviewList.innerHTML = "";
     renderBoard("");
     renderReplay([]);
     updateRunProgress(null);
+    renderCurrentScan(null);
     return;
   }
 
@@ -107,45 +122,35 @@ function render() {
   boardMeta.textContent = sourceExplanation(source);
 
   renderSummary(source);
+  renderNthPairShuffles(source);
   renderInterestingSwaps();
-  renderResults(source);
-  renderScanTypeProgress(source);
+  renderLargeStructuredShuffles();
+  renderBacktrackingPrep();
   renderReplay(examplesForSource(source));
+  renderJobOverview(source);
 }
 
 function renderWorkflowText() {
-  const sampleSummary = sampleData?.summary;
-  boardSampleText.textContent = sampleSummary
-    ? `${sampleSummary.boards} solved boards are stored locally. They are exact-deduped and tagged with ${sampleSummary.parityProfiles} parity-profile groups.`
-    : "No solved-board sample is loaded yet. Build boards first, then scan patterns.";
-
-  const visibleSummary = summarizeVisibleSources();
-  const current = asymmetricData?.current;
-  patternFindingText.textContent = current
-    ? `Scanning ${current.sourceLabel}: ${scanTypeName(current)}. Current visible output has ${visibleSummary.genuineEndpoints} genuine endpoints.`
-    : asymmetricData?.summary
-      ? `${visibleSummary.sourceCount} visible source board(s) in the latest pattern output; ${visibleSummary.genuineEndpoints} genuine endpoints and ${visibleSummary.sequenceTypeCount} type records are shown.`
-      : "No pattern scan is loaded yet.";
-
   const runningJob = runningJobRecord();
   recoveryText.textContent = runningJob
     ? `${runningJob.label} is running. Progress is written to JSON checkpoints while it runs.`
-    : "If power is lost, rerun the same pattern scan. Completed source/type records are reused; an unfinished shuffle type restarts.";
+    : "If power is lost, rerun the same scan for that board. Completed board/type records are reused; an unfinished shuffle type restarts.";
 }
 
 function renderSummary(source) {
   const visibleSummary = summarizeVisibleSources();
   const rows = [
-    ["Visible Boards", visibleSummary.sourceCount],
-    ["Max Disjoint", MAX_DISJOINT_SWAPS],
-    ["Genuine", visibleSummary.genuineEndpoints],
-    ["Types", visibleSummary.sequenceTypeCount],
+    ["Visible Boards", visibleSummary.sourceCount, "Solved source boards currently shown in this UI."],
+    ["Max Disjoint", MAX_DISJOINT_SWAPS, "Largest possible square-pair shuffle if every cell is used at most once."],
+    ["Genuine", visibleSummary.genuineEndpoints, "Solved endpoints that are not just standard symmetry copies."],
+    ["Types", visibleSummary.sequenceTypeCount, "Distinct shuffle pattern records found in the scan output."],
   ];
 
-  summaryGrid.innerHTML = rows.map(([label, value]) => `
+  summaryGrid.innerHTML = rows.map(([label, value, help]) => `
     <div>
       <span>${escapeHtml(label)}</span>
       <strong>${escapeHtml(value)}</strong>
+      <p>${escapeHtml(help)}</p>
     </div>
   `).join("");
 
@@ -162,17 +167,233 @@ function renderInterestingSwaps() {
     {
       label: "Repeated number-pair shuffle",
       status: tradeGenuine > 0 ? `${tradeGenuine} genuine endpoints in visible output` : "tracked pattern",
-      body: "A shuffle sequence can keep reusing one number pair. The interesting part is the shuffle location shape: rows, columns, boxes, bands, and stacks.",
-    },
-    {
-      label: "Three-pair shuffle",
-      status: "planned next scan",
-      body: "Try exactly three disjoint square-pair trades. This is the next natural step after the two-pair shuffle, but it needs strong filters and checkpointing because the raw search grows quickly.",
+      body: "This belongs here because it is not just a size count. Several square-pairs reuse the same two numbers, and the discovery is the location shape: rows, columns, boxes, bands, and stacks.",
     },
   ];
 
   interestingSwapList.innerHTML = rows.map((row) => `
-    <article class="interesting-card">
+    <article class="research-card">
+      <div>
+        <strong>${escapeHtml(row.label)}</strong>
+        <span>${escapeHtml(row.status)}</span>
+      </div>
+      <p>${escapeHtml(row.body)}</p>
+      ${progressBarHtml(tradeFamily?.progress?.percent ?? 0)}
+    </article>
+  `).join("");
+}
+
+function progressBarHtml(percent) {
+  const safePercent = Math.max(0, Math.min(100, Number(percent) || 0));
+  return `
+    <div class="mini-progress" aria-label="${safePercent}% complete">
+      <span style="width: ${safePercent}%"></span>
+    </div>
+  `;
+}
+
+function renderNthPairShuffles(source) {
+  const familyById = new Map((source.operationFamilies ?? []).map((family) => [family.id, family]));
+  const onePairStats = statsForFamily(familyById.get("exact-disjoint-cell-swap-depth-1"));
+  const twoPairStats = statsForFamily(familyById.get("exact-disjoint-cell-swap-depth-2"));
+  const rows = [
+    {
+      label: "One-pair shuffle",
+      familyId: "exact-disjoint-cell-swap-depth-1",
+      stats: onePairStats,
+      body: "One square-pair trades values. It touches 2 cells and is the smallest possible real shuffle.",
+    },
+    {
+      label: "Two-pair shuffle",
+      familyId: "exact-disjoint-cell-swap-depth-2",
+      stats: twoPairStats,
+      body: "Two square-pairs trade values. It touches 4 cells, and no cell can be reused.",
+    },
+    {
+      label: "Three-pair shuffle",
+      familyId: "exact-disjoint-cell-swap-depth-3",
+      status: "planned next scan",
+      body: "Three square-pairs trade values. It touches 6 cells. Raw size is 4,868,103,240 candidates per board, about 975x the two-pair scan, so it needs balance filters.",
+    },
+  ];
+
+  nthShuffleList.innerHTML = rows.map((row) => {
+    const family = familyById.get(row.familyId);
+    const status = row.status ?? (family ? `${family.classCounts?.genuine ?? 0} genuine; ${family.status ?? "pending"}` : "not run yet");
+    const percent = family?.progress?.percent ?? 0;
+    return `
+      <article class="research-card">
+        <div>
+          <strong>${escapeHtml(row.label)}</strong>
+          <span>${escapeHtml(status)}</span>
+        </div>
+        <p>${escapeHtml(row.body)}</p>
+        ${row.stats ? cardStatsHtml(row.stats) : ""}
+        ${progressBarHtml(percent)}
+      </article>
+    `;
+  }).join("");
+}
+
+function twoPairFamily(source) {
+  return source?.operationFamilies?.find((family) => family.id === "exact-disjoint-cell-swap-depth-2") ?? null;
+}
+
+function statsForFamily(family) {
+  if (!family) return null;
+  return {
+    candidatesChecked: family.progress?.checked ?? 0,
+    uniqueValidEndpoints: family.uniqueValidEndpoints ?? 0,
+    genuineEndpoints: family.classCounts?.genuine ?? 0,
+    sequenceTypes: family.sequenceTypeCount ?? 0,
+    runTimeMs: familyRunTimeMs(family),
+  };
+}
+
+function cardStatsHtml(stats) {
+  const rows = [
+    ["Checked", formatNumber(stats.candidatesChecked)],
+    ["Unique", formatNumber(stats.uniqueValidEndpoints)],
+    ["Genuine", formatNumber(stats.genuineEndpoints)],
+    ["Types", formatNumber(stats.sequenceTypes)],
+    ["Time", formatDuration(stats.runTimeMs)],
+  ];
+
+  return `
+    <dl class="card-stat-list">
+      ${rows.map(([label, value]) => `
+        <div>
+          <dt>${escapeHtml(label)}</dt>
+          <dd>${escapeHtml(value)}</dd>
+        </div>
+      `).join("")}
+    </dl>
+  `;
+}
+
+function twoPairStatsForSource(source) {
+  const family = twoPairFamily(source);
+  return {
+    sourceBoardsScanned: family?.status === "complete" ? 1 : 0,
+    candidatesChecked: family?.progress?.checked ?? 0,
+    validEndpointSequences: family?.validEndpointSequences ?? 0,
+    uniqueValidEndpoints: family?.uniqueValidEndpoints ?? 0,
+    genuineEndpoints: family?.classCounts?.genuine ?? 0,
+    sequenceTypes: family?.sequenceTypeCount ?? 0,
+    runTimeMs: familyRunTimeMs(family),
+  };
+}
+
+function aggregateTwoPairStats() {
+  const out = {
+    sourceBoardsScanned: 0,
+    candidatesChecked: 0,
+    validEndpointSequences: 0,
+    uniqueValidEndpoints: 0,
+    genuineEndpoints: 0,
+    sequenceTypes: 0,
+    runTimeMs: 0,
+  };
+
+  for (const source of visibleSources()) {
+    const stats = twoPairStatsForSource(source);
+    out.sourceBoardsScanned += stats.sourceBoardsScanned;
+    out.candidatesChecked += stats.candidatesChecked;
+    out.validEndpointSequences += stats.validEndpointSequences;
+    out.uniqueValidEndpoints += stats.uniqueValidEndpoints;
+    out.genuineEndpoints += stats.genuineEndpoints;
+    out.sequenceTypes += stats.sequenceTypes;
+    out.runTimeMs += stats.runTimeMs;
+  }
+
+  return out;
+}
+
+function evidenceRows(stats) {
+  return [
+    ["Source boards scanned", formatNumber(stats.sourceBoardsScanned)],
+    ["Two-pair candidates checked", formatNumber(stats.candidatesChecked)],
+    ["Valid endpoint sequences", formatNumber(stats.validEndpointSequences)],
+    ["Unique valid endpoints", formatNumber(stats.uniqueValidEndpoints)],
+    ["Genuine endpoints", formatNumber(stats.genuineEndpoints)],
+    ["Sequence types", formatNumber(stats.sequenceTypes)],
+    ["Run time", formatDuration(stats.runTimeMs)],
+  ];
+}
+
+function familyRunTimeMs(family) {
+  if (!family?.startedAt || !family?.completedAt) return 0;
+  const started = Date.parse(family.startedAt);
+  const completed = Date.parse(family.completedAt);
+  return Number.isFinite(started) && Number.isFinite(completed) && completed >= started
+    ? completed - started
+    : 0;
+}
+
+function formatNumber(value) {
+  return Number(value || 0).toLocaleString();
+}
+
+function formatDuration(ms) {
+  if (!ms) return "not available";
+  const seconds = ms / 1000;
+  if (seconds < 60) return `about ${Math.round(seconds)} seconds`;
+  const minutes = seconds / 60;
+  if (minutes < 60) return `about ${minutes.toFixed(1)} minutes`;
+  return `about ${(minutes / 60).toFixed(1)} hours`;
+}
+
+function renderLargeStructuredShuffles() {
+  const rows = [
+    {
+      label: "Balanced large-N shuffle",
+      status: "planned lane",
+      body: `Search near the ${MAX_DISJOINT_SWAPS} square-pair limit by choosing balanced location rules first, then testing endpoints.`,
+    },
+    {
+      label: "Symmetry rejection",
+      status: "required filter",
+      body: "Reject row, column, band, stack, transpose, mirror, and digit-rename aggregates before calling a large shuffle genuine.",
+    },
+  ];
+
+  largeShuffleList.innerHTML = rows.map((row) => `
+    <article class="research-card">
+      <div>
+        <strong>${escapeHtml(row.label)}</strong>
+        <span>${escapeHtml(row.status)}</span>
+      </div>
+      <p>${escapeHtml(row.body)}</p>
+    </article>
+  `).join("");
+}
+
+function renderBacktrackingPrep() {
+  const rows = [
+    {
+      label: "One representative per family",
+      status: "target reduction",
+      body: "Start with one solved board from each standard-symmetry family, then later refine toward true shuffle-disjoint families.",
+    },
+    {
+      label: "Pairwise movement search",
+      status: "planned",
+      body: "Choose two completed boards and backtrack possible square-pair trades that explain how one could move toward the other.",
+    },
+    {
+      label: "40-down search",
+      status: "structured only",
+      body: "The 40 square-pair limit is useful for structured high-N hypotheses. Raw high-to-low brute force is too large, so this needs constraints before search.",
+    },
+    {
+      label: "Inference filter",
+      status: "required",
+      body: "If the movement is just a standard symmetry, classify it separately; keep only genuine asymmetric explanations for discoveries.",
+    },
+  ];
+
+  backtrackingList.innerHTML = rows.map((row) => `
+    <article class="research-card">
       <div>
         <strong>${escapeHtml(row.label)}</strong>
         <span>${escapeHtml(row.status)}</span>
@@ -227,8 +448,8 @@ function summarizeSource(source) {
 
 function updateRunProgress(source) {
   if (!source) {
-    runProgressText.textContent = "No pattern source selected.";
     runProgressBar.style.width = "0%";
+    renderCurrentScan(null);
     return;
   }
 
@@ -238,41 +459,26 @@ function updateRunProgress(source) {
   }
 
   const percent = runningFamily?.progress?.percent ?? sourceCompletionPercent(source);
-  runProgressText.textContent = runningFamily
-    ? `${scanTypeName(runningFamily)}: ${percent}% complete`
-    : `${sourceCompletionPercent(source)}% of shuffle types complete for this source board`;
   runProgressBar.style.width = `${Math.max(0, Math.min(100, Number(percent) || 0))}%`;
+  renderCurrentScan(source, runningFamily);
 }
 
-function sourceCompletionPercent(source) {
-  const families = source.operationFamilies ?? [];
-  if (families.length === 0) return 0;
-  const complete = families.filter((family) => family.status === "complete").length;
-  return Number(((complete / families.length) * 100).toFixed(2));
-}
-
-function renderResults(source) {
-  const complete = Boolean(asymmetricData?.complete);
+function renderCurrentScan(source, runningFamily = null) {
   const current = asymmetricData?.current;
-  frontierText.textContent = current
-    ? `Running ${scanTypeName(current)} on ${current.sourceLabel}`
-    : complete
-      ? "Shuffle scan complete"
-      : "Shuffle scan output is resumable";
-
-  const sourceTotals = summarizeSource(source);
+  const activeFamily = runningFamily
+    ?? (current && source?.id === current.sourceId
+      ? source.operationFamilies?.find((family) => family.id === current.familyId)
+      : null);
+  const currentJob = runningJobRecord();
   const rows = [
-    ["Run state", complete ? "complete" : "in progress"],
-    ["Updated", asymmetricData?.updatedAt ?? "none"],
-    ["Attempted", sourceTotals.attemptedSequences],
-    ["Unique endpoints", sourceTotals.uniqueValidEndpoints],
-    ["Genuine endpoints", sourceTotals.genuineEndpoints],
-    ["Genuine families", sourceTotals.genuineEndpointFamilies],
-    ["Sequence types", sourceTotals.sequenceTypeCount],
-    ["Job", jobStatus?.jobs?.["asymmetric-sequences"]?.state ?? "offline"],
+    ["Selected board", source ? displaySourceLabel(source) : "none"],
+    ["Selected-board progress", activeFamily?.progress?.percent != null ? `${activeFamily.progress.percent}%` : source ? `${sourceCompletionPercent(source)}% source complete` : "0%"],
+    ["Active scan", currentJob ? `${currentJob.label}: ${currentJob.state}` : "none running"],
+    ["Active board", current?.sourceLabel ?? (currentJob ? displaySourceLabel(source) : "none")],
+    ["Active shuffle type", current ? scanTypeName(current) : "none running"],
   ];
 
-  resultList.innerHTML = rows.map(([label, value]) => `
+  currentScanList.innerHTML = rows.map(([label, value]) => `
     <div>
       <dt>${escapeHtml(label)}</dt>
       <dd>${escapeHtml(value)}</dd>
@@ -280,23 +486,11 @@ function renderResults(source) {
   `).join("");
 }
 
-function renderScanTypeProgress(source) {
-  progressTitle.textContent = "Shuffle Type Progress";
-  progressHelp.textContent = "A square-pair means two board squares trading values. A number-pair means the two digits being traded.";
-
-  depthList.innerHTML = (source.operationFamilies ?? []).map((family) => {
-    const status = family.status ?? "pending";
-    return `
-      <button class="depth-row ${statusClass(status)}" type="button">
-        <span class="depth-number">${escapeHtml(statusLabel(status))}</span>
-        <span class="depth-status">
-          <strong>${escapeHtml(scanTypeName(family))}</strong>
-          <small>${escapeHtml(scanTypeExplanation(family))} ${escapeHtml(family.progress?.percent ?? 0)}% complete.</small>
-        </span>
-        <strong>${escapeHtml(family.classCounts?.genuine ?? 0)} genuine</strong>
-      </button>
-    `;
-  }).join("");
+function sourceCompletionPercent(source) {
+  const families = source.operationFamilies ?? [];
+  if (families.length === 0) return 0;
+  const complete = families.filter((family) => family.status === "complete").length;
+  return Number(((complete / families.length) * 100).toFixed(2));
 }
 
 function statusLabel(status) {
@@ -615,20 +809,68 @@ async function refreshJobs() {
     if (!response.ok) return;
     jobStatus = await response.json();
     const running = runningJobRecord();
-    const patternJob = jobStatus.jobs?.["asymmetric-sequences"];
-    const boardJob = jobStatus.jobs?.["board-sample"];
     jobStatusText.textContent = running
       ? `${running.label}: running`
-      : `boards ${boardJob?.state ?? "offline"}; patterns ${patternJob?.state ?? "offline"}`;
+      : "ready";
+    updateJobButtons(running);
     render();
   } catch {
     jobStatusText.textContent = "offline";
+    updateJobButtons(null);
   }
+}
+
+function updateJobButtons(running) {
+  setJobButtonState(startOnePairButton, jobStatus?.jobs?.["one-pair-shuffles"]?.state ?? "offline");
+  setJobButtonState(startTwoPairButton, jobStatus?.jobs?.["two-pair-shuffles"]?.state ?? "offline");
+  setJobButtonState(startRepeatedPairButton, jobStatus?.jobs?.["repeated-number-pair-shuffles"]?.state ?? "offline");
+  setJobButtonState(stopOnePairButton, running?.id === "one-pair-shuffles" ? "running" : "idle");
+  setJobButtonState(stopTwoPairButton, running?.id === "two-pair-shuffles" ? "running" : "idle");
+  setJobButtonState(stopRepeatedPairButton, running?.id === "repeated-number-pair-shuffles" ? "running" : "idle");
+  setJobButtonState(stopScanButton, running ? "running" : "idle");
+  stopScanButton.disabled = !running;
+  stopOnePairButton.disabled = running?.id !== "one-pair-shuffles";
+  stopTwoPairButton.disabled = running?.id !== "two-pair-shuffles";
+  stopRepeatedPairButton.disabled = running?.id !== "repeated-number-pair-shuffles";
+  renderJobOverview();
+}
+
+function setJobButtonState(button, stateName) {
+  button.dataset.state = stateName;
+  button.setAttribute("aria-label", `${button.textContent.trim()}: ${stateName}`);
+}
+
+function renderJobOverview(source = currentSource()) {
+  const families = source?.operationFamilies ?? [];
+  jobOverviewList.innerHTML = families.length
+    ? families.map((family) => `
+      <article class="job-row" data-state="${escapeHtml(family.status ?? "not-run")}">
+        <div>
+          <strong>${escapeHtml(family.label ?? family.id)}</strong>
+          <span>${escapeHtml(family.status ?? "not run")}</span>
+        </div>
+        <p>${escapeHtml(familyBoardSummary(family))}</p>
+      </article>
+    `).join("")
+    : "<p>No scans have been run for this board yet.</p>";
+}
+
+function familyBoardSummary(family) {
+  const progress = family.progress ?? {};
+  const checked = progress.checked ?? family.attemptedSequences ?? 0;
+  const total = progress.total;
+  const checkedText = total ? `${formatNumber(checked)} / ${formatNumber(total)} checked` : `${formatNumber(checked)} checked`;
+  const valid = formatNumber(family.uniqueValidEndpoints ?? family.validEndpointSequences ?? 0);
+  const genuine = formatNumber(family.classCounts?.genuine ?? 0);
+  const types = formatNumber(family.sequenceTypeCount ?? 0);
+  const percent = progress.percent != null ? `, ${progress.percent}%` : "";
+  return `${checkedText}${percent}. Valid endpoints: ${valid}. Genuine: ${genuine}. Types: ${types}.`;
 }
 
 async function postJob(jobId, action) {
   try {
-    await fetch(`/api/jobs/${jobId}/${action}`, { method: "POST" });
+    const sourceParam = action === "start" && state.sourceId ? `?source=${encodeURIComponent(state.sourceId)}` : "";
+    await fetch(`/api/jobs/${jobId}/${action}${sourceParam}`, { method: "POST" });
     await refreshJobs();
     await refreshSampleData();
     await refreshAsymmetricData();
@@ -693,11 +935,15 @@ discoveryList.addEventListener("click", (event) => {
   render();
 });
 
-startBoardJobButton.addEventListener("click", () => postJob("board-sample", "start"));
-startScanButton.addEventListener("click", () => postJob("asymmetric-sequences", "start"));
+startOnePairButton.addEventListener("click", () => postJob("one-pair-shuffles", "start"));
+stopOnePairButton.addEventListener("click", () => postJob("one-pair-shuffles", "stop"));
+startTwoPairButton.addEventListener("click", () => postJob("two-pair-shuffles", "start"));
+stopTwoPairButton.addEventListener("click", () => postJob("two-pair-shuffles", "stop"));
+startRepeatedPairButton.addEventListener("click", () => postJob("repeated-number-pair-shuffles", "start"));
+stopRepeatedPairButton.addEventListener("click", () => postJob("repeated-number-pair-shuffles", "stop"));
 stopScanButton.addEventListener("click", () => {
   const running = runningJobRecord();
-  postJob(running?.id ?? "asymmetric-sequences", "stop");
+  if (running?.id) postJob(running.id, "stop");
 });
 
 renderSourceOptions();
