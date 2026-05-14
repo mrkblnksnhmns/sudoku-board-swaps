@@ -3,21 +3,48 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Sudoku Strict Swap Scan</title>
+    <title>Sudoku Asymmetric Shuffle Scan</title>
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
     <main class="app">
       <header class="topbar">
         <div>
-          <p class="eyebrow">Strict raw cell swaps</p>
-          <h1>Sudoku Swap Scan</h1>
+          <p class="eyebrow">Asymmetric shuffle search</p>
+          <h1>Sudoku Shuffle Scan</h1>
         </div>
-        <label class="source-picker">
-          <span>Board</span>
-          <select id="sourceSelect"></select>
-        </label>
+        <div class="top-actions">
+          <label class="source-picker">
+            <span>Source Board</span>
+            <select id="sourceSelect"></select>
+            <small>A solved board from the board-finding sample. Cyclic baseline boards are documented in the paper, not shown here.</small>
+          </label>
+          <div class="job-controls" aria-label="Scan controls">
+            <button id="startBoardJobButton" type="button">Build Boards</button>
+            <button id="startScanButton" type="button">Scan Shuffles</button>
+            <button id="stopScanButton" type="button">Stop</button>
+            <span id="jobStatusText">offline</span>
+          </div>
+        </div>
       </header>
+
+      <section class="workflow-panel" aria-label="Research workflow">
+        <article>
+          <span>Phase 1</span>
+          <h2>Board Finding</h2>
+          <p id="boardSampleText">Create a local set of solved boards. These boards do not need to be reachable from each other.</p>
+        </article>
+        <article>
+          <span>Phase 2</span>
+          <h2>Pattern Finding</h2>
+          <p id="patternFindingText">Scan each source board for shuffle patterns that end on solved boards.</p>
+        </article>
+        <article>
+          <span>Recovery</span>
+          <h2>Checkpointed Runs</h2>
+          <p id="recoveryText">Completed source/family records are reused when the same pattern scan starts again.</p>
+        </article>
+      </section>
 
       <section class="dashboard">
         <div class="board-panel">
@@ -26,26 +53,45 @@
             <p id="boardMeta">Current source board</p>
           </div>
           <div id="board" class="sudoku-board" aria-label="Current Sudoku board"></div>
+
+          <section class="replay-panel">
+            <div class="panel-heading">
+              <h2>Selected Discovery</h2>
+              <p id="replayMeta">A discovery is one shuffle pattern that reached a solved endpoint. Colors show the shuffle locations.</p>
+            </div>
+            <div id="discoveryDetails" class="discovery-details" aria-label="Selected discovery details"></div>
+            <div class="replay-controls">
+              <button id="playDiscoveriesButton" type="button">Play</button>
+              <button id="prevMoveButton" type="button">Prev</button>
+              <button id="nextMoveButton" type="button">Next</button>
+              <button id="resetMoveButton" type="button">Reset</button>
+              <strong id="moveStepText">0 / 0</strong>
+            </div>
+            <div id="discoveryList" class="discovery-list" aria-label="Discovered examples"></div>
+            <div id="moveList" class="move-list"></div>
+          </section>
         </div>
 
         <aside class="scan-panel">
-          <section class="summary-grid" aria-label="Strict swap limits">
-            <div>
-              <span>Max Disjoint</span>
-              <strong>40</strong>
+          <section id="summaryGrid" class="summary-grid" aria-label="Shuffle scan summary">
+          </section>
+
+          <section class="progress-panel">
+            <div class="panel-heading">
+              <h2>Run Progress</h2>
+              <p id="runProgressText">Latest offline output</p>
             </div>
-            <div>
-              <span>Cells</span>
-              <strong>81</strong>
+            <div class="progress-track" aria-label="Current scan progress">
+              <span id="runProgressBar"></span>
             </div>
-            <div>
-              <span>Cell Pairs</span>
-              <strong>3240</strong>
+          </section>
+
+          <section class="interesting-panel">
+            <div class="panel-heading">
+              <h2>Interesting Shuffles</h2>
+              <p>Patterns worth tracking as research ideas, separate from raw progress counters.</p>
             </div>
-            <div>
-              <span>Effective Source Pairs</span>
-              <strong>2916</strong>
-            </div>
+            <div id="interestingSwapList" class="interesting-list"></div>
           </section>
 
           <section class="results-panel">
@@ -58,8 +104,8 @@
 
           <section class="depth-panel">
             <div class="panel-heading">
-              <h2>Depth Progress</h2>
-              <p>Shown from highest disjoint swap-set count down to one. Computed rows are labeled exact or guided.</p>
+              <h2 id="progressTitle">Shuffle Type Progress</h2>
+              <p id="progressHelp">A pair means two board squares trading values.</p>
             </div>
             <div id="depthList" class="depth-list"></div>
           </section>
@@ -67,7 +113,8 @@
       </section>
     </main>
 
-    <script src="data/raw-cell-swap-depth-data.js"></script>
+    <script src="data/solved-board-sample-data.js"></script>
+    <script src="data/asymmetric-sequences-data.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

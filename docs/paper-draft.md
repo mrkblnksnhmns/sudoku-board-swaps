@@ -1,246 +1,219 @@
-# Valid and Forbidden Transformations of Completed Sudoku Boards
+# Board Finding and Asymmetric Pattern Finding in Completed Sudoku Boards
 
 ## Abstract
 
-This project studies completed Sudoku boards as objects in a transformation space. The first object of study is the valid-board space, where every intermediate board remains a completed Sudoku solution. Forbidden transformations, where intermediate boards may temporarily violate Sudoku constraints before returning to a valid completed board, are treated as a later comparison layer.
+This project studies completed `9x9` Sudoku boards as objects in a transformation space. The current research is split into two phases:
 
-Initial complete enumeration of `4x4` Sudoku shows two disconnected valid-transformation families. These families are separated by row-pair and column-pair parity signatures. However, they can be bridged by two forbidden cell swaps.
+1. **Board finding:** create a local, reproducible sample of solved boards.
+2. **Pattern finding:** scan those boards for asymmetric shuffle patterns that start and end on solved boards.
 
-For the cyclic `9x9` base grid, two forbidden cell swaps never reach a different valid completed board. A structured two-symbol trade scan finds the first nontrivial forbidden neighbors at depth `3`, through six-cell trades.
+This split matters because a board that cannot be reached from one source board may still be important. Therefore, source boards are generated independently before pattern scans begin. Earlier cyclic-base experiments remain useful as baseline research, but the active workflow is no longer centered on the cyclic base board.
 
-## 1. Research Question
+## 1. Current Research Question
 
-Given two completed Sudoku boards, when can one be transformed into the other by swaps?
+Given a collection of solved Sudoku boards, which asymmetric shuffle patterns can move one solved board to another solved board?
 
-We study two spaces, in this order:
-
-- **Valid-board space:** every intermediate board must be a valid completed Sudoku.
-- **Forbidden space:** intermediate boards may be invalid, but the start and end boards must be valid completed Sudoku.
-
-The central question is:
-
-> Which structural properties prevent movement inside valid-board space, and how quickly can forbidden moves cross those boundaries?
-
-## 2. Definitions
-
-A completed Sudoku board is a filled grid satisfying all row, column, and box constraints.
-
-A valid move is a transformation that maps one completed Sudoku board directly to another completed Sudoku board.
-
-A forbidden move is a transformation step that may temporarily break Sudoku validity.
-
-A forbidden bridge is a sequence:
+The current object of study is:
 
 ```text
-valid board -> invalid board(s) -> valid board
+solved source board -> predefined shuffle pattern -> solved endpoint board
 ```
 
-A row-pair parity signature compares every pair of rows as permutations of the symbols and counts how many pair mappings are even or odd. A column-pair parity signature does the same for columns.
-
-## 3. Complete 4x4 Results
-
-For `4x4` Sudoku with `2x2` boxes:
+The endpoint is classified as:
 
 ```text
-completed grids: 288
-standard symmetry families: 2
+identity
+standard-symmetry
+genuine
 ```
 
-Family 1:
+A genuine endpoint is a solved board that is not just the same board and not a standard Sudoku symmetry copy of the source.
+
+## 2. Phase 1: Board Finding
+
+Board finding produces source boards for the experiment. It must not rely only on boards reachable from one starting board, because disconnected board regions would never be scanned.
+
+The current local generator uses randomized backtracking to create completed Sudoku boards:
+
+```bash
+node sudoku-9x9-board-sample.js --count=100 --seed=phase-one-board-finding
+```
+
+The output is:
 
 ```text
-size: 96
-rows even:6,odd:0
-cols even:6,odd:0
+data/solved-board-sample.latest.json
+visualizer/data/solved-board-sample.latest.json
+visualizer/data/solved-board-sample-data.js
 ```
 
-Family 2:
+Each board is:
+
+- validated as a completed Sudoku grid
+- exact-deduplicated
+- sorted by cheap structural profile
+- tagged with row-pair and column-pair parity profile metadata
+
+This sample is not a complete catalog of all Sudoku boards. It is a reproducible working set that can grow over time.
+
+## 3. Phase 2: Pattern Finding
+
+Pattern finding scans source boards for predefined shuffle operations.
+
+The current scanner is:
+
+```bash
+node sudoku-9x9-asymmetric-sequences.js --source=sample
+```
+
+The output is:
 
 ```text
-size: 192
-rows even:2,odd:4
-cols even:2,odd:4
+data/asymmetric-sequences.latest.json
+visualizer/data/asymmetric-sequences.latest.json
+visualizer/data/asymmetric-sequences-data.js
 ```
 
-Under standard atomic moves:
+The current shuffle types are:
+
+- **One-pair shuffle:** try every single square-pair trade that changes two different numbers.
+- **Two-pair shuffle:** try two square-pair trades where no square is used twice.
+- **Repeated number-pair shuffle:** reuse one number pair across several shuffle locations, then classify the shuffle location shape that lets the endpoint remain solved.
+
+The scanner is checkpointed at the source/type level. If power is lost, completed source/type records are reused when the same run starts again. An unfinished shuffle type restarts.
+
+## 4. Asymmetric Swap Rules
+
+The active rules are:
+
+- A source board is a solved Sudoku grid.
+- A candidate pattern may pass through invalid intermediate states.
+- The endpoint must be a solved Sudoku grid.
+- A cell can appear in at most one square-pair trade within a disjoint shuffle pattern.
+- A forward sequence and its reverse are treated as the same pattern identity.
+- Endpoints that are standard Sudoku symmetries are not counted as genuine discoveries.
+- Whole-board symmetry aggregates are rejected as asymmetric discoveries.
+
+These rules keep the experiment focused on local asymmetric patterns rather than rediscovering standard row, column, band, stack, transpose, or digit-renaming symmetries.
+
+## 5. Current Implementation State
+
+The current local app has two buttons:
+
+- **Build Boards:** run the board-finding phase and write the solved-board sample.
+- **Scan Patterns:** run the pattern-finding phase against the solved-board sample.
+
+The visualizer shows:
+
+- the selected source board
+- source-level result counts
+- shuffle type progress
+- selected discoveries
+- step-by-step board replay for a discovered shuffle pattern
+
+The UI intentionally hides the cyclic base board. Cyclic-base work is now documented as background and later research rather than being the main visible workflow.
+
+## 6. Current Data Snapshot
+
+The latest board-finding sample currently stores:
 
 ```text
-connected components: 2
-component sizes: 192, 96
-diameter: 4
+solved boards: 100
+exact unique boards: 100
+parity profile groups: 13
 ```
 
-Under validity-preserving row/column swaps:
+The latest completed pattern output contains preliminary seed-board results:
 
 ```text
-connected components: 2
-component sizes: 192, 96
-diameter: 4
+genuine endpoints: 106
+sequence type records: 134
 ```
 
-Thus the two families remain disconnected even under looser validity-preserving row/column moves.
+Those preliminary results include cyclic-base baseline data and comparison-board data. The active UI filters out cyclic-base sources so the visible workflow stays focused on source boards from the board-finding/pattern-finding split.
 
-## 4. 4x4 Forbidden Bridges
+## 7. Interesting Shuffle Types
 
-Although the `4x4` families are disconnected in valid-board space, they are close in forbidden space.
+### Repeated Number-Pair Shuffle
 
-Example:
+A repeated number-pair shuffle is currently the clearest example of a reusable asymmetric pattern.
+
+Every ordinary square-pair trade exchanges two numbers. The current observation is that useful multi-shuffle discoveries often keep using the same number pair, then place those square-pairs in meaningful shuffle locations:
 
 ```text
-1 2 | 3 4
-3 4 | 1 2
-----+----
-2 1 | 4 3
-4 3 | 2 1
+4 -> 7
+7 -> 4
 ```
 
-Swap `r1c1 <-> r1c2`, producing an invalid intermediate board:
+The shuffle location shape is what makes this more interesting than the number pair alone. A strong form is balanced, where every affected row, column, and box loses and gains the same pair of numbers.
+
+As ordinary square-pair trades, a repeated number-pair shuffle can be decomposed by size:
 
 ```text
-2 1 | 3 4
-3 4 | 1 2
-----+----
-2 1 | 4 3
-4 3 | 2 1
+4 selected cells  -> 2 square-pairs
+6 selected cells  -> 3 square-pairs
+12 selected cells -> 6 square-pairs
 ```
 
-Then swap `r3c1 <-> r3c2`, producing a valid board in family 2:
+This pattern is important because it suggests that useful asymmetric transformations may be discoverable through structural constraints, especially repeated use of a number pair in specific shuffle locations, rather than only brute-force enumeration.
+
+### Planned Three-Pair Shuffle
+
+The next planned shuffle type is a three-pair shuffle:
 
 ```text
-2 1 | 3 4
-3 4 | 1 2
-----+----
-1 2 | 4 3
-4 3 | 2 1
+solved source board -> 3 disjoint square-pair trades -> solved endpoint board
 ```
 
-There are `32` two-step forbidden bridges from the family 1 representative into family 2. The bridges have balanced geometric patterns, showing that the result is not a one-off accident.
+This test should touch exactly six cells, reuse no cells, canonicalize pair order, and classify solved endpoints as identity, standard-symmetry, or genuine.
 
-## 5. Initial 9x9 Results
+The first implementation should not try every possible long sequence blindly. It should use row/column/box balance filters, skip same-number no-op trades, checkpoint partial progress, and keep small example sets for visualization.
 
-For the cyclic `9x9` base grid:
+This is not yet a true 3-cell cycle test. A 3-cell cycle should be treated as a later, separate operation family.
 
-```text
-parity signature:
-rows even:36,odd:0 | cols even:36,odd:0
-```
+## 8. Background: Cyclic Base
 
-For a comparison completed grid:
+The cyclic base is a highly regular solved Sudoku board built by cycling the digits `1-9` through rows. It is useful as a clean baseline because its structure is easy to reason about.
 
-```text
-parity signature:
-rows even:16,odd:20 | cols even:16,odd:20
-```
+Earlier observations:
 
-The cyclic base is highly regular and all-even. The comparison grid has mixed parity.
+- cyclic base has all-even row/column parity profile
+- two arbitrary square-pair trades from the cyclic base do not reach a different solved board
+- structured repeated number-pair shuffles from the cyclic base produced genuine solved endpoints at depth `3`
 
-## 6. 9x9 Valid Pattern Transformations
+This is important background, but it is not the active UI path. Cyclic-base scans should be treated as a controlled baseline study.
 
-We distinguish valid endpoint permutations from stepwise-valid permutations.
+## 9. Later Research
 
-A valid endpoint permutation produces a completed Sudoku board after a row or column permutation. A stepwise-valid permutation can be reached by swapping one row or column pair at a time, with every intermediate board remaining a completed Sudoku board.
+Next work should stay separated by phase.
 
-For the cyclic base:
+Board-finding next steps:
 
-```text
-row valid endpoint permutations:        1296
-row stepwise-valid reachable endpoints: 216
+- generate larger local samples, starting around `100` solved boards
+- record exact board keys and structural profile tags
+- add standard-symmetry grouping as an optional reduction pass
+- keep boards even if they are not reachable from current sources
 
-column valid endpoint permutations:        46656
-column stepwise-valid reachable endpoints: 46656
-```
+Pattern-finding next steps:
 
-For the comparison grid:
+- run the current shuffle types against the local sample
+- implement the planned three-pair shuffle with balance filters
+- classify every discovery by number-pair repetition and shuffle location shape
+- compare which source boards produce genuine endpoints quickly
+- improve canonical type keys so equivalent asymmetric patterns merge cleanly
+- add better resume checkpoints inside long-running shuffle types
+- decide later whether to restrict the search to only disjoint or only non-equivalent board representatives
 
-```text
-row valid endpoint permutations:        1296
-row stepwise-valid reachable endpoints: 216
+Cyclic-baseline later work:
 
-column valid endpoint permutations:        1296
-column stepwise-valid reachable endpoints: 216
-```
+- keep cyclic base as a separate baseline source
+- study whether its repeated number-pair shuffle behavior appears in less regular boards
+- compare cyclic baseline discoveries against random-sample discoveries
+- avoid mixing cyclic baseline results into the main UI unless the view is explicitly labeled as baseline research
 
-Thus endpoint validity and stepwise validity are distinct. Whole-band and whole-stack relocation are valid pattern moves, but they are not generated by single row/column swaps while staying valid at every intermediate step.
+Longer-term theory questions:
 
-The cyclic base column case is exceptional: all `46656` valid column endpoints are reachable by valid single-column swaps.
-
-## 7. 9x9 Forbidden Neighborhood
-
-Every two-step arbitrary cell-swap sequence from the cyclic base grid that returns to a valid completed board returns to the original grid:
-
-```text
-bridge sequences found: 2916
-unique valid target boards: 1
-identity status: returns to source
-```
-
-So, unlike `4x4`, the cyclic `9x9` base has no nontrivial valid target at forbidden depth `2`.
-
-## 8. 9x9 Two-Symbol Trades
-
-We searched for structured two-symbol trades around the cyclic base grid.
-
-Result:
-
-```text
-total nontrivial trades: 54
-unique valid target boards: 54
-minimum trade size: 6 cells
-minimum forbidden cell-swap depth: 3
-```
-
-Trade size distribution:
-
-```text
-6 cells: 27
-12 cells: 27
-```
-
-Minimum trade shape:
-
-```text
-cells:6,rows:3,cols:3,boxes:3
-rowBands:1,colStacks:3
-```
-
-Minimum digit-pair distribution:
-
-```text
-1<->4: 3
-1<->7: 3
-2<->5: 3
-2<->8: 3
-3<->6: 3
-3<->9: 3
-4<->7: 3
-5<->8: 3
-6<->9: 3
-```
-
-Every nontrivial two-symbol trade changes the parity signature:
-
-```text
-before: rows even:36,odd:0  | cols even:36,odd:0
-after:  rows even:18,odd:18 | cols even:18,odd:18
-```
-
-## 9. Current Hypotheses
-
-The row-pair and column-pair parity signature appears to be a useful invariant for classifying valid-board components.
-
-Forbidden moves can cross valid-board boundaries, but the depth and shape of the bridge depends strongly on board size and structure.
-
-For the cyclic `9x9` base grid, the first nontrivial forbidden neighbors appear at depth `3`, not depth `2`.
-
-## 10. Next Work
-
-Next experiments:
-
-- classify valid `9x9` row and column swap patterns before extending forbidden trade work
-- determine which valid full row/column permutations can be decomposed into valid single-swap paths
-- compare the standard symmetry orbit against the larger validity-preserving row/column orbit
-- build a graph of `9x9` trade-neighborhoods from the cyclic base
-- classify the 54 `9x9` two-symbol trade targets by symmetry and swap freedom after the valid-first work
-- test whether the `18 even / 18 odd` parity signature is stable under further trades
-- compare the cyclic base against less regular completed grids
-- determine whether similar trade patterns exist in non-cyclic boards
+- Which structural profiles predict many asymmetric endpoints?
+- Which boards appear isolated under shallow disjoint swap scans?
+- Do asymmetric shuffle types form reusable families across unrelated solved boards?
+- Can source-board sampling and pattern scanning reveal disconnected regions of the solved-board space?

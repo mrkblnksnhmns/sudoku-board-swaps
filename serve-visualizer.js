@@ -7,10 +7,15 @@ const PORT = Number(process.env.PORT ?? process.argv[2] ?? 8080);
 const ROOT = __dirname;
 const JOB_STATUS_JSON = path.join(ROOT, "data", "job-status.latest.json");
 const JOBS = {
-  "arbitrary-frontier": {
-    label: "Big arbitrary frontier scan",
+  "board-sample": {
+    label: "Build solved board sample",
     command: process.execPath,
-    args: ["sudoku-9x9-arbitrary-transformations.js", "--frontier"],
+    args: ["sudoku-9x9-board-sample.js", "--count=100", "--seed=phase-one-board-finding"],
+  },
+  "asymmetric-sequences": {
+    label: "Asymmetric sequence scan",
+    command: process.execPath,
+    args: ["sudoku-9x9-asymmetric-sequences.js", "--source=sample"],
   },
 };
 const runningJobs = new Map();
