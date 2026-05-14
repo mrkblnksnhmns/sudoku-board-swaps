@@ -22,13 +22,10 @@ const boardTitle = document.querySelector("#boardTitle");
 const boardMeta = document.querySelector("#boardMeta");
 const board = document.querySelector("#board");
 const summaryGrid = document.querySelector("#summaryGrid");
-const runProgressBar = document.querySelector("#runProgressBar");
-const currentScanList = document.querySelector("#currentScanList");
 const nthShuffleList = document.querySelector("#nthShuffleList");
 const interestingSwapList = document.querySelector("#interestingSwapList");
 const largeShuffleList = document.querySelector("#largeShuffleList");
 const backtrackingList = document.querySelector("#backtrackingList");
-const jobOverviewList = document.querySelector("#jobOverviewList");
 const jobStatusText = document.querySelector("#jobStatusText");
 const stopScanButton = document.querySelector("#stopScanButton");
 const startOnePairButton = document.querySelector("#startOnePairButton");
@@ -59,14 +56,19 @@ function visibleSources() {
 
 function sortSources(sources) {
   return [...sources].sort((first, second) => {
-    const firstLabel = displaySourceLabel(first);
-    const secondLabel = displaySourceLabel(second);
+    const firstLabel = sourceSortLabel(first);
+    const secondLabel = sourceSortLabel(second);
     const firstIsComparison = first?.id === "comparison" || first?.id === "seed-comparison";
     const secondIsComparison = second?.id === "comparison" || second?.id === "seed-comparison";
     if (firstIsComparison !== secondIsComparison) return firstIsComparison ? -1 : 1;
     return firstLabel.localeCompare(secondLabel, undefined, { numeric: true, sensitivity: "base" })
       || String(first?.id ?? "").localeCompare(String(second?.id ?? ""), undefined, { numeric: true, sensitivity: "base" });
   });
+}
+
+function sourceSortLabel(source) {
+  if (source?.id === "comparison" || source?.id === "seed-comparison") return "comparison board";
+  return source?.label ?? source?.id ?? "source board";
 }
 
 function currentSource() {
@@ -90,13 +92,13 @@ function renderSourceOptions() {
 }
 
 function displaySourceLabel(source) {
-  if (source?.id === "comparison" || source?.id === "seed-comparison") return "comparison board";
-  return source?.label ?? "source board";
+  const index = visibleSources().findIndex((visibleSource) => visibleSource.id === source?.id);
+  return index >= 0 ? String(index + 1) : "source board";
 }
 
 function sourceExplanation(source) {
   if (source?.id === "comparison" || source?.id === "seed-comparison") {
-    return "A solved board used as the current visible pattern-finding example. The cyclic baseline is kept in the paper as background research.";
+    return "A solved board used as the current visible pattern-finding example. The cyclic baseline is kept as background findings.";
   }
   return "One solved source board from the local board-finding sample. The pattern scan tests shuffle rules starting from this board.";
 }
@@ -109,11 +111,8 @@ function render() {
     boardTitle.textContent = "No Pattern Output";
     boardMeta.textContent = "Load a solved board, then scan it case by case.";
     summaryGrid.innerHTML = "";
-    jobOverviewList.innerHTML = "";
     renderBoard("");
     renderReplay([]);
-    updateRunProgress(null);
-    renderCurrentScan(null);
     return;
   }
 
@@ -123,11 +122,10 @@ function render() {
 
   renderSummary(source);
   renderNthPairShuffles(source);
-  renderInterestingSwaps();
+  renderInterestingSwaps(source);
   renderLargeStructuredShuffles();
   renderBacktrackingPrep();
   renderReplay(examplesForSource(source));
-  renderJobOverview(source);
 }
 
 function renderWorkflowText() {
@@ -153,20 +151,19 @@ function renderSummary(source) {
       <p>${escapeHtml(help)}</p>
     </div>
   `).join("");
-
-  updateRunProgress(source);
 }
 
-function renderInterestingSwaps() {
-  const tradeFamily = visibleSources()
-    .flatMap((source) => source.operationFamilies ?? [])
-    .find((family) => family.id === "two-symbol-balanced-trade");
+function renderInterestingSwaps(source = currentSource()) {
+  const tradeFamily = source?.operationFamilies?.find((family) => family.id === "two-symbol-balanced-trade") ?? null;
   const tradeGenuine = tradeFamily?.classCounts?.genuine ?? 0;
+  const tradeStats = statsForFamily(tradeFamily);
+  const tradeStatus = familyStatusLabel(tradeFamily, "repeated-number-pair-shuffles");
 
   const rows = [
     {
       label: "Repeated number-pair shuffle",
-      status: tradeGenuine > 0 ? `${tradeGenuine} genuine endpoints in visible output` : "tracked pattern",
+      status: tradeFamily ? `${tradeGenuine} genuine; ${tradeStatus}` : "not run yet",
+      stats: tradeStats,
       body: "This belongs here because it is not just a size count. Several square-pairs reuse the same two numbers, and the discovery is the location shape: rows, columns, boxes, bands, and stacks.",
     },
   ];
@@ -178,6 +175,7 @@ function renderInterestingSwaps() {
         <span>${escapeHtml(row.status)}</span>
       </div>
       <p>${escapeHtml(row.body)}</p>
+      ${row.stats ? cardStatsHtml(row.stats) : ""}
       ${progressBarHtml(tradeFamily?.progress?.percent ?? 0)}
     </article>
   `).join("");
@@ -219,7 +217,7 @@ function renderNthPairShuffles(source) {
 
   nthShuffleList.innerHTML = rows.map((row) => {
     const family = familyById.get(row.familyId);
-    const status = row.status ?? (family ? `${family.classCounts?.genuine ?? 0} genuine; ${family.status ?? "pending"}` : "not run yet");
+    const status = row.status ?? (family ? `${family.classCounts?.genuine ?? 0} genuine; ${familyStatusLabel(family, jobIdForFamily(row.familyId))}` : "not run yet");
     const percent = family?.progress?.percent ?? 0;
     return `
       <article class="research-card">
@@ -235,8 +233,20 @@ function renderNthPairShuffles(source) {
   }).join("");
 }
 
-function twoPairFamily(source) {
-  return source?.operationFamilies?.find((family) => family.id === "exact-disjoint-cell-swap-depth-2") ?? null;
+function jobIdForFamily(familyId) {
+  if (familyId === "exact-disjoint-cell-swap-depth-1") return "one-pair-shuffles";
+  if (familyId === "exact-disjoint-cell-swap-depth-2") return "two-pair-shuffles";
+  if (familyId === "two-symbol-balanced-trade") return "repeated-number-pair-shuffles";
+  return null;
+}
+
+function familyStatusLabel(family, jobId = null) {
+  const status = family?.status ?? "pending";
+  const jobState = jobId ? jobStatus?.jobs?.[jobId]?.state : null;
+  if (status === "running" && jobStatus && jobState !== "running") {
+    return jobState === "stopped" || jobState === "interrupted" ? jobState : "interrupted";
+  }
+  return status;
 }
 
 function statsForFamily(family) {
@@ -269,56 +279,6 @@ function cardStatsHtml(stats) {
       `).join("")}
     </dl>
   `;
-}
-
-function twoPairStatsForSource(source) {
-  const family = twoPairFamily(source);
-  return {
-    sourceBoardsScanned: family?.status === "complete" ? 1 : 0,
-    candidatesChecked: family?.progress?.checked ?? 0,
-    validEndpointSequences: family?.validEndpointSequences ?? 0,
-    uniqueValidEndpoints: family?.uniqueValidEndpoints ?? 0,
-    genuineEndpoints: family?.classCounts?.genuine ?? 0,
-    sequenceTypes: family?.sequenceTypeCount ?? 0,
-    runTimeMs: familyRunTimeMs(family),
-  };
-}
-
-function aggregateTwoPairStats() {
-  const out = {
-    sourceBoardsScanned: 0,
-    candidatesChecked: 0,
-    validEndpointSequences: 0,
-    uniqueValidEndpoints: 0,
-    genuineEndpoints: 0,
-    sequenceTypes: 0,
-    runTimeMs: 0,
-  };
-
-  for (const source of visibleSources()) {
-    const stats = twoPairStatsForSource(source);
-    out.sourceBoardsScanned += stats.sourceBoardsScanned;
-    out.candidatesChecked += stats.candidatesChecked;
-    out.validEndpointSequences += stats.validEndpointSequences;
-    out.uniqueValidEndpoints += stats.uniqueValidEndpoints;
-    out.genuineEndpoints += stats.genuineEndpoints;
-    out.sequenceTypes += stats.sequenceTypes;
-    out.runTimeMs += stats.runTimeMs;
-  }
-
-  return out;
-}
-
-function evidenceRows(stats) {
-  return [
-    ["Source boards scanned", formatNumber(stats.sourceBoardsScanned)],
-    ["Two-pair candidates checked", formatNumber(stats.candidatesChecked)],
-    ["Valid endpoint sequences", formatNumber(stats.validEndpointSequences)],
-    ["Unique valid endpoints", formatNumber(stats.uniqueValidEndpoints)],
-    ["Genuine endpoints", formatNumber(stats.genuineEndpoints)],
-    ["Sequence types", formatNumber(stats.sequenceTypes)],
-    ["Run time", formatDuration(stats.runTimeMs)],
-  ];
 }
 
 function familyRunTimeMs(family) {
@@ -446,84 +406,12 @@ function summarizeSource(source) {
   return out;
 }
 
-function updateRunProgress(source) {
-  if (!source) {
-    runProgressBar.style.width = "0%";
-    renderCurrentScan(null);
-    return;
-  }
-
-  let runningFamily = source.operationFamilies?.find((family) => family.status === "running") ?? null;
-  if (!runningFamily && asymmetricData?.current && source.id === asymmetricData.current.sourceId) {
-    runningFamily = source.operationFamilies?.find((family) => family.id === asymmetricData.current.familyId) ?? null;
-  }
-
-  const percent = runningFamily?.progress?.percent ?? sourceCompletionPercent(source);
-  runProgressBar.style.width = `${Math.max(0, Math.min(100, Number(percent) || 0))}%`;
-  renderCurrentScan(source, runningFamily);
-}
-
-function renderCurrentScan(source, runningFamily = null) {
-  const current = asymmetricData?.current;
-  const activeFamily = runningFamily
-    ?? (current && source?.id === current.sourceId
-      ? source.operationFamilies?.find((family) => family.id === current.familyId)
-      : null);
-  const currentJob = runningJobRecord();
-  const rows = [
-    ["Selected board", source ? displaySourceLabel(source) : "none"],
-    ["Selected-board progress", activeFamily?.progress?.percent != null ? `${activeFamily.progress.percent}%` : source ? `${sourceCompletionPercent(source)}% source complete` : "0%"],
-    ["Active scan", currentJob ? `${currentJob.label}: ${currentJob.state}` : "none running"],
-    ["Active board", current?.sourceLabel ?? (currentJob ? displaySourceLabel(source) : "none")],
-    ["Active shuffle type", current ? scanTypeName(current) : "none running"],
-  ];
-
-  currentScanList.innerHTML = rows.map(([label, value]) => `
-    <div>
-      <dt>${escapeHtml(label)}</dt>
-      <dd>${escapeHtml(value)}</dd>
-    </div>
-  `).join("");
-}
-
-function sourceCompletionPercent(source) {
-  const families = source.operationFamilies ?? [];
-  if (families.length === 0) return 0;
-  const complete = families.filter((family) => family.status === "complete").length;
-  return Number(((complete / families.length) * 100).toFixed(2));
-}
-
-function statusLabel(status) {
-  if (status === "complete") return "done";
-  if (status === "running") return "running";
-  return "waiting";
-}
-
-function statusClass(status) {
-  if (status === "complete") return "exact";
-  if (status === "running") return "guided";
-  return "not-run";
-}
-
 function scanTypeName(family) {
   const id = family?.id ?? family?.familyId;
   if (id === "exact-disjoint-cell-swap-depth-1") return "One-pair shuffle";
   if (id === "exact-disjoint-cell-swap-depth-2") return "Two-pair shuffle";
   if (id === "two-symbol-balanced-trade") return "Repeated number-pair shuffle";
   return family?.label ?? family?.familyLabel ?? id ?? "shuffle type";
-}
-
-function scanTypeExplanation(family) {
-  if (family.id === "exact-disjoint-cell-swap-depth-1") {
-    return "One square-pair trade: two cells trade values.";
-  }
-  if (family.id === "exact-disjoint-cell-swap-depth-2") {
-    return "Two square-pair trades: four cells touched, no cell reused.";
-  }
-  if (family.id === "two-symbol-balanced-trade") {
-    return "Several square-pair trades reuse one number pair, placed so rows, columns, and boxes can end solved.";
-  }
-  return "Run one operation family against this source board.";
 }
 
 function examplesForSource(source) {
@@ -832,39 +720,11 @@ function updateJobButtons(running) {
   stopOnePairButton.disabled = running?.id !== "one-pair-shuffles";
   stopTwoPairButton.disabled = running?.id !== "two-pair-shuffles";
   stopRepeatedPairButton.disabled = running?.id !== "repeated-number-pair-shuffles";
-  renderJobOverview();
 }
 
 function setJobButtonState(button, stateName) {
   button.dataset.state = stateName;
   button.setAttribute("aria-label", `${button.textContent.trim()}: ${stateName}`);
-}
-
-function renderJobOverview(source = currentSource()) {
-  const families = source?.operationFamilies ?? [];
-  jobOverviewList.innerHTML = families.length
-    ? families.map((family) => `
-      <article class="job-row" data-state="${escapeHtml(family.status ?? "not-run")}">
-        <div>
-          <strong>${escapeHtml(family.label ?? family.id)}</strong>
-          <span>${escapeHtml(family.status ?? "not run")}</span>
-        </div>
-        <p>${escapeHtml(familyBoardSummary(family))}</p>
-      </article>
-    `).join("")
-    : "<p>No scans have been run for this board yet.</p>";
-}
-
-function familyBoardSummary(family) {
-  const progress = family.progress ?? {};
-  const checked = progress.checked ?? family.attemptedSequences ?? 0;
-  const total = progress.total;
-  const checkedText = total ? `${formatNumber(checked)} / ${formatNumber(total)} checked` : `${formatNumber(checked)} checked`;
-  const valid = formatNumber(family.uniqueValidEndpoints ?? family.validEndpointSequences ?? 0);
-  const genuine = formatNumber(family.classCounts?.genuine ?? 0);
-  const types = formatNumber(family.sequenceTypeCount ?? 0);
-  const percent = progress.percent != null ? `, ${progress.percent}%` : "";
-  return `${checkedText}${percent}. Valid endpoints: ${valid}. Genuine: ${genuine}. Types: ${types}.`;
 }
 
 async function postJob(jobId, action) {

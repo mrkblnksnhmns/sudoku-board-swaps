@@ -2,10 +2,10 @@
   "kind": "asymmetric-sequences",
   "schema": "asymmetric-sequence-v1",
   "runStartedAt": "2026-05-14T16:55:58.586Z",
-  "updatedAt": "2026-05-14T17:31:09.326Z",
-  "complete": true,
+  "updatedAt": "2026-05-14T18:33:45.108Z",
+  "complete": false,
   "config": {
-    "source": "random-063",
+    "source": "random-066",
     "sourceFile": "/home/markblanksonhemans/projects/sudoku-board-swaps/data/solved-board-sample.latest.json",
     "sourceLimit": 0,
     "minExactDepth": 1,
@@ -28,8 +28,2258 @@
     "standardAggregates": "Pure row, column, stack/band, side-swap, and transpose aggregates are rejected as asymmetric types."
   },
   "skippedSources": [],
-  "current": null,
+  "current": {
+    "sourceId": "random-066",
+    "sourceLabel": "random solved 66",
+    "familyId": "two-symbol-balanced-trade",
+    "familyLabel": "Repeated number-pair shuffle"
+  },
   "sources": [
+    {
+      "id": "random-066",
+      "label": "random solved 66",
+      "board": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
+      "equivalentSourceSkipped": false,
+      "operationFamilies": [
+        {
+          "id": "exact-disjoint-cell-swap-depth-1",
+          "label": "One-pair shuffle",
+          "depth": 1,
+          "exhaustive": true,
+          "status": "complete",
+          "startedAt": "2026-05-14T16:55:58.598Z",
+          "completedAt": "2026-05-14T16:55:58.618Z",
+          "progress": {
+            "checked": 3240,
+            "total": 3240,
+            "percent": 100
+          },
+          "attemptedSequences": 3240,
+          "validEndpointSequences": 0,
+          "uniqueValidEndpoints": 0,
+          "classCounts": {
+            "identity": 0,
+            "standard-symmetry": 0,
+            "genuine": 0
+          },
+          "rejected": {
+            "noOpSwap": 324,
+            "repeatedCell": 0,
+            "standardAggregate": 0,
+            "invalidEndpoint": 2916,
+            "duplicateEndpoint": 0
+          },
+          "genuineEndpointFamilies": 0,
+          "sequenceTypeCount": 0,
+          "sequenceTypes": []
+        },
+        {
+          "id": "exact-disjoint-cell-swap-depth-2",
+          "label": "2-pair shuffle",
+          "depth": 2,
+          "exhaustive": true,
+          "status": "complete",
+          "startedAt": "2026-05-14T16:56:30.254Z",
+          "completedAt": "2026-05-14T16:58:58.955Z",
+          "progress": {
+            "checked": 4991220,
+            "total": 4991220,
+            "percent": 100
+          },
+          "attemptedSequences": 4991220,
+          "validEndpointSequences": 30,
+          "uniqueValidEndpoints": 15,
+          "classCounts": {
+            "identity": 0,
+            "standard-symmetry": 0,
+            "genuine": 15
+          },
+          "rejected": {
+            "noOpSwap": 948186,
+            "repeatedCell": 230364,
+            "standardAggregate": 0,
+            "invalidEndpoint": 4043004,
+            "duplicateEndpoint": 15
+          },
+          "genuineEndpointFamilies": 15,
+          "sequenceTypeCount": 15,
+          "sequenceTypes": [
+            {
+              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"1<->5\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks\",\"geometryCounts\":{\"same-row-inside-box\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[2,2],\"stacks\":[4]},\"className\":\"genuine\"}",
+              "label": "2-pair shuffle; 2 square-pairs",
+              "swapDepth": 2,
+              "shape": {
+                "digitPairs": [
+                  "1<->5",
+                  "1<->5"
+                ],
+                "digitPairCounts": {
+                  "1<->5": 2
+                },
+                "uniqueDigitPairCount": 1,
+                "repeatedDigitPair": true,
+                "repeatedDigitPairKey": "1<->5",
+                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
+                "geometryCounts": {
+                  "same-row-inside-box": 2
+                },
+                "touched": {
+                  "rows": [
+                    1,
+                    8
+                  ],
+                  "cols": [
+                    1,
+                    3
+                  ],
+                  "boxes": [
+                    1,
+                    7
+                  ],
+                  "bands": [
+                    1,
+                    3
+                  ],
+                  "stacks": [
+                    1
+                  ]
+                },
+                "touchCounts": {
+                  "rows": [
+                    2,
+                    2
+                  ],
+                  "cols": [
+                    2,
+                    2
+                  ],
+                  "boxes": [
+                    2,
+                    2
+                  ],
+                  "bands": [
+                    2,
+                    2
+                  ],
+                  "stacks": [
+                    4
+                  ]
+                }
+              },
+              "count": 1,
+              "endpointCount": 1,
+              "classCounts": {
+                "identity": 0,
+                "standard-symmetry": 0,
+                "genuine": 1
+              },
+              "examples": [
+                {
+                  "moves": [
+                    "A1<->C1",
+                    "A8<->C8"
+                  ],
+                  "shape": {
+                    "digitPairs": [
+                      "1<->5",
+                      "1<->5"
+                    ],
+                    "digitPairCounts": {
+                      "1<->5": 2
+                    },
+                    "uniqueDigitPairCount": 1,
+                    "repeatedDigitPair": true,
+                    "repeatedDigitPairKey": "1<->5",
+                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
+                    "geometryCounts": {
+                      "same-row-inside-box": 2
+                    },
+                    "touched": {
+                      "rows": [
+                        1,
+                        8
+                      ],
+                      "cols": [
+                        1,
+                        3
+                      ],
+                      "boxes": [
+                        1,
+                        7
+                      ],
+                      "bands": [
+                        1,
+                        3
+                      ],
+                      "stacks": [
+                        1
+                      ]
+                    },
+                    "touchCounts": {
+                      "rows": [
+                        2,
+                        2
+                      ],
+                      "cols": [
+                        2,
+                        2
+                      ],
+                      "boxes": [
+                        2,
+                        2
+                      ],
+                      "bands": [
+                        2,
+                        2
+                      ],
+                      "stacks": [
+                        4
+                      ]
+                    }
+                  },
+                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
+                  "endpointBoard": "541783692726495813389162745218974536654831927973256184862317459135649278497528361",
+                  "className": "genuine",
+                  "endpointKey": "family-1"
+                }
+              ]
+            },
+            {
+              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"4<->5\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks\",\"geometryCounts\":{\"same-row-inside-box\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[2,2],\"stacks\":[4]},\"className\":\"genuine\"}",
+              "label": "2-pair shuffle; 2 square-pairs",
+              "swapDepth": 2,
+              "shape": {
+                "digitPairs": [
+                  "4<->5",
+                  "4<->5"
+                ],
+                "digitPairCounts": {
+                  "4<->5": 2
+                },
+                "uniqueDigitPairCount": 1,
+                "repeatedDigitPair": true,
+                "repeatedDigitPairKey": "4<->5",
+                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
+                "geometryCounts": {
+                  "same-row-inside-box": 2
+                },
+                "touched": {
+                  "rows": [
+                    1,
+                    5
+                  ],
+                  "cols": [
+                    2,
+                    3
+                  ],
+                  "boxes": [
+                    1,
+                    4
+                  ],
+                  "bands": [
+                    1,
+                    2
+                  ],
+                  "stacks": [
+                    1
+                  ]
+                },
+                "touchCounts": {
+                  "rows": [
+                    2,
+                    2
+                  ],
+                  "cols": [
+                    2,
+                    2
+                  ],
+                  "boxes": [
+                    2,
+                    2
+                  ],
+                  "bands": [
+                    2,
+                    2
+                  ],
+                  "stacks": [
+                    4
+                  ]
+                }
+              },
+              "count": 1,
+              "endpointCount": 1,
+              "classCounts": {
+                "identity": 0,
+                "standard-symmetry": 0,
+                "genuine": 1
+              },
+              "examples": [
+                {
+                  "moves": [
+                    "B1<->C1",
+                    "B5<->C5"
+                  ],
+                  "shape": {
+                    "digitPairs": [
+                      "4<->5",
+                      "4<->5"
+                    ],
+                    "digitPairCounts": {
+                      "4<->5": 2
+                    },
+                    "uniqueDigitPairCount": 1,
+                    "repeatedDigitPair": true,
+                    "repeatedDigitPairKey": "4<->5",
+                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
+                    "geometryCounts": {
+                      "same-row-inside-box": 2
+                    },
+                    "touched": {
+                      "rows": [
+                        1,
+                        5
+                      ],
+                      "cols": [
+                        2,
+                        3
+                      ],
+                      "boxes": [
+                        1,
+                        4
+                      ],
+                      "bands": [
+                        1,
+                        2
+                      ],
+                      "stacks": [
+                        1
+                      ]
+                    },
+                    "touchCounts": {
+                      "rows": [
+                        2,
+                        2
+                      ],
+                      "cols": [
+                        2,
+                        2
+                      ],
+                      "boxes": [
+                        2,
+                        2
+                      ],
+                      "bands": [
+                        2,
+                        2
+                      ],
+                      "stacks": [
+                        4
+                      ]
+                    }
+                  },
+                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
+                  "endpointBoard": "154783692726495813389162745218974536645831927973256184862317459531649278497528361",
+                  "className": "genuine",
+                  "endpointKey": "family-2"
+                }
+              ]
+            },
+            {
+              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"3<->7\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks\",\"geometryCounts\":{\"same-row-inside-box\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[2,2],\"stacks\":[4]},\"className\":\"genuine\"}",
+              "label": "2-pair shuffle; 2 square-pairs",
+              "swapDepth": 2,
+              "shape": {
+                "digitPairs": [
+                  "3<->7",
+                  "3<->7"
+                ],
+                "digitPairCounts": {
+                  "3<->7": 2
+                },
+                "uniqueDigitPairCount": 1,
+                "repeatedDigitPair": true,
+                "repeatedDigitPairKey": "3<->7",
+                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
+                "geometryCounts": {
+                  "same-row-inside-box": 2
+                },
+                "touched": {
+                  "rows": [
+                    1,
+                    7
+                  ],
+                  "cols": [
+                    4,
+                    6
+                  ],
+                  "boxes": [
+                    2,
+                    8
+                  ],
+                  "bands": [
+                    1,
+                    3
+                  ],
+                  "stacks": [
+                    2
+                  ]
+                },
+                "touchCounts": {
+                  "rows": [
+                    2,
+                    2
+                  ],
+                  "cols": [
+                    2,
+                    2
+                  ],
+                  "boxes": [
+                    2,
+                    2
+                  ],
+                  "bands": [
+                    2,
+                    2
+                  ],
+                  "stacks": [
+                    4
+                  ]
+                }
+              },
+              "count": 1,
+              "endpointCount": 1,
+              "classCounts": {
+                "identity": 0,
+                "standard-symmetry": 0,
+                "genuine": 1
+              },
+              "examples": [
+                {
+                  "moves": [
+                    "D1<->F1",
+                    "D7<->F7"
+                  ],
+                  "shape": {
+                    "digitPairs": [
+                      "3<->7",
+                      "3<->7"
+                    ],
+                    "digitPairCounts": {
+                      "3<->7": 2
+                    },
+                    "uniqueDigitPairCount": 1,
+                    "repeatedDigitPair": true,
+                    "repeatedDigitPairKey": "3<->7",
+                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
+                    "geometryCounts": {
+                      "same-row-inside-box": 2
+                    },
+                    "touched": {
+                      "rows": [
+                        1,
+                        7
+                      ],
+                      "cols": [
+                        4,
+                        6
+                      ],
+                      "boxes": [
+                        2,
+                        8
+                      ],
+                      "bands": [
+                        1,
+                        3
+                      ],
+                      "stacks": [
+                        2
+                      ]
+                    },
+                    "touchCounts": {
+                      "rows": [
+                        2,
+                        2
+                      ],
+                      "cols": [
+                        2,
+                        2
+                      ],
+                      "boxes": [
+                        2,
+                        2
+                      ],
+                      "bands": [
+                        2,
+                        2
+                      ],
+                      "stacks": [
+                        4
+                      ]
+                    }
+                  },
+                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
+                  "endpointBoard": "145387692726495813389162745218974536654831927973256184862713459531649278497528361",
+                  "className": "genuine",
+                  "endpointKey": "family-3"
+                }
+              ]
+            },
+            {
+              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"2<->6\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks\",\"geometryCounts\":{\"same-row-inside-box\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[2,2],\"stacks\":[4]},\"className\":\"genuine\"}",
+              "label": "2-pair shuffle; 2 square-pairs",
+              "swapDepth": 2,
+              "shape": {
+                "digitPairs": [
+                  "2<->6",
+                  "2<->6"
+                ],
+                "digitPairCounts": {
+                  "2<->6": 2
+                },
+                "uniqueDigitPairCount": 1,
+                "repeatedDigitPair": true,
+                "repeatedDigitPairKey": "2<->6",
+                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
+                "geometryCounts": {
+                  "same-row-inside-box": 2
+                },
+                "touched": {
+                  "rows": [
+                    2,
+                    7
+                  ],
+                  "cols": [
+                    2,
+                    3
+                  ],
+                  "boxes": [
+                    1,
+                    7
+                  ],
+                  "bands": [
+                    1,
+                    3
+                  ],
+                  "stacks": [
+                    1
+                  ]
+                },
+                "touchCounts": {
+                  "rows": [
+                    2,
+                    2
+                  ],
+                  "cols": [
+                    2,
+                    2
+                  ],
+                  "boxes": [
+                    2,
+                    2
+                  ],
+                  "bands": [
+                    2,
+                    2
+                  ],
+                  "stacks": [
+                    4
+                  ]
+                }
+              },
+              "count": 1,
+              "endpointCount": 1,
+              "classCounts": {
+                "identity": 0,
+                "standard-symmetry": 0,
+                "genuine": 1
+              },
+              "examples": [
+                {
+                  "moves": [
+                    "B2<->C2",
+                    "B7<->C7"
+                  ],
+                  "shape": {
+                    "digitPairs": [
+                      "2<->6",
+                      "2<->6"
+                    ],
+                    "digitPairCounts": {
+                      "2<->6": 2
+                    },
+                    "uniqueDigitPairCount": 1,
+                    "repeatedDigitPair": true,
+                    "repeatedDigitPairKey": "2<->6",
+                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
+                    "geometryCounts": {
+                      "same-row-inside-box": 2
+                    },
+                    "touched": {
+                      "rows": [
+                        2,
+                        7
+                      ],
+                      "cols": [
+                        2,
+                        3
+                      ],
+                      "boxes": [
+                        1,
+                        7
+                      ],
+                      "bands": [
+                        1,
+                        3
+                      ],
+                      "stacks": [
+                        1
+                      ]
+                    },
+                    "touchCounts": {
+                      "rows": [
+                        2,
+                        2
+                      ],
+                      "cols": [
+                        2,
+                        2
+                      ],
+                      "boxes": [
+                        2,
+                        2
+                      ],
+                      "bands": [
+                        2,
+                        2
+                      ],
+                      "stacks": [
+                        4
+                      ]
+                    }
+                  },
+                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
+                  "endpointBoard": "145783692762495813389162745218974536654831927973256184826317459531649278497528361",
+                  "className": "genuine",
+                  "endpointKey": "family-4"
+                }
+              ]
+            },
+            {
+              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"6<->9\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks\",\"geometryCounts\":{\"same-row-across-boxes\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[4],\"stacks\":[2,2]},\"className\":\"genuine\"}",
+              "label": "2-pair shuffle; 2 square-pairs",
+              "swapDepth": 2,
+              "shape": {
+                "digitPairs": [
+                  "6<->9",
+                  "6<->9"
+                ],
+                "digitPairCounts": {
+                  "6<->9": 2
+                },
+                "uniqueDigitPairCount": 1,
+                "repeatedDigitPair": true,
+                "repeatedDigitPairKey": "6<->9",
+                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
+                "geometryCounts": {
+                  "same-row-across-boxes": 2
+                },
+                "touched": {
+                  "rows": [
+                    2,
+                    3
+                  ],
+                  "cols": [
+                    3,
+                    5
+                  ],
+                  "boxes": [
+                    1,
+                    2
+                  ],
+                  "bands": [
+                    1
+                  ],
+                  "stacks": [
+                    1,
+                    2
+                  ]
+                },
+                "touchCounts": {
+                  "rows": [
+                    2,
+                    2
+                  ],
+                  "cols": [
+                    2,
+                    2
+                  ],
+                  "boxes": [
+                    2,
+                    2
+                  ],
+                  "bands": [
+                    4
+                  ],
+                  "stacks": [
+                    2,
+                    2
+                  ]
+                }
+              },
+              "count": 1,
+              "endpointCount": 1,
+              "classCounts": {
+                "identity": 0,
+                "standard-symmetry": 0,
+                "genuine": 1
+              },
+              "examples": [
+                {
+                  "moves": [
+                    "C2<->E2",
+                    "C3<->E3"
+                  ],
+                  "shape": {
+                    "digitPairs": [
+                      "6<->9",
+                      "6<->9"
+                    ],
+                    "digitPairCounts": {
+                      "6<->9": 2
+                    },
+                    "uniqueDigitPairCount": 1,
+                    "repeatedDigitPair": true,
+                    "repeatedDigitPairKey": "6<->9",
+                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
+                    "geometryCounts": {
+                      "same-row-across-boxes": 2
+                    },
+                    "touched": {
+                      "rows": [
+                        2,
+                        3
+                      ],
+                      "cols": [
+                        3,
+                        5
+                      ],
+                      "boxes": [
+                        1,
+                        2
+                      ],
+                      "bands": [
+                        1
+                      ],
+                      "stacks": [
+                        1,
+                        2
+                      ]
+                    },
+                    "touchCounts": {
+                      "rows": [
+                        2,
+                        2
+                      ],
+                      "cols": [
+                        2,
+                        2
+                      ],
+                      "boxes": [
+                        2,
+                        2
+                      ],
+                      "bands": [
+                        4
+                      ],
+                      "stacks": [
+                        2,
+                        2
+                      ]
+                    }
+                  },
+                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
+                  "endpointBoard": "145783692729465813386192745218974536654831927973256184862317459531649278497528361",
+                  "className": "genuine",
+                  "endpointKey": "family-5"
+                }
+              ]
+            },
+            {
+              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"1<->4\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks\",\"geometryCounts\":{\"same-row-across-boxes\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[4],\"stacks\":[2,2]},\"className\":\"genuine\"}",
+              "label": "2-pair shuffle; 2 square-pairs",
+              "swapDepth": 2,
+              "shape": {
+                "digitPairs": [
+                  "1<->4",
+                  "1<->4"
+                ],
+                "digitPairCounts": {
+                  "1<->4": 2
+                },
+                "uniqueDigitPairCount": 1,
+                "repeatedDigitPair": true,
+                "repeatedDigitPairKey": "1<->4",
+                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
+                "geometryCounts": {
+                  "same-row-across-boxes": 2
+                },
+                "touched": {
+                  "rows": [
+                    2,
+                    3
+                  ],
+                  "cols": [
+                    4,
+                    8
+                  ],
+                  "boxes": [
+                    2,
+                    3
+                  ],
+                  "bands": [
+                    1
+                  ],
+                  "stacks": [
+                    2,
+                    3
+                  ]
+                },
+                "touchCounts": {
+                  "rows": [
+                    2,
+                    2
+                  ],
+                  "cols": [
+                    2,
+                    2
+                  ],
+                  "boxes": [
+                    2,
+                    2
+                  ],
+                  "bands": [
+                    4
+                  ],
+                  "stacks": [
+                    2,
+                    2
+                  ]
+                }
+              },
+              "count": 1,
+              "endpointCount": 1,
+              "classCounts": {
+                "identity": 0,
+                "standard-symmetry": 0,
+                "genuine": 1
+              },
+              "examples": [
+                {
+                  "moves": [
+                    "D2<->H2",
+                    "D3<->H3"
+                  ],
+                  "shape": {
+                    "digitPairs": [
+                      "1<->4",
+                      "1<->4"
+                    ],
+                    "digitPairCounts": {
+                      "1<->4": 2
+                    },
+                    "uniqueDigitPairCount": 1,
+                    "repeatedDigitPair": true,
+                    "repeatedDigitPairKey": "1<->4",
+                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
+                    "geometryCounts": {
+                      "same-row-across-boxes": 2
+                    },
+                    "touched": {
+                      "rows": [
+                        2,
+                        3
+                      ],
+                      "cols": [
+                        4,
+                        8
+                      ],
+                      "boxes": [
+                        2,
+                        3
+                      ],
+                      "bands": [
+                        1
+                      ],
+                      "stacks": [
+                        2,
+                        3
+                      ]
+                    },
+                    "touchCounts": {
+                      "rows": [
+                        2,
+                        2
+                      ],
+                      "cols": [
+                        2,
+                        2
+                      ],
+                      "boxes": [
+                        2,
+                        2
+                      ],
+                      "bands": [
+                        4
+                      ],
+                      "stacks": [
+                        2,
+                        2
+                      ]
+                    }
+                  },
+                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
+                  "endpointBoard": "145783692726195843389462715218974536654831927973256184862317459531649278497528361",
+                  "className": "genuine",
+                  "endpointKey": "family-6"
+                }
+              ]
+            },
+            {
+              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"1<->8\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks\",\"geometryCounts\":{\"same-row-inside-box\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[2,2],\"stacks\":[4]},\"className\":\"genuine\"}",
+              "label": "2-pair shuffle; 2 square-pairs",
+              "swapDepth": 2,
+              "shape": {
+                "digitPairs": [
+                  "1<->8",
+                  "1<->8"
+                ],
+                "digitPairCounts": {
+                  "1<->8": 2
+                },
+                "uniqueDigitPairCount": 1,
+                "repeatedDigitPair": true,
+                "repeatedDigitPairKey": "1<->8",
+                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
+                "geometryCounts": {
+                  "same-row-inside-box": 2
+                },
+                "touched": {
+                  "rows": [
+                    2,
+                    6
+                  ],
+                  "cols": [
+                    7,
+                    8
+                  ],
+                  "boxes": [
+                    3,
+                    6
+                  ],
+                  "bands": [
+                    1,
+                    2
+                  ],
+                  "stacks": [
+                    3
+                  ]
+                },
+                "touchCounts": {
+                  "rows": [
+                    2,
+                    2
+                  ],
+                  "cols": [
+                    2,
+                    2
+                  ],
+                  "boxes": [
+                    2,
+                    2
+                  ],
+                  "bands": [
+                    2,
+                    2
+                  ],
+                  "stacks": [
+                    4
+                  ]
+                }
+              },
+              "count": 1,
+              "endpointCount": 1,
+              "classCounts": {
+                "identity": 0,
+                "standard-symmetry": 0,
+                "genuine": 1
+              },
+              "examples": [
+                {
+                  "moves": [
+                    "G2<->H2",
+                    "G6<->H6"
+                  ],
+                  "shape": {
+                    "digitPairs": [
+                      "1<->8",
+                      "1<->8"
+                    ],
+                    "digitPairCounts": {
+                      "1<->8": 2
+                    },
+                    "uniqueDigitPairCount": 1,
+                    "repeatedDigitPair": true,
+                    "repeatedDigitPairKey": "1<->8",
+                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
+                    "geometryCounts": {
+                      "same-row-inside-box": 2
+                    },
+                    "touched": {
+                      "rows": [
+                        2,
+                        6
+                      ],
+                      "cols": [
+                        7,
+                        8
+                      ],
+                      "boxes": [
+                        3,
+                        6
+                      ],
+                      "bands": [
+                        1,
+                        2
+                      ],
+                      "stacks": [
+                        3
+                      ]
+                    },
+                    "touchCounts": {
+                      "rows": [
+                        2,
+                        2
+                      ],
+                      "cols": [
+                        2,
+                        2
+                      ],
+                      "boxes": [
+                        2,
+                        2
+                      ],
+                      "bands": [
+                        2,
+                        2
+                      ],
+                      "stacks": [
+                        4
+                      ]
+                    }
+                  },
+                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
+                  "endpointBoard": "145783692726495183389162745218974536654831927973256814862317459531649278497528361",
+                  "className": "genuine",
+                  "endpointKey": "family-7"
+                }
+              ]
+            },
+            {
+              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"3<->9\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks\",\"geometryCounts\":{\"same-row-inside-box\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[2,2],\"stacks\":[4]},\"className\":\"genuine\"}",
+              "label": "2-pair shuffle; 2 square-pairs",
+              "swapDepth": 2,
+              "shape": {
+                "digitPairs": [
+                  "3<->9",
+                  "3<->9"
+                ],
+                "digitPairCounts": {
+                  "3<->9": 2
+                },
+                "uniqueDigitPairCount": 1,
+                "repeatedDigitPair": true,
+                "repeatedDigitPairKey": "3<->9",
+                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
+                "geometryCounts": {
+                  "same-row-inside-box": 2
+                },
+                "touched": {
+                  "rows": [
+                    3,
+                    6
+                  ],
+                  "cols": [
+                    1,
+                    3
+                  ],
+                  "boxes": [
+                    1,
+                    4
+                  ],
+                  "bands": [
+                    1,
+                    2
+                  ],
+                  "stacks": [
+                    1
+                  ]
+                },
+                "touchCounts": {
+                  "rows": [
+                    2,
+                    2
+                  ],
+                  "cols": [
+                    2,
+                    2
+                  ],
+                  "boxes": [
+                    2,
+                    2
+                  ],
+                  "bands": [
+                    2,
+                    2
+                  ],
+                  "stacks": [
+                    4
+                  ]
+                }
+              },
+              "count": 1,
+              "endpointCount": 1,
+              "classCounts": {
+                "identity": 0,
+                "standard-symmetry": 0,
+                "genuine": 1
+              },
+              "examples": [
+                {
+                  "moves": [
+                    "A3<->C3",
+                    "A6<->C6"
+                  ],
+                  "shape": {
+                    "digitPairs": [
+                      "3<->9",
+                      "3<->9"
+                    ],
+                    "digitPairCounts": {
+                      "3<->9": 2
+                    },
+                    "uniqueDigitPairCount": 1,
+                    "repeatedDigitPair": true,
+                    "repeatedDigitPairKey": "3<->9",
+                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
+                    "geometryCounts": {
+                      "same-row-inside-box": 2
+                    },
+                    "touched": {
+                      "rows": [
+                        3,
+                        6
+                      ],
+                      "cols": [
+                        1,
+                        3
+                      ],
+                      "boxes": [
+                        1,
+                        4
+                      ],
+                      "bands": [
+                        1,
+                        2
+                      ],
+                      "stacks": [
+                        1
+                      ]
+                    },
+                    "touchCounts": {
+                      "rows": [
+                        2,
+                        2
+                      ],
+                      "cols": [
+                        2,
+                        2
+                      ],
+                      "boxes": [
+                        2,
+                        2
+                      ],
+                      "bands": [
+                        2,
+                        2
+                      ],
+                      "stacks": [
+                        4
+                      ]
+                    }
+                  },
+                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
+                  "endpointBoard": "145783692726495813983162745218974536654831927379256184862317459531649278497528361",
+                  "className": "genuine",
+                  "endpointKey": "family-8"
+                }
+              ]
+            },
+            {
+              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"2<->8\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks\",\"geometryCounts\":{\"same-row-inside-box\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[2,2],\"stacks\":[4]},\"className\":\"genuine\"}",
+              "label": "2-pair shuffle; 2 square-pairs",
+              "swapDepth": 2,
+              "shape": {
+                "digitPairs": [
+                  "2<->8",
+                  "2<->8"
+                ],
+                "digitPairCounts": {
+                  "2<->8": 2
+                },
+                "uniqueDigitPairCount": 1,
+                "repeatedDigitPair": true,
+                "repeatedDigitPairKey": "2<->8",
+                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
+                "geometryCounts": {
+                  "same-row-inside-box": 2
+                },
+                "touched": {
+                  "rows": [
+                    4,
+                    7
+                  ],
+                  "cols": [
+                    1,
+                    3
+                  ],
+                  "boxes": [
+                    4,
+                    7
+                  ],
+                  "bands": [
+                    2,
+                    3
+                  ],
+                  "stacks": [
+                    1
+                  ]
+                },
+                "touchCounts": {
+                  "rows": [
+                    2,
+                    2
+                  ],
+                  "cols": [
+                    2,
+                    2
+                  ],
+                  "boxes": [
+                    2,
+                    2
+                  ],
+                  "bands": [
+                    2,
+                    2
+                  ],
+                  "stacks": [
+                    4
+                  ]
+                }
+              },
+              "count": 1,
+              "endpointCount": 1,
+              "classCounts": {
+                "identity": 0,
+                "standard-symmetry": 0,
+                "genuine": 1
+              },
+              "examples": [
+                {
+                  "moves": [
+                    "A4<->C4",
+                    "A7<->C7"
+                  ],
+                  "shape": {
+                    "digitPairs": [
+                      "2<->8",
+                      "2<->8"
+                    ],
+                    "digitPairCounts": {
+                      "2<->8": 2
+                    },
+                    "uniqueDigitPairCount": 1,
+                    "repeatedDigitPair": true,
+                    "repeatedDigitPairKey": "2<->8",
+                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
+                    "geometryCounts": {
+                      "same-row-inside-box": 2
+                    },
+                    "touched": {
+                      "rows": [
+                        4,
+                        7
+                      ],
+                      "cols": [
+                        1,
+                        3
+                      ],
+                      "boxes": [
+                        4,
+                        7
+                      ],
+                      "bands": [
+                        2,
+                        3
+                      ],
+                      "stacks": [
+                        1
+                      ]
+                    },
+                    "touchCounts": {
+                      "rows": [
+                        2,
+                        2
+                      ],
+                      "cols": [
+                        2,
+                        2
+                      ],
+                      "boxes": [
+                        2,
+                        2
+                      ],
+                      "bands": [
+                        2,
+                        2
+                      ],
+                      "stacks": [
+                        4
+                      ]
+                    }
+                  },
+                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
+                  "endpointBoard": "145783692726495813389162745812974536654831927973256184268317459531649278497528361",
+                  "className": "genuine",
+                  "endpointKey": "family-9"
+                }
+              ]
+            },
+            {
+              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"2<->9\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks\",\"geometryCounts\":{\"same-row-across-boxes\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[4],\"stacks\":[2,2]},\"className\":\"genuine\"}",
+              "label": "2-pair shuffle; 2 square-pairs",
+              "swapDepth": 2,
+              "shape": {
+                "digitPairs": [
+                  "2<->9",
+                  "2<->9"
+                ],
+                "digitPairCounts": {
+                  "2<->9": 2
+                },
+                "uniqueDigitPairCount": 1,
+                "repeatedDigitPair": true,
+                "repeatedDigitPairKey": "2<->9",
+                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
+                "geometryCounts": {
+                  "same-row-across-boxes": 2
+                },
+                "touched": {
+                  "rows": [
+                    4,
+                    6
+                  ],
+                  "cols": [
+                    1,
+                    4
+                  ],
+                  "boxes": [
+                    4,
+                    5
+                  ],
+                  "bands": [
+                    2
+                  ],
+                  "stacks": [
+                    1,
+                    2
+                  ]
+                },
+                "touchCounts": {
+                  "rows": [
+                    2,
+                    2
+                  ],
+                  "cols": [
+                    2,
+                    2
+                  ],
+                  "boxes": [
+                    2,
+                    2
+                  ],
+                  "bands": [
+                    4
+                  ],
+                  "stacks": [
+                    2,
+                    2
+                  ]
+                }
+              },
+              "count": 1,
+              "endpointCount": 1,
+              "classCounts": {
+                "identity": 0,
+                "standard-symmetry": 0,
+                "genuine": 1
+              },
+              "examples": [
+                {
+                  "moves": [
+                    "A4<->D4",
+                    "A6<->D6"
+                  ],
+                  "shape": {
+                    "digitPairs": [
+                      "2<->9",
+                      "2<->9"
+                    ],
+                    "digitPairCounts": {
+                      "2<->9": 2
+                    },
+                    "uniqueDigitPairCount": 1,
+                    "repeatedDigitPair": true,
+                    "repeatedDigitPairKey": "2<->9",
+                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
+                    "geometryCounts": {
+                      "same-row-across-boxes": 2
+                    },
+                    "touched": {
+                      "rows": [
+                        4,
+                        6
+                      ],
+                      "cols": [
+                        1,
+                        4
+                      ],
+                      "boxes": [
+                        4,
+                        5
+                      ],
+                      "bands": [
+                        2
+                      ],
+                      "stacks": [
+                        1,
+                        2
+                      ]
+                    },
+                    "touchCounts": {
+                      "rows": [
+                        2,
+                        2
+                      ],
+                      "cols": [
+                        2,
+                        2
+                      ],
+                      "boxes": [
+                        2,
+                        2
+                      ],
+                      "bands": [
+                        4
+                      ],
+                      "stacks": [
+                        2,
+                        2
+                      ]
+                    }
+                  },
+                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
+                  "endpointBoard": "145783692726495813389162745918274536654831927273956184862317459531649278497528361",
+                  "className": "genuine",
+                  "endpointKey": "family-10"
+                }
+              ]
+            },
+            {
+              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"3<->8\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks\",\"geometryCounts\":{\"same-row-across-boxes\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[4],\"stacks\":[2,2]},\"className\":\"genuine\"}",
+              "label": "2-pair shuffle; 2 square-pairs",
+              "swapDepth": 2,
+              "shape": {
+                "digitPairs": [
+                  "3<->8",
+                  "3<->8"
+                ],
+                "digitPairCounts": {
+                  "3<->8": 2
+                },
+                "uniqueDigitPairCount": 1,
+                "repeatedDigitPair": true,
+                "repeatedDigitPairKey": "3<->8",
+                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
+                "geometryCounts": {
+                  "same-row-across-boxes": 2
+                },
+                "touched": {
+                  "rows": [
+                    4,
+                    6
+                  ],
+                  "cols": [
+                    3,
+                    8
+                  ],
+                  "boxes": [
+                    4,
+                    6
+                  ],
+                  "bands": [
+                    2
+                  ],
+                  "stacks": [
+                    1,
+                    3
+                  ]
+                },
+                "touchCounts": {
+                  "rows": [
+                    2,
+                    2
+                  ],
+                  "cols": [
+                    2,
+                    2
+                  ],
+                  "boxes": [
+                    2,
+                    2
+                  ],
+                  "bands": [
+                    4
+                  ],
+                  "stacks": [
+                    2,
+                    2
+                  ]
+                }
+              },
+              "count": 1,
+              "endpointCount": 1,
+              "classCounts": {
+                "identity": 0,
+                "standard-symmetry": 0,
+                "genuine": 1
+              },
+              "examples": [
+                {
+                  "moves": [
+                    "C4<->H4",
+                    "C6<->H6"
+                  ],
+                  "shape": {
+                    "digitPairs": [
+                      "3<->8",
+                      "3<->8"
+                    ],
+                    "digitPairCounts": {
+                      "3<->8": 2
+                    },
+                    "uniqueDigitPairCount": 1,
+                    "repeatedDigitPair": true,
+                    "repeatedDigitPairKey": "3<->8",
+                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
+                    "geometryCounts": {
+                      "same-row-across-boxes": 2
+                    },
+                    "touched": {
+                      "rows": [
+                        4,
+                        6
+                      ],
+                      "cols": [
+                        3,
+                        8
+                      ],
+                      "boxes": [
+                        4,
+                        6
+                      ],
+                      "bands": [
+                        2
+                      ],
+                      "stacks": [
+                        1,
+                        3
+                      ]
+                    },
+                    "touchCounts": {
+                      "rows": [
+                        2,
+                        2
+                      ],
+                      "cols": [
+                        2,
+                        2
+                      ],
+                      "boxes": [
+                        2,
+                        2
+                      ],
+                      "bands": [
+                        4
+                      ],
+                      "stacks": [
+                        2,
+                        2
+                      ]
+                    }
+                  },
+                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
+                  "endpointBoard": "145783692726495813389162745213974586654831927978256134862317459531649278497528361",
+                  "className": "genuine",
+                  "endpointKey": "family-11"
+                }
+              ]
+            },
+            {
+              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"4<->6\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks\",\"geometryCounts\":{\"same-row-across-boxes\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[4],\"stacks\":[2,2]},\"className\":\"genuine\"}",
+              "label": "2-pair shuffle; 2 square-pairs",
+              "swapDepth": 2,
+              "shape": {
+                "digitPairs": [
+                  "4<->6",
+                  "4<->6"
+                ],
+                "digitPairCounts": {
+                  "4<->6": 2
+                },
+                "uniqueDigitPairCount": 1,
+                "repeatedDigitPair": true,
+                "repeatedDigitPairKey": "4<->6",
+                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
+                "geometryCounts": {
+                  "same-row-across-boxes": 2
+                },
+                "touched": {
+                  "rows": [
+                    4,
+                    6
+                  ],
+                  "cols": [
+                    6,
+                    9
+                  ],
+                  "boxes": [
+                    5,
+                    6
+                  ],
+                  "bands": [
+                    2
+                  ],
+                  "stacks": [
+                    2,
+                    3
+                  ]
+                },
+                "touchCounts": {
+                  "rows": [
+                    2,
+                    2
+                  ],
+                  "cols": [
+                    2,
+                    2
+                  ],
+                  "boxes": [
+                    2,
+                    2
+                  ],
+                  "bands": [
+                    4
+                  ],
+                  "stacks": [
+                    2,
+                    2
+                  ]
+                }
+              },
+              "count": 1,
+              "endpointCount": 1,
+              "classCounts": {
+                "identity": 0,
+                "standard-symmetry": 0,
+                "genuine": 1
+              },
+              "examples": [
+                {
+                  "moves": [
+                    "F4<->I4",
+                    "F6<->I6"
+                  ],
+                  "shape": {
+                    "digitPairs": [
+                      "4<->6",
+                      "4<->6"
+                    ],
+                    "digitPairCounts": {
+                      "4<->6": 2
+                    },
+                    "uniqueDigitPairCount": 1,
+                    "repeatedDigitPair": true,
+                    "repeatedDigitPairKey": "4<->6",
+                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
+                    "geometryCounts": {
+                      "same-row-across-boxes": 2
+                    },
+                    "touched": {
+                      "rows": [
+                        4,
+                        6
+                      ],
+                      "cols": [
+                        6,
+                        9
+                      ],
+                      "boxes": [
+                        5,
+                        6
+                      ],
+                      "bands": [
+                        2
+                      ],
+                      "stacks": [
+                        2,
+                        3
+                      ]
+                    },
+                    "touchCounts": {
+                      "rows": [
+                        2,
+                        2
+                      ],
+                      "cols": [
+                        2,
+                        2
+                      ],
+                      "boxes": [
+                        2,
+                        2
+                      ],
+                      "bands": [
+                        4
+                      ],
+                      "stacks": [
+                        2,
+                        2
+                      ]
+                    }
+                  },
+                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
+                  "endpointBoard": "145783692726495813389162745218976534654831927973254186862317459531649278497528361",
+                  "className": "genuine",
+                  "endpointKey": "family-12"
+                }
+              ]
+            },
+            {
+              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"2<->8\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks\",\"geometryCounts\":{\"same-row-across-boxes\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[4],\"stacks\":[2,2]},\"className\":\"genuine\"}",
+              "label": "2-pair shuffle; 2 square-pairs",
+              "swapDepth": 2,
+              "shape": {
+                "digitPairs": [
+                  "2<->8",
+                  "2<->8"
+                ],
+                "digitPairCounts": {
+                  "2<->8": 2
+                },
+                "uniqueDigitPairCount": 1,
+                "repeatedDigitPair": true,
+                "repeatedDigitPairKey": "2<->8",
+                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
+                "geometryCounts": {
+                  "same-row-across-boxes": 2
+                },
+                "touched": {
+                  "rows": [
+                    5,
+                    6
+                  ],
+                  "cols": [
+                    4,
+                    8
+                  ],
+                  "boxes": [
+                    5,
+                    6
+                  ],
+                  "bands": [
+                    2
+                  ],
+                  "stacks": [
+                    2,
+                    3
+                  ]
+                },
+                "touchCounts": {
+                  "rows": [
+                    2,
+                    2
+                  ],
+                  "cols": [
+                    2,
+                    2
+                  ],
+                  "boxes": [
+                    2,
+                    2
+                  ],
+                  "bands": [
+                    4
+                  ],
+                  "stacks": [
+                    2,
+                    2
+                  ]
+                }
+              },
+              "count": 1,
+              "endpointCount": 1,
+              "classCounts": {
+                "identity": 0,
+                "standard-symmetry": 0,
+                "genuine": 1
+              },
+              "examples": [
+                {
+                  "moves": [
+                    "D5<->H5",
+                    "D6<->H6"
+                  ],
+                  "shape": {
+                    "digitPairs": [
+                      "2<->8",
+                      "2<->8"
+                    ],
+                    "digitPairCounts": {
+                      "2<->8": 2
+                    },
+                    "uniqueDigitPairCount": 1,
+                    "repeatedDigitPair": true,
+                    "repeatedDigitPairKey": "2<->8",
+                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
+                    "geometryCounts": {
+                      "same-row-across-boxes": 2
+                    },
+                    "touched": {
+                      "rows": [
+                        5,
+                        6
+                      ],
+                      "cols": [
+                        4,
+                        8
+                      ],
+                      "boxes": [
+                        5,
+                        6
+                      ],
+                      "bands": [
+                        2
+                      ],
+                      "stacks": [
+                        2,
+                        3
+                      ]
+                    },
+                    "touchCounts": {
+                      "rows": [
+                        2,
+                        2
+                      ],
+                      "cols": [
+                        2,
+                        2
+                      ],
+                      "boxes": [
+                        2,
+                        2
+                      ],
+                      "bands": [
+                        4
+                      ],
+                      "stacks": [
+                        2,
+                        2
+                      ]
+                    }
+                  },
+                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
+                  "endpointBoard": "145783692726495813389162745218974536654231987973856124862317459531649278497528361",
+                  "className": "genuine",
+                  "endpointKey": "family-13"
+                }
+              ]
+            },
+            {
+              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"2<->5\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks\",\"geometryCounts\":{\"same-row-inside-box\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[2,2],\"stacks\":[4]},\"className\":\"genuine\"}",
+              "label": "2-pair shuffle; 2 square-pairs",
+              "swapDepth": 2,
+              "shape": {
+                "digitPairs": [
+                  "2<->5",
+                  "2<->5"
+                ],
+                "digitPairCounts": {
+                  "2<->5": 2
+                },
+                "uniqueDigitPairCount": 1,
+                "repeatedDigitPair": true,
+                "repeatedDigitPairKey": "2<->5",
+                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
+                "geometryCounts": {
+                  "same-row-inside-box": 2
+                },
+                "touched": {
+                  "rows": [
+                    6,
+                    9
+                  ],
+                  "cols": [
+                    4,
+                    5
+                  ],
+                  "boxes": [
+                    5,
+                    8
+                  ],
+                  "bands": [
+                    2,
+                    3
+                  ],
+                  "stacks": [
+                    2
+                  ]
+                },
+                "touchCounts": {
+                  "rows": [
+                    2,
+                    2
+                  ],
+                  "cols": [
+                    2,
+                    2
+                  ],
+                  "boxes": [
+                    2,
+                    2
+                  ],
+                  "bands": [
+                    2,
+                    2
+                  ],
+                  "stacks": [
+                    4
+                  ]
+                }
+              },
+              "count": 1,
+              "endpointCount": 1,
+              "classCounts": {
+                "identity": 0,
+                "standard-symmetry": 0,
+                "genuine": 1
+              },
+              "examples": [
+                {
+                  "moves": [
+                    "D6<->E6",
+                    "D9<->E9"
+                  ],
+                  "shape": {
+                    "digitPairs": [
+                      "2<->5",
+                      "2<->5"
+                    ],
+                    "digitPairCounts": {
+                      "2<->5": 2
+                    },
+                    "uniqueDigitPairCount": 1,
+                    "repeatedDigitPair": true,
+                    "repeatedDigitPairKey": "2<->5",
+                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
+                    "geometryCounts": {
+                      "same-row-inside-box": 2
+                    },
+                    "touched": {
+                      "rows": [
+                        6,
+                        9
+                      ],
+                      "cols": [
+                        4,
+                        5
+                      ],
+                      "boxes": [
+                        5,
+                        8
+                      ],
+                      "bands": [
+                        2,
+                        3
+                      ],
+                      "stacks": [
+                        2
+                      ]
+                    },
+                    "touchCounts": {
+                      "rows": [
+                        2,
+                        2
+                      ],
+                      "cols": [
+                        2,
+                        2
+                      ],
+                      "boxes": [
+                        2,
+                        2
+                      ],
+                      "bands": [
+                        2,
+                        2
+                      ],
+                      "stacks": [
+                        4
+                      ]
+                    }
+                  },
+                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
+                  "endpointBoard": "145783692726495813389162745218974536654831927973526184862317459531649278497258361",
+                  "className": "genuine",
+                  "endpointKey": "family-14"
+                }
+              ]
+            },
+            {
+              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"3<->6\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks\",\"geometryCounts\":{\"same-row-across-boxes\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[4],\"stacks\":[2,2]},\"className\":\"genuine\"}",
+              "label": "2-pair shuffle; 2 square-pairs",
+              "swapDepth": 2,
+              "shape": {
+                "digitPairs": [
+                  "3<->6",
+                  "3<->6"
+                ],
+                "digitPairCounts": {
+                  "3<->6": 2
+                },
+                "uniqueDigitPairCount": 1,
+                "repeatedDigitPair": true,
+                "repeatedDigitPairKey": "3<->6",
+                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
+                "geometryCounts": {
+                  "same-row-across-boxes": 2
+                },
+                "touched": {
+                  "rows": [
+                    7,
+                    8
+                  ],
+                  "cols": [
+                    2,
+                    4
+                  ],
+                  "boxes": [
+                    7,
+                    8
+                  ],
+                  "bands": [
+                    3
+                  ],
+                  "stacks": [
+                    1,
+                    2
+                  ]
+                },
+                "touchCounts": {
+                  "rows": [
+                    2,
+                    2
+                  ],
+                  "cols": [
+                    2,
+                    2
+                  ],
+                  "boxes": [
+                    2,
+                    2
+                  ],
+                  "bands": [
+                    4
+                  ],
+                  "stacks": [
+                    2,
+                    2
+                  ]
+                }
+              },
+              "count": 1,
+              "endpointCount": 1,
+              "classCounts": {
+                "identity": 0,
+                "standard-symmetry": 0,
+                "genuine": 1
+              },
+              "examples": [
+                {
+                  "moves": [
+                    "B7<->D7",
+                    "B8<->D8"
+                  ],
+                  "shape": {
+                    "digitPairs": [
+                      "3<->6",
+                      "3<->6"
+                    ],
+                    "digitPairCounts": {
+                      "3<->6": 2
+                    },
+                    "uniqueDigitPairCount": 1,
+                    "repeatedDigitPair": true,
+                    "repeatedDigitPairKey": "3<->6",
+                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
+                    "geometryCounts": {
+                      "same-row-across-boxes": 2
+                    },
+                    "touched": {
+                      "rows": [
+                        7,
+                        8
+                      ],
+                      "cols": [
+                        2,
+                        4
+                      ],
+                      "boxes": [
+                        7,
+                        8
+                      ],
+                      "bands": [
+                        3
+                      ],
+                      "stacks": [
+                        1,
+                        2
+                      ]
+                    },
+                    "touchCounts": {
+                      "rows": [
+                        2,
+                        2
+                      ],
+                      "cols": [
+                        2,
+                        2
+                      ],
+                      "boxes": [
+                        2,
+                        2
+                      ],
+                      "bands": [
+                        4
+                      ],
+                      "stacks": [
+                        2,
+                        2
+                      ]
+                    }
+                  },
+                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
+                  "endpointBoard": "145783692726495813389162745218974536654831927973256184832617459561349278497528361",
+                  "className": "genuine",
+                  "endpointKey": "family-15"
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "two-symbol-balanced-trade",
+          "label": "Repeated number-pair shuffle",
+          "depth": "variable",
+          "exhaustive": false,
+          "status": "running",
+          "startedAt": "2026-05-14T18:33:44.449Z",
+          "completedAt": null,
+          "progress": {
+            "checked": 786429,
+            "total": 9437148,
+            "percent": 8.33
+          },
+          "attemptedSequences": 392754,
+          "validEndpointSequences": 7,
+          "uniqueValidEndpoints": 7,
+          "classCounts": {
+            "identity": 0,
+            "standard-symmetry": 3,
+            "genuine": 4
+          },
+          "rejected": {
+            "noOpSwap": 0,
+            "repeatedCell": 0,
+            "standardAggregate": 0,
+            "invalidEndpoint": 392747,
+            "duplicateEndpoint": 0
+          },
+          "genuineEndpointFamilies": 2,
+          "sequenceTypeCount": 7,
+          "sequenceTypes": []
+        }
+      ]
+    },
+    {
+      "id": "random-069",
+      "label": "random solved 69",
+      "board": "147258369839146275265937148593681724412573896678429513386714952921365487754892631",
+      "equivalentSourceSkipped": false,
+      "operationFamilies": [
+        {
+          "id": "exact-disjoint-cell-swap-depth-1",
+          "label": "One-pair shuffle",
+          "depth": 1,
+          "exhaustive": true,
+          "status": "complete",
+          "startedAt": "2026-05-14T16:55:58.621Z",
+          "completedAt": "2026-05-14T16:55:58.633Z",
+          "progress": {
+            "checked": 3240,
+            "total": 3240,
+            "percent": 100
+          },
+          "attemptedSequences": 3240,
+          "validEndpointSequences": 0,
+          "uniqueValidEndpoints": 0,
+          "classCounts": {
+            "identity": 0,
+            "standard-symmetry": 0,
+            "genuine": 0
+          },
+          "rejected": {
+            "noOpSwap": 324,
+            "repeatedCell": 0,
+            "standardAggregate": 0,
+            "invalidEndpoint": 2916,
+            "duplicateEndpoint": 0
+          },
+          "genuineEndpointFamilies": 0,
+          "sequenceTypeCount": 0,
+          "sequenceTypes": []
+        }
+      ]
+    },
     {
       "id": "random-063",
       "label": "random solved 63",
@@ -19486,2229 +21736,16 @@
         "genuineEndpointFamilies": 39,
         "sequenceTypeCount": 97
       }
-    },
-    {
-      "id": "random-066",
-      "label": "random solved 66",
-      "board": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
-      "equivalentSourceSkipped": false,
-      "operationFamilies": [
-        {
-          "id": "exact-disjoint-cell-swap-depth-1",
-          "label": "One-pair shuffle",
-          "depth": 1,
-          "exhaustive": true,
-          "status": "complete",
-          "startedAt": "2026-05-14T16:55:58.598Z",
-          "completedAt": "2026-05-14T16:55:58.618Z",
-          "progress": {
-            "checked": 3240,
-            "total": 3240,
-            "percent": 100
-          },
-          "attemptedSequences": 3240,
-          "validEndpointSequences": 0,
-          "uniqueValidEndpoints": 0,
-          "classCounts": {
-            "identity": 0,
-            "standard-symmetry": 0,
-            "genuine": 0
-          },
-          "rejected": {
-            "noOpSwap": 324,
-            "repeatedCell": 0,
-            "standardAggregate": 0,
-            "invalidEndpoint": 2916,
-            "duplicateEndpoint": 0
-          },
-          "genuineEndpointFamilies": 0,
-          "sequenceTypeCount": 0,
-          "sequenceTypes": []
-        },
-        {
-          "id": "exact-disjoint-cell-swap-depth-2",
-          "label": "2-pair shuffle",
-          "depth": 2,
-          "exhaustive": true,
-          "status": "complete",
-          "startedAt": "2026-05-14T16:56:30.254Z",
-          "completedAt": "2026-05-14T16:58:58.955Z",
-          "progress": {
-            "checked": 4991220,
-            "total": 4991220,
-            "percent": 100
-          },
-          "attemptedSequences": 4991220,
-          "validEndpointSequences": 30,
-          "uniqueValidEndpoints": 15,
-          "classCounts": {
-            "identity": 0,
-            "standard-symmetry": 0,
-            "genuine": 15
-          },
-          "rejected": {
-            "noOpSwap": 948186,
-            "repeatedCell": 230364,
-            "standardAggregate": 0,
-            "invalidEndpoint": 4043004,
-            "duplicateEndpoint": 15
-          },
-          "genuineEndpointFamilies": 15,
-          "sequenceTypeCount": 15,
-          "sequenceTypes": [
-            {
-              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"1<->5\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks\",\"geometryCounts\":{\"same-row-inside-box\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[2,2],\"stacks\":[4]},\"className\":\"genuine\"}",
-              "label": "2-pair shuffle; 2 square-pairs",
-              "swapDepth": 2,
-              "shape": {
-                "digitPairs": [
-                  "1<->5",
-                  "1<->5"
-                ],
-                "digitPairCounts": {
-                  "1<->5": 2
-                },
-                "uniqueDigitPairCount": 1,
-                "repeatedDigitPair": true,
-                "repeatedDigitPairKey": "1<->5",
-                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
-                "geometryCounts": {
-                  "same-row-inside-box": 2
-                },
-                "touched": {
-                  "rows": [
-                    1,
-                    8
-                  ],
-                  "cols": [
-                    1,
-                    3
-                  ],
-                  "boxes": [
-                    1,
-                    7
-                  ],
-                  "bands": [
-                    1,
-                    3
-                  ],
-                  "stacks": [
-                    1
-                  ]
-                },
-                "touchCounts": {
-                  "rows": [
-                    2,
-                    2
-                  ],
-                  "cols": [
-                    2,
-                    2
-                  ],
-                  "boxes": [
-                    2,
-                    2
-                  ],
-                  "bands": [
-                    2,
-                    2
-                  ],
-                  "stacks": [
-                    4
-                  ]
-                }
-              },
-              "count": 1,
-              "endpointCount": 1,
-              "classCounts": {
-                "identity": 0,
-                "standard-symmetry": 0,
-                "genuine": 1
-              },
-              "examples": [
-                {
-                  "moves": [
-                    "A1<->C1",
-                    "A8<->C8"
-                  ],
-                  "shape": {
-                    "digitPairs": [
-                      "1<->5",
-                      "1<->5"
-                    ],
-                    "digitPairCounts": {
-                      "1<->5": 2
-                    },
-                    "uniqueDigitPairCount": 1,
-                    "repeatedDigitPair": true,
-                    "repeatedDigitPairKey": "1<->5",
-                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
-                    "geometryCounts": {
-                      "same-row-inside-box": 2
-                    },
-                    "touched": {
-                      "rows": [
-                        1,
-                        8
-                      ],
-                      "cols": [
-                        1,
-                        3
-                      ],
-                      "boxes": [
-                        1,
-                        7
-                      ],
-                      "bands": [
-                        1,
-                        3
-                      ],
-                      "stacks": [
-                        1
-                      ]
-                    },
-                    "touchCounts": {
-                      "rows": [
-                        2,
-                        2
-                      ],
-                      "cols": [
-                        2,
-                        2
-                      ],
-                      "boxes": [
-                        2,
-                        2
-                      ],
-                      "bands": [
-                        2,
-                        2
-                      ],
-                      "stacks": [
-                        4
-                      ]
-                    }
-                  },
-                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
-                  "endpointBoard": "541783692726495813389162745218974536654831927973256184862317459135649278497528361",
-                  "className": "genuine",
-                  "endpointKey": "family-1"
-                }
-              ]
-            },
-            {
-              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"4<->5\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks\",\"geometryCounts\":{\"same-row-inside-box\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[2,2],\"stacks\":[4]},\"className\":\"genuine\"}",
-              "label": "2-pair shuffle; 2 square-pairs",
-              "swapDepth": 2,
-              "shape": {
-                "digitPairs": [
-                  "4<->5",
-                  "4<->5"
-                ],
-                "digitPairCounts": {
-                  "4<->5": 2
-                },
-                "uniqueDigitPairCount": 1,
-                "repeatedDigitPair": true,
-                "repeatedDigitPairKey": "4<->5",
-                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
-                "geometryCounts": {
-                  "same-row-inside-box": 2
-                },
-                "touched": {
-                  "rows": [
-                    1,
-                    5
-                  ],
-                  "cols": [
-                    2,
-                    3
-                  ],
-                  "boxes": [
-                    1,
-                    4
-                  ],
-                  "bands": [
-                    1,
-                    2
-                  ],
-                  "stacks": [
-                    1
-                  ]
-                },
-                "touchCounts": {
-                  "rows": [
-                    2,
-                    2
-                  ],
-                  "cols": [
-                    2,
-                    2
-                  ],
-                  "boxes": [
-                    2,
-                    2
-                  ],
-                  "bands": [
-                    2,
-                    2
-                  ],
-                  "stacks": [
-                    4
-                  ]
-                }
-              },
-              "count": 1,
-              "endpointCount": 1,
-              "classCounts": {
-                "identity": 0,
-                "standard-symmetry": 0,
-                "genuine": 1
-              },
-              "examples": [
-                {
-                  "moves": [
-                    "B1<->C1",
-                    "B5<->C5"
-                  ],
-                  "shape": {
-                    "digitPairs": [
-                      "4<->5",
-                      "4<->5"
-                    ],
-                    "digitPairCounts": {
-                      "4<->5": 2
-                    },
-                    "uniqueDigitPairCount": 1,
-                    "repeatedDigitPair": true,
-                    "repeatedDigitPairKey": "4<->5",
-                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
-                    "geometryCounts": {
-                      "same-row-inside-box": 2
-                    },
-                    "touched": {
-                      "rows": [
-                        1,
-                        5
-                      ],
-                      "cols": [
-                        2,
-                        3
-                      ],
-                      "boxes": [
-                        1,
-                        4
-                      ],
-                      "bands": [
-                        1,
-                        2
-                      ],
-                      "stacks": [
-                        1
-                      ]
-                    },
-                    "touchCounts": {
-                      "rows": [
-                        2,
-                        2
-                      ],
-                      "cols": [
-                        2,
-                        2
-                      ],
-                      "boxes": [
-                        2,
-                        2
-                      ],
-                      "bands": [
-                        2,
-                        2
-                      ],
-                      "stacks": [
-                        4
-                      ]
-                    }
-                  },
-                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
-                  "endpointBoard": "154783692726495813389162745218974536645831927973256184862317459531649278497528361",
-                  "className": "genuine",
-                  "endpointKey": "family-2"
-                }
-              ]
-            },
-            {
-              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"3<->7\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks\",\"geometryCounts\":{\"same-row-inside-box\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[2,2],\"stacks\":[4]},\"className\":\"genuine\"}",
-              "label": "2-pair shuffle; 2 square-pairs",
-              "swapDepth": 2,
-              "shape": {
-                "digitPairs": [
-                  "3<->7",
-                  "3<->7"
-                ],
-                "digitPairCounts": {
-                  "3<->7": 2
-                },
-                "uniqueDigitPairCount": 1,
-                "repeatedDigitPair": true,
-                "repeatedDigitPairKey": "3<->7",
-                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
-                "geometryCounts": {
-                  "same-row-inside-box": 2
-                },
-                "touched": {
-                  "rows": [
-                    1,
-                    7
-                  ],
-                  "cols": [
-                    4,
-                    6
-                  ],
-                  "boxes": [
-                    2,
-                    8
-                  ],
-                  "bands": [
-                    1,
-                    3
-                  ],
-                  "stacks": [
-                    2
-                  ]
-                },
-                "touchCounts": {
-                  "rows": [
-                    2,
-                    2
-                  ],
-                  "cols": [
-                    2,
-                    2
-                  ],
-                  "boxes": [
-                    2,
-                    2
-                  ],
-                  "bands": [
-                    2,
-                    2
-                  ],
-                  "stacks": [
-                    4
-                  ]
-                }
-              },
-              "count": 1,
-              "endpointCount": 1,
-              "classCounts": {
-                "identity": 0,
-                "standard-symmetry": 0,
-                "genuine": 1
-              },
-              "examples": [
-                {
-                  "moves": [
-                    "D1<->F1",
-                    "D7<->F7"
-                  ],
-                  "shape": {
-                    "digitPairs": [
-                      "3<->7",
-                      "3<->7"
-                    ],
-                    "digitPairCounts": {
-                      "3<->7": 2
-                    },
-                    "uniqueDigitPairCount": 1,
-                    "repeatedDigitPair": true,
-                    "repeatedDigitPairKey": "3<->7",
-                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
-                    "geometryCounts": {
-                      "same-row-inside-box": 2
-                    },
-                    "touched": {
-                      "rows": [
-                        1,
-                        7
-                      ],
-                      "cols": [
-                        4,
-                        6
-                      ],
-                      "boxes": [
-                        2,
-                        8
-                      ],
-                      "bands": [
-                        1,
-                        3
-                      ],
-                      "stacks": [
-                        2
-                      ]
-                    },
-                    "touchCounts": {
-                      "rows": [
-                        2,
-                        2
-                      ],
-                      "cols": [
-                        2,
-                        2
-                      ],
-                      "boxes": [
-                        2,
-                        2
-                      ],
-                      "bands": [
-                        2,
-                        2
-                      ],
-                      "stacks": [
-                        4
-                      ]
-                    }
-                  },
-                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
-                  "endpointBoard": "145387692726495813389162745218974536654831927973256184862713459531649278497528361",
-                  "className": "genuine",
-                  "endpointKey": "family-3"
-                }
-              ]
-            },
-            {
-              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"2<->6\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks\",\"geometryCounts\":{\"same-row-inside-box\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[2,2],\"stacks\":[4]},\"className\":\"genuine\"}",
-              "label": "2-pair shuffle; 2 square-pairs",
-              "swapDepth": 2,
-              "shape": {
-                "digitPairs": [
-                  "2<->6",
-                  "2<->6"
-                ],
-                "digitPairCounts": {
-                  "2<->6": 2
-                },
-                "uniqueDigitPairCount": 1,
-                "repeatedDigitPair": true,
-                "repeatedDigitPairKey": "2<->6",
-                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
-                "geometryCounts": {
-                  "same-row-inside-box": 2
-                },
-                "touched": {
-                  "rows": [
-                    2,
-                    7
-                  ],
-                  "cols": [
-                    2,
-                    3
-                  ],
-                  "boxes": [
-                    1,
-                    7
-                  ],
-                  "bands": [
-                    1,
-                    3
-                  ],
-                  "stacks": [
-                    1
-                  ]
-                },
-                "touchCounts": {
-                  "rows": [
-                    2,
-                    2
-                  ],
-                  "cols": [
-                    2,
-                    2
-                  ],
-                  "boxes": [
-                    2,
-                    2
-                  ],
-                  "bands": [
-                    2,
-                    2
-                  ],
-                  "stacks": [
-                    4
-                  ]
-                }
-              },
-              "count": 1,
-              "endpointCount": 1,
-              "classCounts": {
-                "identity": 0,
-                "standard-symmetry": 0,
-                "genuine": 1
-              },
-              "examples": [
-                {
-                  "moves": [
-                    "B2<->C2",
-                    "B7<->C7"
-                  ],
-                  "shape": {
-                    "digitPairs": [
-                      "2<->6",
-                      "2<->6"
-                    ],
-                    "digitPairCounts": {
-                      "2<->6": 2
-                    },
-                    "uniqueDigitPairCount": 1,
-                    "repeatedDigitPair": true,
-                    "repeatedDigitPairKey": "2<->6",
-                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
-                    "geometryCounts": {
-                      "same-row-inside-box": 2
-                    },
-                    "touched": {
-                      "rows": [
-                        2,
-                        7
-                      ],
-                      "cols": [
-                        2,
-                        3
-                      ],
-                      "boxes": [
-                        1,
-                        7
-                      ],
-                      "bands": [
-                        1,
-                        3
-                      ],
-                      "stacks": [
-                        1
-                      ]
-                    },
-                    "touchCounts": {
-                      "rows": [
-                        2,
-                        2
-                      ],
-                      "cols": [
-                        2,
-                        2
-                      ],
-                      "boxes": [
-                        2,
-                        2
-                      ],
-                      "bands": [
-                        2,
-                        2
-                      ],
-                      "stacks": [
-                        4
-                      ]
-                    }
-                  },
-                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
-                  "endpointBoard": "145783692762495813389162745218974536654831927973256184826317459531649278497528361",
-                  "className": "genuine",
-                  "endpointKey": "family-4"
-                }
-              ]
-            },
-            {
-              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"6<->9\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks\",\"geometryCounts\":{\"same-row-across-boxes\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[4],\"stacks\":[2,2]},\"className\":\"genuine\"}",
-              "label": "2-pair shuffle; 2 square-pairs",
-              "swapDepth": 2,
-              "shape": {
-                "digitPairs": [
-                  "6<->9",
-                  "6<->9"
-                ],
-                "digitPairCounts": {
-                  "6<->9": 2
-                },
-                "uniqueDigitPairCount": 1,
-                "repeatedDigitPair": true,
-                "repeatedDigitPairKey": "6<->9",
-                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
-                "geometryCounts": {
-                  "same-row-across-boxes": 2
-                },
-                "touched": {
-                  "rows": [
-                    2,
-                    3
-                  ],
-                  "cols": [
-                    3,
-                    5
-                  ],
-                  "boxes": [
-                    1,
-                    2
-                  ],
-                  "bands": [
-                    1
-                  ],
-                  "stacks": [
-                    1,
-                    2
-                  ]
-                },
-                "touchCounts": {
-                  "rows": [
-                    2,
-                    2
-                  ],
-                  "cols": [
-                    2,
-                    2
-                  ],
-                  "boxes": [
-                    2,
-                    2
-                  ],
-                  "bands": [
-                    4
-                  ],
-                  "stacks": [
-                    2,
-                    2
-                  ]
-                }
-              },
-              "count": 1,
-              "endpointCount": 1,
-              "classCounts": {
-                "identity": 0,
-                "standard-symmetry": 0,
-                "genuine": 1
-              },
-              "examples": [
-                {
-                  "moves": [
-                    "C2<->E2",
-                    "C3<->E3"
-                  ],
-                  "shape": {
-                    "digitPairs": [
-                      "6<->9",
-                      "6<->9"
-                    ],
-                    "digitPairCounts": {
-                      "6<->9": 2
-                    },
-                    "uniqueDigitPairCount": 1,
-                    "repeatedDigitPair": true,
-                    "repeatedDigitPairKey": "6<->9",
-                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
-                    "geometryCounts": {
-                      "same-row-across-boxes": 2
-                    },
-                    "touched": {
-                      "rows": [
-                        2,
-                        3
-                      ],
-                      "cols": [
-                        3,
-                        5
-                      ],
-                      "boxes": [
-                        1,
-                        2
-                      ],
-                      "bands": [
-                        1
-                      ],
-                      "stacks": [
-                        1,
-                        2
-                      ]
-                    },
-                    "touchCounts": {
-                      "rows": [
-                        2,
-                        2
-                      ],
-                      "cols": [
-                        2,
-                        2
-                      ],
-                      "boxes": [
-                        2,
-                        2
-                      ],
-                      "bands": [
-                        4
-                      ],
-                      "stacks": [
-                        2,
-                        2
-                      ]
-                    }
-                  },
-                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
-                  "endpointBoard": "145783692729465813386192745218974536654831927973256184862317459531649278497528361",
-                  "className": "genuine",
-                  "endpointKey": "family-5"
-                }
-              ]
-            },
-            {
-              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"1<->4\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks\",\"geometryCounts\":{\"same-row-across-boxes\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[4],\"stacks\":[2,2]},\"className\":\"genuine\"}",
-              "label": "2-pair shuffle; 2 square-pairs",
-              "swapDepth": 2,
-              "shape": {
-                "digitPairs": [
-                  "1<->4",
-                  "1<->4"
-                ],
-                "digitPairCounts": {
-                  "1<->4": 2
-                },
-                "uniqueDigitPairCount": 1,
-                "repeatedDigitPair": true,
-                "repeatedDigitPairKey": "1<->4",
-                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
-                "geometryCounts": {
-                  "same-row-across-boxes": 2
-                },
-                "touched": {
-                  "rows": [
-                    2,
-                    3
-                  ],
-                  "cols": [
-                    4,
-                    8
-                  ],
-                  "boxes": [
-                    2,
-                    3
-                  ],
-                  "bands": [
-                    1
-                  ],
-                  "stacks": [
-                    2,
-                    3
-                  ]
-                },
-                "touchCounts": {
-                  "rows": [
-                    2,
-                    2
-                  ],
-                  "cols": [
-                    2,
-                    2
-                  ],
-                  "boxes": [
-                    2,
-                    2
-                  ],
-                  "bands": [
-                    4
-                  ],
-                  "stacks": [
-                    2,
-                    2
-                  ]
-                }
-              },
-              "count": 1,
-              "endpointCount": 1,
-              "classCounts": {
-                "identity": 0,
-                "standard-symmetry": 0,
-                "genuine": 1
-              },
-              "examples": [
-                {
-                  "moves": [
-                    "D2<->H2",
-                    "D3<->H3"
-                  ],
-                  "shape": {
-                    "digitPairs": [
-                      "1<->4",
-                      "1<->4"
-                    ],
-                    "digitPairCounts": {
-                      "1<->4": 2
-                    },
-                    "uniqueDigitPairCount": 1,
-                    "repeatedDigitPair": true,
-                    "repeatedDigitPairKey": "1<->4",
-                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
-                    "geometryCounts": {
-                      "same-row-across-boxes": 2
-                    },
-                    "touched": {
-                      "rows": [
-                        2,
-                        3
-                      ],
-                      "cols": [
-                        4,
-                        8
-                      ],
-                      "boxes": [
-                        2,
-                        3
-                      ],
-                      "bands": [
-                        1
-                      ],
-                      "stacks": [
-                        2,
-                        3
-                      ]
-                    },
-                    "touchCounts": {
-                      "rows": [
-                        2,
-                        2
-                      ],
-                      "cols": [
-                        2,
-                        2
-                      ],
-                      "boxes": [
-                        2,
-                        2
-                      ],
-                      "bands": [
-                        4
-                      ],
-                      "stacks": [
-                        2,
-                        2
-                      ]
-                    }
-                  },
-                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
-                  "endpointBoard": "145783692726195843389462715218974536654831927973256184862317459531649278497528361",
-                  "className": "genuine",
-                  "endpointKey": "family-6"
-                }
-              ]
-            },
-            {
-              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"1<->8\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks\",\"geometryCounts\":{\"same-row-inside-box\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[2,2],\"stacks\":[4]},\"className\":\"genuine\"}",
-              "label": "2-pair shuffle; 2 square-pairs",
-              "swapDepth": 2,
-              "shape": {
-                "digitPairs": [
-                  "1<->8",
-                  "1<->8"
-                ],
-                "digitPairCounts": {
-                  "1<->8": 2
-                },
-                "uniqueDigitPairCount": 1,
-                "repeatedDigitPair": true,
-                "repeatedDigitPairKey": "1<->8",
-                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
-                "geometryCounts": {
-                  "same-row-inside-box": 2
-                },
-                "touched": {
-                  "rows": [
-                    2,
-                    6
-                  ],
-                  "cols": [
-                    7,
-                    8
-                  ],
-                  "boxes": [
-                    3,
-                    6
-                  ],
-                  "bands": [
-                    1,
-                    2
-                  ],
-                  "stacks": [
-                    3
-                  ]
-                },
-                "touchCounts": {
-                  "rows": [
-                    2,
-                    2
-                  ],
-                  "cols": [
-                    2,
-                    2
-                  ],
-                  "boxes": [
-                    2,
-                    2
-                  ],
-                  "bands": [
-                    2,
-                    2
-                  ],
-                  "stacks": [
-                    4
-                  ]
-                }
-              },
-              "count": 1,
-              "endpointCount": 1,
-              "classCounts": {
-                "identity": 0,
-                "standard-symmetry": 0,
-                "genuine": 1
-              },
-              "examples": [
-                {
-                  "moves": [
-                    "G2<->H2",
-                    "G6<->H6"
-                  ],
-                  "shape": {
-                    "digitPairs": [
-                      "1<->8",
-                      "1<->8"
-                    ],
-                    "digitPairCounts": {
-                      "1<->8": 2
-                    },
-                    "uniqueDigitPairCount": 1,
-                    "repeatedDigitPair": true,
-                    "repeatedDigitPairKey": "1<->8",
-                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
-                    "geometryCounts": {
-                      "same-row-inside-box": 2
-                    },
-                    "touched": {
-                      "rows": [
-                        2,
-                        6
-                      ],
-                      "cols": [
-                        7,
-                        8
-                      ],
-                      "boxes": [
-                        3,
-                        6
-                      ],
-                      "bands": [
-                        1,
-                        2
-                      ],
-                      "stacks": [
-                        3
-                      ]
-                    },
-                    "touchCounts": {
-                      "rows": [
-                        2,
-                        2
-                      ],
-                      "cols": [
-                        2,
-                        2
-                      ],
-                      "boxes": [
-                        2,
-                        2
-                      ],
-                      "bands": [
-                        2,
-                        2
-                      ],
-                      "stacks": [
-                        4
-                      ]
-                    }
-                  },
-                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
-                  "endpointBoard": "145783692726495183389162745218974536654831927973256814862317459531649278497528361",
-                  "className": "genuine",
-                  "endpointKey": "family-7"
-                }
-              ]
-            },
-            {
-              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"3<->9\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks\",\"geometryCounts\":{\"same-row-inside-box\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[2,2],\"stacks\":[4]},\"className\":\"genuine\"}",
-              "label": "2-pair shuffle; 2 square-pairs",
-              "swapDepth": 2,
-              "shape": {
-                "digitPairs": [
-                  "3<->9",
-                  "3<->9"
-                ],
-                "digitPairCounts": {
-                  "3<->9": 2
-                },
-                "uniqueDigitPairCount": 1,
-                "repeatedDigitPair": true,
-                "repeatedDigitPairKey": "3<->9",
-                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
-                "geometryCounts": {
-                  "same-row-inside-box": 2
-                },
-                "touched": {
-                  "rows": [
-                    3,
-                    6
-                  ],
-                  "cols": [
-                    1,
-                    3
-                  ],
-                  "boxes": [
-                    1,
-                    4
-                  ],
-                  "bands": [
-                    1,
-                    2
-                  ],
-                  "stacks": [
-                    1
-                  ]
-                },
-                "touchCounts": {
-                  "rows": [
-                    2,
-                    2
-                  ],
-                  "cols": [
-                    2,
-                    2
-                  ],
-                  "boxes": [
-                    2,
-                    2
-                  ],
-                  "bands": [
-                    2,
-                    2
-                  ],
-                  "stacks": [
-                    4
-                  ]
-                }
-              },
-              "count": 1,
-              "endpointCount": 1,
-              "classCounts": {
-                "identity": 0,
-                "standard-symmetry": 0,
-                "genuine": 1
-              },
-              "examples": [
-                {
-                  "moves": [
-                    "A3<->C3",
-                    "A6<->C6"
-                  ],
-                  "shape": {
-                    "digitPairs": [
-                      "3<->9",
-                      "3<->9"
-                    ],
-                    "digitPairCounts": {
-                      "3<->9": 2
-                    },
-                    "uniqueDigitPairCount": 1,
-                    "repeatedDigitPair": true,
-                    "repeatedDigitPairKey": "3<->9",
-                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
-                    "geometryCounts": {
-                      "same-row-inside-box": 2
-                    },
-                    "touched": {
-                      "rows": [
-                        3,
-                        6
-                      ],
-                      "cols": [
-                        1,
-                        3
-                      ],
-                      "boxes": [
-                        1,
-                        4
-                      ],
-                      "bands": [
-                        1,
-                        2
-                      ],
-                      "stacks": [
-                        1
-                      ]
-                    },
-                    "touchCounts": {
-                      "rows": [
-                        2,
-                        2
-                      ],
-                      "cols": [
-                        2,
-                        2
-                      ],
-                      "boxes": [
-                        2,
-                        2
-                      ],
-                      "bands": [
-                        2,
-                        2
-                      ],
-                      "stacks": [
-                        4
-                      ]
-                    }
-                  },
-                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
-                  "endpointBoard": "145783692726495813983162745218974536654831927379256184862317459531649278497528361",
-                  "className": "genuine",
-                  "endpointKey": "family-8"
-                }
-              ]
-            },
-            {
-              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"2<->8\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks\",\"geometryCounts\":{\"same-row-inside-box\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[2,2],\"stacks\":[4]},\"className\":\"genuine\"}",
-              "label": "2-pair shuffle; 2 square-pairs",
-              "swapDepth": 2,
-              "shape": {
-                "digitPairs": [
-                  "2<->8",
-                  "2<->8"
-                ],
-                "digitPairCounts": {
-                  "2<->8": 2
-                },
-                "uniqueDigitPairCount": 1,
-                "repeatedDigitPair": true,
-                "repeatedDigitPairKey": "2<->8",
-                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
-                "geometryCounts": {
-                  "same-row-inside-box": 2
-                },
-                "touched": {
-                  "rows": [
-                    4,
-                    7
-                  ],
-                  "cols": [
-                    1,
-                    3
-                  ],
-                  "boxes": [
-                    4,
-                    7
-                  ],
-                  "bands": [
-                    2,
-                    3
-                  ],
-                  "stacks": [
-                    1
-                  ]
-                },
-                "touchCounts": {
-                  "rows": [
-                    2,
-                    2
-                  ],
-                  "cols": [
-                    2,
-                    2
-                  ],
-                  "boxes": [
-                    2,
-                    2
-                  ],
-                  "bands": [
-                    2,
-                    2
-                  ],
-                  "stacks": [
-                    4
-                  ]
-                }
-              },
-              "count": 1,
-              "endpointCount": 1,
-              "classCounts": {
-                "identity": 0,
-                "standard-symmetry": 0,
-                "genuine": 1
-              },
-              "examples": [
-                {
-                  "moves": [
-                    "A4<->C4",
-                    "A7<->C7"
-                  ],
-                  "shape": {
-                    "digitPairs": [
-                      "2<->8",
-                      "2<->8"
-                    ],
-                    "digitPairCounts": {
-                      "2<->8": 2
-                    },
-                    "uniqueDigitPairCount": 1,
-                    "repeatedDigitPair": true,
-                    "repeatedDigitPairKey": "2<->8",
-                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
-                    "geometryCounts": {
-                      "same-row-inside-box": 2
-                    },
-                    "touched": {
-                      "rows": [
-                        4,
-                        7
-                      ],
-                      "cols": [
-                        1,
-                        3
-                      ],
-                      "boxes": [
-                        4,
-                        7
-                      ],
-                      "bands": [
-                        2,
-                        3
-                      ],
-                      "stacks": [
-                        1
-                      ]
-                    },
-                    "touchCounts": {
-                      "rows": [
-                        2,
-                        2
-                      ],
-                      "cols": [
-                        2,
-                        2
-                      ],
-                      "boxes": [
-                        2,
-                        2
-                      ],
-                      "bands": [
-                        2,
-                        2
-                      ],
-                      "stacks": [
-                        4
-                      ]
-                    }
-                  },
-                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
-                  "endpointBoard": "145783692726495813389162745812974536654831927973256184268317459531649278497528361",
-                  "className": "genuine",
-                  "endpointKey": "family-9"
-                }
-              ]
-            },
-            {
-              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"2<->9\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks\",\"geometryCounts\":{\"same-row-across-boxes\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[4],\"stacks\":[2,2]},\"className\":\"genuine\"}",
-              "label": "2-pair shuffle; 2 square-pairs",
-              "swapDepth": 2,
-              "shape": {
-                "digitPairs": [
-                  "2<->9",
-                  "2<->9"
-                ],
-                "digitPairCounts": {
-                  "2<->9": 2
-                },
-                "uniqueDigitPairCount": 1,
-                "repeatedDigitPair": true,
-                "repeatedDigitPairKey": "2<->9",
-                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
-                "geometryCounts": {
-                  "same-row-across-boxes": 2
-                },
-                "touched": {
-                  "rows": [
-                    4,
-                    6
-                  ],
-                  "cols": [
-                    1,
-                    4
-                  ],
-                  "boxes": [
-                    4,
-                    5
-                  ],
-                  "bands": [
-                    2
-                  ],
-                  "stacks": [
-                    1,
-                    2
-                  ]
-                },
-                "touchCounts": {
-                  "rows": [
-                    2,
-                    2
-                  ],
-                  "cols": [
-                    2,
-                    2
-                  ],
-                  "boxes": [
-                    2,
-                    2
-                  ],
-                  "bands": [
-                    4
-                  ],
-                  "stacks": [
-                    2,
-                    2
-                  ]
-                }
-              },
-              "count": 1,
-              "endpointCount": 1,
-              "classCounts": {
-                "identity": 0,
-                "standard-symmetry": 0,
-                "genuine": 1
-              },
-              "examples": [
-                {
-                  "moves": [
-                    "A4<->D4",
-                    "A6<->D6"
-                  ],
-                  "shape": {
-                    "digitPairs": [
-                      "2<->9",
-                      "2<->9"
-                    ],
-                    "digitPairCounts": {
-                      "2<->9": 2
-                    },
-                    "uniqueDigitPairCount": 1,
-                    "repeatedDigitPair": true,
-                    "repeatedDigitPairKey": "2<->9",
-                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
-                    "geometryCounts": {
-                      "same-row-across-boxes": 2
-                    },
-                    "touched": {
-                      "rows": [
-                        4,
-                        6
-                      ],
-                      "cols": [
-                        1,
-                        4
-                      ],
-                      "boxes": [
-                        4,
-                        5
-                      ],
-                      "bands": [
-                        2
-                      ],
-                      "stacks": [
-                        1,
-                        2
-                      ]
-                    },
-                    "touchCounts": {
-                      "rows": [
-                        2,
-                        2
-                      ],
-                      "cols": [
-                        2,
-                        2
-                      ],
-                      "boxes": [
-                        2,
-                        2
-                      ],
-                      "bands": [
-                        4
-                      ],
-                      "stacks": [
-                        2,
-                        2
-                      ]
-                    }
-                  },
-                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
-                  "endpointBoard": "145783692726495813389162745918274536654831927273956184862317459531649278497528361",
-                  "className": "genuine",
-                  "endpointKey": "family-10"
-                }
-              ]
-            },
-            {
-              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"3<->8\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks\",\"geometryCounts\":{\"same-row-across-boxes\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[4],\"stacks\":[2,2]},\"className\":\"genuine\"}",
-              "label": "2-pair shuffle; 2 square-pairs",
-              "swapDepth": 2,
-              "shape": {
-                "digitPairs": [
-                  "3<->8",
-                  "3<->8"
-                ],
-                "digitPairCounts": {
-                  "3<->8": 2
-                },
-                "uniqueDigitPairCount": 1,
-                "repeatedDigitPair": true,
-                "repeatedDigitPairKey": "3<->8",
-                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
-                "geometryCounts": {
-                  "same-row-across-boxes": 2
-                },
-                "touched": {
-                  "rows": [
-                    4,
-                    6
-                  ],
-                  "cols": [
-                    3,
-                    8
-                  ],
-                  "boxes": [
-                    4,
-                    6
-                  ],
-                  "bands": [
-                    2
-                  ],
-                  "stacks": [
-                    1,
-                    3
-                  ]
-                },
-                "touchCounts": {
-                  "rows": [
-                    2,
-                    2
-                  ],
-                  "cols": [
-                    2,
-                    2
-                  ],
-                  "boxes": [
-                    2,
-                    2
-                  ],
-                  "bands": [
-                    4
-                  ],
-                  "stacks": [
-                    2,
-                    2
-                  ]
-                }
-              },
-              "count": 1,
-              "endpointCount": 1,
-              "classCounts": {
-                "identity": 0,
-                "standard-symmetry": 0,
-                "genuine": 1
-              },
-              "examples": [
-                {
-                  "moves": [
-                    "C4<->H4",
-                    "C6<->H6"
-                  ],
-                  "shape": {
-                    "digitPairs": [
-                      "3<->8",
-                      "3<->8"
-                    ],
-                    "digitPairCounts": {
-                      "3<->8": 2
-                    },
-                    "uniqueDigitPairCount": 1,
-                    "repeatedDigitPair": true,
-                    "repeatedDigitPairKey": "3<->8",
-                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
-                    "geometryCounts": {
-                      "same-row-across-boxes": 2
-                    },
-                    "touched": {
-                      "rows": [
-                        4,
-                        6
-                      ],
-                      "cols": [
-                        3,
-                        8
-                      ],
-                      "boxes": [
-                        4,
-                        6
-                      ],
-                      "bands": [
-                        2
-                      ],
-                      "stacks": [
-                        1,
-                        3
-                      ]
-                    },
-                    "touchCounts": {
-                      "rows": [
-                        2,
-                        2
-                      ],
-                      "cols": [
-                        2,
-                        2
-                      ],
-                      "boxes": [
-                        2,
-                        2
-                      ],
-                      "bands": [
-                        4
-                      ],
-                      "stacks": [
-                        2,
-                        2
-                      ]
-                    }
-                  },
-                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
-                  "endpointBoard": "145783692726495813389162745213974586654831927978256134862317459531649278497528361",
-                  "className": "genuine",
-                  "endpointKey": "family-11"
-                }
-              ]
-            },
-            {
-              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"4<->6\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks\",\"geometryCounts\":{\"same-row-across-boxes\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[4],\"stacks\":[2,2]},\"className\":\"genuine\"}",
-              "label": "2-pair shuffle; 2 square-pairs",
-              "swapDepth": 2,
-              "shape": {
-                "digitPairs": [
-                  "4<->6",
-                  "4<->6"
-                ],
-                "digitPairCounts": {
-                  "4<->6": 2
-                },
-                "uniqueDigitPairCount": 1,
-                "repeatedDigitPair": true,
-                "repeatedDigitPairKey": "4<->6",
-                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
-                "geometryCounts": {
-                  "same-row-across-boxes": 2
-                },
-                "touched": {
-                  "rows": [
-                    4,
-                    6
-                  ],
-                  "cols": [
-                    6,
-                    9
-                  ],
-                  "boxes": [
-                    5,
-                    6
-                  ],
-                  "bands": [
-                    2
-                  ],
-                  "stacks": [
-                    2,
-                    3
-                  ]
-                },
-                "touchCounts": {
-                  "rows": [
-                    2,
-                    2
-                  ],
-                  "cols": [
-                    2,
-                    2
-                  ],
-                  "boxes": [
-                    2,
-                    2
-                  ],
-                  "bands": [
-                    4
-                  ],
-                  "stacks": [
-                    2,
-                    2
-                  ]
-                }
-              },
-              "count": 1,
-              "endpointCount": 1,
-              "classCounts": {
-                "identity": 0,
-                "standard-symmetry": 0,
-                "genuine": 1
-              },
-              "examples": [
-                {
-                  "moves": [
-                    "F4<->I4",
-                    "F6<->I6"
-                  ],
-                  "shape": {
-                    "digitPairs": [
-                      "4<->6",
-                      "4<->6"
-                    ],
-                    "digitPairCounts": {
-                      "4<->6": 2
-                    },
-                    "uniqueDigitPairCount": 1,
-                    "repeatedDigitPair": true,
-                    "repeatedDigitPairKey": "4<->6",
-                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
-                    "geometryCounts": {
-                      "same-row-across-boxes": 2
-                    },
-                    "touched": {
-                      "rows": [
-                        4,
-                        6
-                      ],
-                      "cols": [
-                        6,
-                        9
-                      ],
-                      "boxes": [
-                        5,
-                        6
-                      ],
-                      "bands": [
-                        2
-                      ],
-                      "stacks": [
-                        2,
-                        3
-                      ]
-                    },
-                    "touchCounts": {
-                      "rows": [
-                        2,
-                        2
-                      ],
-                      "cols": [
-                        2,
-                        2
-                      ],
-                      "boxes": [
-                        2,
-                        2
-                      ],
-                      "bands": [
-                        4
-                      ],
-                      "stacks": [
-                        2,
-                        2
-                      ]
-                    }
-                  },
-                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
-                  "endpointBoard": "145783692726495813389162745218976534654831927973254186862317459531649278497528361",
-                  "className": "genuine",
-                  "endpointKey": "family-12"
-                }
-              ]
-            },
-            {
-              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"2<->8\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks\",\"geometryCounts\":{\"same-row-across-boxes\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[4],\"stacks\":[2,2]},\"className\":\"genuine\"}",
-              "label": "2-pair shuffle; 2 square-pairs",
-              "swapDepth": 2,
-              "shape": {
-                "digitPairs": [
-                  "2<->8",
-                  "2<->8"
-                ],
-                "digitPairCounts": {
-                  "2<->8": 2
-                },
-                "uniqueDigitPairCount": 1,
-                "repeatedDigitPair": true,
-                "repeatedDigitPairKey": "2<->8",
-                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
-                "geometryCounts": {
-                  "same-row-across-boxes": 2
-                },
-                "touched": {
-                  "rows": [
-                    5,
-                    6
-                  ],
-                  "cols": [
-                    4,
-                    8
-                  ],
-                  "boxes": [
-                    5,
-                    6
-                  ],
-                  "bands": [
-                    2
-                  ],
-                  "stacks": [
-                    2,
-                    3
-                  ]
-                },
-                "touchCounts": {
-                  "rows": [
-                    2,
-                    2
-                  ],
-                  "cols": [
-                    2,
-                    2
-                  ],
-                  "boxes": [
-                    2,
-                    2
-                  ],
-                  "bands": [
-                    4
-                  ],
-                  "stacks": [
-                    2,
-                    2
-                  ]
-                }
-              },
-              "count": 1,
-              "endpointCount": 1,
-              "classCounts": {
-                "identity": 0,
-                "standard-symmetry": 0,
-                "genuine": 1
-              },
-              "examples": [
-                {
-                  "moves": [
-                    "D5<->H5",
-                    "D6<->H6"
-                  ],
-                  "shape": {
-                    "digitPairs": [
-                      "2<->8",
-                      "2<->8"
-                    ],
-                    "digitPairCounts": {
-                      "2<->8": 2
-                    },
-                    "uniqueDigitPairCount": 1,
-                    "repeatedDigitPair": true,
-                    "repeatedDigitPairKey": "2<->8",
-                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
-                    "geometryCounts": {
-                      "same-row-across-boxes": 2
-                    },
-                    "touched": {
-                      "rows": [
-                        5,
-                        6
-                      ],
-                      "cols": [
-                        4,
-                        8
-                      ],
-                      "boxes": [
-                        5,
-                        6
-                      ],
-                      "bands": [
-                        2
-                      ],
-                      "stacks": [
-                        2,
-                        3
-                      ]
-                    },
-                    "touchCounts": {
-                      "rows": [
-                        2,
-                        2
-                      ],
-                      "cols": [
-                        2,
-                        2
-                      ],
-                      "boxes": [
-                        2,
-                        2
-                      ],
-                      "bands": [
-                        4
-                      ],
-                      "stacks": [
-                        2,
-                        2
-                      ]
-                    }
-                  },
-                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
-                  "endpointBoard": "145783692726495813389162745218974536654231987973856124862317459531649278497528361",
-                  "className": "genuine",
-                  "endpointKey": "family-13"
-                }
-              ]
-            },
-            {
-              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"2<->5\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks\",\"geometryCounts\":{\"same-row-inside-box\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[2,2],\"stacks\":[4]},\"className\":\"genuine\"}",
-              "label": "2-pair shuffle; 2 square-pairs",
-              "swapDepth": 2,
-              "shape": {
-                "digitPairs": [
-                  "2<->5",
-                  "2<->5"
-                ],
-                "digitPairCounts": {
-                  "2<->5": 2
-                },
-                "uniqueDigitPairCount": 1,
-                "repeatedDigitPair": true,
-                "repeatedDigitPairKey": "2<->5",
-                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
-                "geometryCounts": {
-                  "same-row-inside-box": 2
-                },
-                "touched": {
-                  "rows": [
-                    6,
-                    9
-                  ],
-                  "cols": [
-                    4,
-                    5
-                  ],
-                  "boxes": [
-                    5,
-                    8
-                  ],
-                  "bands": [
-                    2,
-                    3
-                  ],
-                  "stacks": [
-                    2
-                  ]
-                },
-                "touchCounts": {
-                  "rows": [
-                    2,
-                    2
-                  ],
-                  "cols": [
-                    2,
-                    2
-                  ],
-                  "boxes": [
-                    2,
-                    2
-                  ],
-                  "bands": [
-                    2,
-                    2
-                  ],
-                  "stacks": [
-                    4
-                  ]
-                }
-              },
-              "count": 1,
-              "endpointCount": 1,
-              "classCounts": {
-                "identity": 0,
-                "standard-symmetry": 0,
-                "genuine": 1
-              },
-              "examples": [
-                {
-                  "moves": [
-                    "D6<->E6",
-                    "D9<->E9"
-                  ],
-                  "shape": {
-                    "digitPairs": [
-                      "2<->5",
-                      "2<->5"
-                    ],
-                    "digitPairCounts": {
-                      "2<->5": 2
-                    },
-                    "uniqueDigitPairCount": 1,
-                    "repeatedDigitPair": true,
-                    "repeatedDigitPairKey": "2<->5",
-                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 2 bands / 1 stacks",
-                    "geometryCounts": {
-                      "same-row-inside-box": 2
-                    },
-                    "touched": {
-                      "rows": [
-                        6,
-                        9
-                      ],
-                      "cols": [
-                        4,
-                        5
-                      ],
-                      "boxes": [
-                        5,
-                        8
-                      ],
-                      "bands": [
-                        2,
-                        3
-                      ],
-                      "stacks": [
-                        2
-                      ]
-                    },
-                    "touchCounts": {
-                      "rows": [
-                        2,
-                        2
-                      ],
-                      "cols": [
-                        2,
-                        2
-                      ],
-                      "boxes": [
-                        2,
-                        2
-                      ],
-                      "bands": [
-                        2,
-                        2
-                      ],
-                      "stacks": [
-                        4
-                      ]
-                    }
-                  },
-                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
-                  "endpointBoard": "145783692726495813389162745218974536654831927973526184862317459531649278497258361",
-                  "className": "genuine",
-                  "endpointKey": "family-14"
-                }
-              ]
-            },
-            {
-              "typeKey": "{\"familyId\":\"exact-disjoint-cell-swap-depth-2\",\"swapDepth\":2,\"digitPairCounts\":{\"3<->6\":2},\"repeatedDigitPair\":true,\"locationShape\":\"2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks\",\"geometryCounts\":{\"same-row-across-boxes\":2},\"touchCounts\":{\"rows\":[2,2],\"cols\":[2,2],\"boxes\":[2,2],\"bands\":[4],\"stacks\":[2,2]},\"className\":\"genuine\"}",
-              "label": "2-pair shuffle; 2 square-pairs",
-              "swapDepth": 2,
-              "shape": {
-                "digitPairs": [
-                  "3<->6",
-                  "3<->6"
-                ],
-                "digitPairCounts": {
-                  "3<->6": 2
-                },
-                "uniqueDigitPairCount": 1,
-                "repeatedDigitPair": true,
-                "repeatedDigitPairKey": "3<->6",
-                "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
-                "geometryCounts": {
-                  "same-row-across-boxes": 2
-                },
-                "touched": {
-                  "rows": [
-                    7,
-                    8
-                  ],
-                  "cols": [
-                    2,
-                    4
-                  ],
-                  "boxes": [
-                    7,
-                    8
-                  ],
-                  "bands": [
-                    3
-                  ],
-                  "stacks": [
-                    1,
-                    2
-                  ]
-                },
-                "touchCounts": {
-                  "rows": [
-                    2,
-                    2
-                  ],
-                  "cols": [
-                    2,
-                    2
-                  ],
-                  "boxes": [
-                    2,
-                    2
-                  ],
-                  "bands": [
-                    4
-                  ],
-                  "stacks": [
-                    2,
-                    2
-                  ]
-                }
-              },
-              "count": 1,
-              "endpointCount": 1,
-              "classCounts": {
-                "identity": 0,
-                "standard-symmetry": 0,
-                "genuine": 1
-              },
-              "examples": [
-                {
-                  "moves": [
-                    "B7<->D7",
-                    "B8<->D8"
-                  ],
-                  "shape": {
-                    "digitPairs": [
-                      "3<->6",
-                      "3<->6"
-                    ],
-                    "digitPairCounts": {
-                      "3<->6": 2
-                    },
-                    "uniqueDigitPairCount": 1,
-                    "repeatedDigitPair": true,
-                    "repeatedDigitPairKey": "3<->6",
-                    "locationShape": "2 square-pairs / 2 rows / 2 cols / 2 boxes / 1 bands / 2 stacks",
-                    "geometryCounts": {
-                      "same-row-across-boxes": 2
-                    },
-                    "touched": {
-                      "rows": [
-                        7,
-                        8
-                      ],
-                      "cols": [
-                        2,
-                        4
-                      ],
-                      "boxes": [
-                        7,
-                        8
-                      ],
-                      "bands": [
-                        3
-                      ],
-                      "stacks": [
-                        1,
-                        2
-                      ]
-                    },
-                    "touchCounts": {
-                      "rows": [
-                        2,
-                        2
-                      ],
-                      "cols": [
-                        2,
-                        2
-                      ],
-                      "boxes": [
-                        2,
-                        2
-                      ],
-                      "bands": [
-                        4
-                      ],
-                      "stacks": [
-                        2,
-                        2
-                      ]
-                    }
-                  },
-                  "sourceBoard": "145783692726495813389162745218974536654831927973256184862317459531649278497528361",
-                  "endpointBoard": "145783692726495813389162745218974536654831927973256184832617459561349278497528361",
-                  "className": "genuine",
-                  "endpointKey": "family-15"
-                }
-              ]
-            }
-          ]
-        }
-      ]
-    },
-    {
-      "id": "random-069",
-      "label": "random solved 69",
-      "board": "147258369839146275265937148593681724412573896678429513386714952921365487754892631",
-      "equivalentSourceSkipped": false,
-      "operationFamilies": [
-        {
-          "id": "exact-disjoint-cell-swap-depth-1",
-          "label": "One-pair shuffle",
-          "depth": 1,
-          "exhaustive": true,
-          "status": "complete",
-          "startedAt": "2026-05-14T16:55:58.621Z",
-          "completedAt": "2026-05-14T16:55:58.633Z",
-          "progress": {
-            "checked": 3240,
-            "total": 3240,
-            "percent": 100
-          },
-          "attemptedSequences": 3240,
-          "validEndpointSequences": 0,
-          "uniqueValidEndpoints": 0,
-          "classCounts": {
-            "identity": 0,
-            "standard-symmetry": 0,
-            "genuine": 0
-          },
-          "rejected": {
-            "noOpSwap": 324,
-            "repeatedCell": 0,
-            "standardAggregate": 0,
-            "invalidEndpoint": 2916,
-            "duplicateEndpoint": 0
-          },
-          "genuineEndpointFamilies": 0,
-          "sequenceTypeCount": 0,
-          "sequenceTypes": []
-        }
-      ]
     }
   ],
   "summary": {
     "sourceCount": 3,
-    "completeSources": 3,
-    "attemptedSequences": 14705208,
-    "validEndpointSequences": 144,
-    "uniqueValidEndpoints": 115,
-    "genuineEndpoints": 79,
-    "genuineEndpointFamilies": 54,
-    "sequenceTypeCount": 112
+    "completeSources": 2,
+    "attemptedSequences": 15097962,
+    "validEndpointSequences": 151,
+    "uniqueValidEndpoints": 122,
+    "genuineEndpoints": 83,
+    "genuineEndpointFamilies": 56,
+    "sequenceTypeCount": 119
   }
 }

@@ -236,48 +236,16 @@ Outputs:
 - `visualizer/data/bridge-depth.latest.json`
 - `visualizer/data/bridge-depth-data.js`
 
-See [RESULTS.md](RESULTS.md) for the current research output.
+See [RESULTS.md](RESULTS.md) for the historical script output log.
 
-See [docs/research-journal.md](docs/research-journal.md) for the narrative research log that captures the discussion, hypotheses, experiments, and next steps.
+Current project notes are split by premise and answer type:
 
-See [docs/paper-draft.md](docs/paper-draft.md) for the working research-paper draft.
+- [Theoretical premise](docs/theoretical-premise.md)
+- [Data premise](docs/data-premise.md)
+- [Theoretical answers](docs/theoretical-answers.md)
+- [Data answers](docs/data-answers.md)
 
-See [docs/valid-transformation-agenda.md](docs/valid-transformation-agenda.md) for the current valid-first research agenda.
-
-See [docs/swap-pair-conventions.md](docs/swap-pair-conventions.md) for the `9x9` cell coordinate and swap-pair definitions used by the raw depth search.
-
-## Current Questions
-
-- How should we grow a local sample of solved boards without assuming all boards are reachable from one seed?
-- Which source boards produce genuine asymmetric endpoints under shallow shuffle types?
-- Which asymmetric type signatures repeat across unrelated solved boards?
-- How much standard-symmetry deduplication should happen before pattern scans?
-- Which shuffle types are useful enough to keep in the main workflow?
-- Which older cyclic-base findings should stay as baseline-only research?
-
-## Current Observations
-
-The active workflow is now:
-
-```text
-build solved board sample -> scan patterns on source boards -> inspect discoveries
-```
-
-The visualizer intentionally focuses on this path. The cyclic base and older raw-depth outputs are not part of the main UI.
-
-The latest local board sample stores `100` solved boards when built through the UI's `Build Boards` button. For the current practical workflow, scan jobs are capped to the first `3` boards from that sample. This keeps the research focused on pattern behavior we can actually inspect on this hardware, while leaving the larger stored sample available for later scaling.
-
-The next frontend step is a board browser that can show source boards from the solved-board sample even before they have scan output, then launch scans for selected boards.
-
-Use standard-symmetry representatives as the first safe reduction. True shuffle-disjoint families should be treated as a discovery from scans or pairwise board-to-board backtracking, not as something assumed before the search.
-
-## Working Notes
-
-Primary scripts:
-
-- `sudoku-9x9-board-sample.js`: phase 1 board finding.
-- `sudoku-9x9-asymmetric-sequences.js`: phase 2 pattern finding.
-- `serve-visualizer.js`: local UI server and job controls.
+The old long-form draft framing has been retired. The project now keeps premises and answers directly in these docs.
 
 Baseline and historical scripts:
 

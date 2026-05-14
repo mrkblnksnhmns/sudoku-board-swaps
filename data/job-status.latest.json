@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-05-14T17:35:03.280Z",
+  "updatedAt": "2026-05-14T18:57:57.279Z",
   "jobs": {
     "one-pair-shuffles": {
       "id": "one-pair-shuffles",
@@ -68,33 +68,33 @@
     "repeated-number-pair-shuffles": {
       "id": "repeated-number-pair-shuffles",
       "label": "Repeated number-pair shuffle scan",
-      "state": "complete",
+      "state": "stopped",
       "pid": null,
-      "startedAt": "2026-05-14T17:22:38.704Z",
-      "stoppedAt": "2026-05-14T17:31:09.411Z",
-      "exitCode": 0,
-      "signal": null,
+      "startedAt": "2026-05-14T18:33:44.248Z",
+      "stoppedAt": "2026-05-14T18:34:03.464Z",
+      "exitCode": null,
+      "signal": "SIGINT",
       "logTail": [
-        "  skipping complete family exact-disjoint-cell-swap-depth-1",
-        "  skipping complete family exact-disjoint-cell-swap-depth-2",
-        "  running family two-symbol-balanced-trade",
-        "stop requested 2026-05-14T17:21:46.112Z",
-        "exited code=null signal=SIGINT",
-        "started 2026-05-14T17:22:38.704Z",
-        "selected source random-063",
-        "9x9 asymmetric sequence offline scan",
-        "sources: random solved 63",
+        "sources: random solved 69",
         "families: two-symbol-balanced-trade",
         "resume: true",
-        "scanning source 1/1: random solved 63",
+        "scanning source 1/1: random solved 69",
+        "skipping complete family exact-disjoint-cell-swap-depth-1",
+        "  running family two-symbol-balanced-trade",
+        "stop requested 2026-05-14T18:32:50.055Z",
+        "exited code=null signal=SIGINT",
+        "started 2026-05-14T18:33:44.248Z",
+        "selected source random-066",
+        "9x9 asymmetric sequence offline scan",
+        "sources: random solved 66",
+        "families: two-symbol-balanced-trade",
+        "resume: true",
+        "scanning source 1/1: random solved 66",
         "  skipping complete family exact-disjoint-cell-swap-depth-1",
         "  skipping complete family exact-disjoint-cell-swap-depth-2",
         "  running family two-symbol-balanced-trade",
-        "genuine endpoints=50, families=25, types=84",
-        "complete: true",
-        "genuine endpoints: 79",
-        "asymmetric type records: 112",
-        "exited code=0 signal=none"
+        "stop requested 2026-05-14T18:34:03.453Z",
+        "exited code=null signal=SIGINT"
       ]
     }
   }

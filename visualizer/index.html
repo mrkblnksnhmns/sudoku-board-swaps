@@ -17,7 +17,7 @@
           <label class="source-picker">
             <span>Source Board</span>
             <select id="sourceSelect"></select>
-            <small>A solved board from the board-finding sample. Cyclic baseline boards are documented in the paper, not shown here.</small>
+            <small>A solved board from the board-finding sample. Cyclic baseline boards are background findings, not the main view.</small>
           </label>
           <div class="job-controls" aria-label="Scan controls">
             <div class="job-action compact">
@@ -62,23 +62,9 @@
             <div id="moveList" class="move-list"></div>
           </section>
 
-          <section class="jobs-panel">
-            <div class="panel-heading">
-              <h2>Current Jobs</h2>
-              <p>Selected-board scan state only. Each row is data for this board.</p>
-            </div>
-            <dl id="currentScanList" class="current-scan-list"></dl>
-            <div class="progress-track" aria-label="Selected board scan progress">
-              <span id="runProgressBar"></span>
-            </div>
-            <div id="jobOverviewList" class="job-overview-list"></div>
-          </section>
         </div>
 
         <aside class="scan-panel">
-          <section id="summaryGrid" class="summary-grid" aria-label="Shuffle scan summary">
-          </section>
-
           <section class="nth-panel">
             <div class="panel-heading">
               <h2>N-th Pair Shuffles</h2>
@@ -122,6 +108,9 @@
               <p>Planned comparison mode for learning movement between two solved boards.</p>
             </div>
             <div id="backtrackingList" class="research-card-list"></div>
+          </section>
+
+          <section id="summaryGrid" class="summary-grid" aria-label="Shuffle scan summary">
           </section>
 
         </aside>

@@ -413,12 +413,9 @@ select {
   line-height: 1.35;
 }
 
-.results-panel,
 .nth-panel,
-.two-pair-panel,
 .interesting-panel,
 .large-panel,
-.jobs-panel,
 .replay-panel {
   display: grid;
   gap: 12px;
@@ -555,22 +552,6 @@ select {
   border-color: var(--shuffle-border);
   background: var(--shuffle-bg);
   color: var(--shuffle-ink);
-}
-
-.progress-track {
-  height: 12px;
-  overflow: hidden;
-  border-radius: 999px;
-  background: var(--soft-gray);
-}
-
-.progress-track span {
-  display: block;
-  width: 0;
-  height: 100%;
-  border-radius: inherit;
-  background: linear-gradient(90deg, var(--green), var(--blue));
-  transition: width 180ms ease;
 }
 
 .research-card-list {
@@ -737,90 +718,6 @@ select {
   font-weight: 850;
   font-variant-numeric: tabular-nums;
   text-align: right;
-}
-
-.current-scan-list {
-  display: grid;
-  gap: 7px;
-}
-
-.current-scan-list div {
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto;
-  gap: 12px;
-  align-items: baseline;
-  border-bottom: 1px solid #e7eeee;
-  padding-bottom: 7px;
-}
-
-.current-scan-list dt {
-  color: var(--muted);
-  font-size: 0.86rem;
-}
-
-.current-scan-list dd {
-  min-width: 0;
-  margin: 0;
-  font-weight: 850;
-  text-align: right;
-  overflow-wrap: anywhere;
-}
-
-.job-overview-list {
-  display: grid;
-  gap: 8px;
-}
-
-.job-overview-list > p {
-  color: var(--muted);
-}
-
-.job-row {
-  display: grid;
-  gap: 6px;
-  border: 1px solid var(--line);
-  border-radius: 8px;
-  background: #fbfdfc;
-  padding: 10px;
-}
-
-.job-row div {
-  display: flex;
-  align-items: baseline;
-  justify-content: space-between;
-  gap: 10px;
-}
-
-.job-row strong {
-  font-size: 0.94rem;
-}
-
-.job-row span {
-  color: var(--muted);
-  font-size: 0.82rem;
-  font-weight: 850;
-}
-
-.job-row[data-state="running"] {
-  border-color: #a7c8e4;
-  background: var(--soft-blue);
-}
-
-.job-row[data-state="complete"] {
-  border-color: #97c0a6;
-  background: var(--soft-green);
-}
-
-.job-row[data-state="failed"],
-.job-row[data-state="stopped"],
-.job-row[data-state="interrupted"] {
-  border-color: #dfbf8b;
-  background: var(--soft-amber);
-}
-
-.job-row p {
-  color: var(--muted);
-  line-height: 1.35;
 }
 
 .result-list {
