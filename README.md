@@ -1,34 +1,36 @@
 # Sudoku Board Swaps
 
-This is a small Node.js lab for investigating whether completed Sudoku boards are just reshufflings of one base solution.
+This is a small Node.js lab for studying completed Sudoku boards as a transformation space.
 
-The current priority is arbitrary cell-piece transformations first: any cells may be swapped as pieces, but endpoints that are only standard Sudoku symmetries are classified as symmetry-equivalent rather than genuinely new.
+The current workflow has two phases:
+
+1. **Board finding:** generate a local sample of solved boards.
+2. **Pattern finding:** scan those source boards for asymmetric shuffle patterns that end on solved boards.
+
+The cyclic base grid is kept as baseline research, but it is not the main UI path.
 
 The project studies Sudoku as a transformation space:
 
 - completed boards are objects
-- swaps and relabelings are moves
+- shuffles and relabelings are moves
 - structural fingerprints tell us which boards are more or less interchangeable
 
-We are starting with `4x4` Sudoku because it is small enough to enumerate completely, then using the same ideas on ordinary `9x9` Sudoku.
+Older `4x4`, cyclic-base, raw-depth, and frontier scripts remain useful as research history and comparison tools. The active app workflow is board sample first, then pattern scan.
 
-Run:
+Active workflow:
 
 ```bash
-node sudoku-4x4.js
-node sudoku-9x9-valid-patterns.js
-node sudoku-9x9-optimization.js
-node sudoku-9x9-role-graph-batch.js
-node sudoku-9x9-trade-target-batch.js
-node sudoku-9x9-trade-adjacency.js
-node sudoku-9x9-forbidden-neighborhood.js
-node sudoku-9x9-bridge-depth.js
-node sudoku-9x9-arbitrary-transformations.js
-node sudoku-9x9-trades.js
-node sudoku-structure.js
+node sudoku-9x9-board-sample.js
+node sudoku-9x9-asymmetric-sequences.js
 ```
 
-Open `visualizer/index.html` in a browser to inspect row/column role edges and two-symbol trade examples visually.
+Open `visualizer/index.html` in a browser to inspect the current research workflow:
+
+- build solved board samples
+- scan asymmetric shuffle patterns against source boards
+- track checkpointed progress by shuffle type
+- inspect selected discoveries with shuffle location details
+- replay discovered shuffle patterns on the board
 
 For live batch updates, serve the repo over localhost and open the visualizer route:
 
@@ -42,7 +44,14 @@ Then open:
 http://localhost:8080/visualizer/
 ```
 
-The visualizer has local Start/Stop controls for recoverable batch jobs. The loaded job is `Big arbitrary frontier scan`, a serial checkpointed run:
+The main app buttons run:
+
+```bash
+node sudoku-9x9-board-sample.js --count=100 --seed=phase-one-board-finding
+node sudoku-9x9-asymmetric-sequences.js --source=sample
+```
+
+Older batch scripts are still useful for comparison research. The large arbitrary frontier scan is a serial checkpointed run:
 
 ```bash
 node sudoku-9x9-arbitrary-transformations.js --frontier
@@ -56,9 +65,7 @@ It writes its status and log tail to:
 - `data/arbitrary-transformations.latest.json`
 - `visualizer/data/arbitrary-transformations.latest.json`
 
-After rebooting, start the server again with `node serve-visualizer.js`; the UI will show the last completed/interrupted job state and can start the loaded job again. Jobs run serially: the server rejects a new start while another job is already running.
-
-When served over HTTP, the visualizer polls `visualizer/data/arbitrary-transformations.latest.json` and the local job-status API for arbitrary cell-swap classification.
+After rebooting, start the server again with `node serve-visualizer.js` if you want the local job API available. The current simple visualizer does not require the batch logs to render.
 
 Small arbitrary transformation scan:
 
@@ -78,6 +85,89 @@ Outputs:
 - `visualizer/data/arbitrary-transformations.latest.json`
 - `visualizer/data/arbitrary-transformations-data.js`
 
+Asymmetric sequence offline scan:
+
+First generate a local solved-board sample:
+
+```bash
+node sudoku-9x9-board-sample.js --count=100 --seed=phase-one-board-finding
+```
+
+This writes:
+
+- `data/solved-board-sample.latest.json`
+- `visualizer/data/solved-board-sample.latest.json`
+- `visualizer/data/solved-board-sample-data.js`
+
+Then run the pattern scanner against that sample:
+
+```bash
+node sudoku-9x9-asymmetric-sequences.js --source=sample
+```
+
+The first offline version separates board finding from pattern finding. The board-finding phase creates a reproducible local sample of solved boards. The pattern-finding phase scans operation families on those boards, generates only disjoint square-pair matchings, collapses forward/backward sequence descriptions, and rejects direct whole-board symmetry aggregates before counting asymmetric types.
+
+N-th pair shuffle names:
+
+- **One-pair shuffle:** one square-pair trades values.
+- **Two-pair shuffle:** two square-pairs trade values; four cells are touched and no cell repeats.
+- **Three-pair shuffle:** planned next scan; three square-pairs trade values, so six cells are touched and no cell repeats.
+
+The raw three-pair search is `4,868,103,240` disjoint candidates per source board, about `975x` the two-pair search. It should be filtered before broad runs.
+
+Interesting shuffle category:
+
+- **Repeated number-pair shuffle:** several square-pairs reuse the same number pair, then the scanner studies the shuffle location shape.
+
+It is resumable at the source/family level. If the computer turns off, run the same command again and completed source/family records are reused:
+
+```bash
+node sudoku-9x9-asymmetric-sequences.js --source=sample --resume
+```
+
+By default, the scanner uses the source boards as supplied. Add `--dedupe-sources` when you deliberately want to skip sources that are standard-symmetry equivalents of an earlier source.
+
+Small verification run:
+
+```bash
+node sudoku-9x9-asymmetric-sequences.js --source=comparison --max-exact-depth=2 --no-two-symbol-trades --no-resume
+```
+
+The `--no-two-symbol-trades` flag is the older internal name for disabling repeated number-pair shuffles.
+
+Outputs:
+
+- `data/asymmetric-sequences.latest.json`
+- `visualizer/data/asymmetric-sequences.latest.json`
+- `visualizer/data/asymmetric-sequences-data.js`
+
+When the local visualizer server is running, the frontend can start/stop this job and poll progress from the latest checkpoint.
+
+Raw cell-swap depth scan:
+
+```bash
+node sudoku-9x9-raw-cell-swap-depth.js --source=cyclic-base --max-depth=2 --no-guided-depth3
+```
+
+This writes only genuine non-symmetry endpoints to JSONL and stores small summaries for the visualizer:
+
+- `data/raw-cell-swap-depth.latest.json`
+- `data/raw-cell-swap-depth.latest.jsonl`
+- `visualizer/data/raw-cell-swap-depth.latest.json`
+- `visualizer/data/raw-cell-swap-depth-data.js`
+
+Coordinates use chess-like notation: `A1` is the top-left cell, `I9` is the bottom-right cell, and a swap is written as `A1<->D1`.
+
+The exact depth-2 scan is practical for individual source boards. A naive exact depth-3 scan is roughly `2916` times larger than depth 2, so the older raw-depth script keeps depth 3 behind its guided repeated number-pair mode:
+
+```bash
+node sudoku-9x9-raw-cell-swap-depth.js --source=cyclic-base --max-depth=3 --guided-depth3
+```
+
+Run one source board at a time with `--source=cyclic-base` or `--source=comparison`. Use `--source=all` only when you deliberately want to rebuild a combined offline snapshot.
+
+For the high-to-low visualizer ladder, the clean strict swap-set maximum is `floor(81 / 2) = 40`, meaning each cell is used at most once and one cell is left unused. The larger `choose(81, 2) = 3240` number is the distinct cell-pair ceiling if reused cells are allowed in a sequence.
+
 Batch role-graph tests write resumable/latest output while they run:
 
 ```bash
@@ -90,7 +180,7 @@ Outputs:
 - `visualizer/data/role-graph-batch.latest.json`
 - `visualizer/data/role-graph-batch-data.js`
 
-The visualizer reads `visualizer/data/role-graph-batch-data.js`, so the latest saved batch summary is available without Codex running.
+The generated `visualizer/data/role-graph-batch-data.js` mirror remains available for future visualizer views or standalone inspection.
 
 Trade target batch:
 
@@ -146,106 +236,22 @@ Outputs:
 - `visualizer/data/bridge-depth.latest.json`
 - `visualizer/data/bridge-depth-data.js`
 
-See [RESULTS.md](RESULTS.md) for the current research output.
+See [RESULTS.md](RESULTS.md) for the historical script output log.
 
-See [docs/research-journal.md](docs/research-journal.md) for the narrative research log that captures the discussion, hypotheses, experiments, and next steps.
+Current project notes are split by premise and answer type:
 
-See [docs/paper-draft.md](docs/paper-draft.md) for the working research-paper draft.
+- [Theoretical premise](docs/theoretical-premise.md)
+- [Data premise](docs/data-premise.md)
+- [Theoretical answers](docs/theoretical-answers.md)
+- [Data answers](docs/data-answers.md)
 
-See [docs/valid-transformation-agenda.md](docs/valid-transformation-agenda.md) for the current valid-first research agenda.
+The old long-form draft framing has been retired. The project now keeps premises and answers directly in these docs.
 
-## Current Questions
+Baseline and historical scripts:
 
-- How many completed boards exist at each size?
-- Which boards are connected by standard Sudoku-preserving transformations?
-- Which boards have extra internal swap freedom?
-- What is the shortest swap distance between connected boards?
-- Which invariants prevent two boards from being connected?
-- What patterns distinguish highly symmetric boards from ordinary boards?
-- What additional transformations would connect more board families?
-- What is the smallest arbitrary cell-swap depth that reaches a genuinely non-symmetrical completed board?
-- Which valid full row/column permutations can be decomposed into valid single-swap steps as a narrower comparison model?
-
-The current script compares:
-
-- a simple cyclic base grid
-- a common completed Sudoku grid with a less regular structure
-
-It checks whether the second board can be reached from the first using the standard Sudoku-preserving symmetries:
-
-- rename digits
-- swap rows inside a 3-row band
-- swap columns inside a 3-column stack
-- swap whole bands
-- swap whole stacks
-- transpose the grid
-
-If no combination works, the boards are in different standard symmetry families.
-
-## Current Observations
-
-The base cyclic board is much more symmetric than the comparison board.
-
-For the two included boards:
-
-| metric | base cyclic grid | comparison grid |
-| --- | ---: | ---: |
-| standard automorphisms | 54 | 1 |
-| valid full-row permutations | 1296 | 1296 |
-| valid full-column permutations | 46656 | 1296 |
-| valid single row swaps | 9 | 9 |
-| valid single column swaps | 18 | 9 |
-
-The number `1296` is the ordinary/default Sudoku freedom:
-
-```text
-swap rows inside each band: 6 * 6 * 6
-swap the three bands:       6
-total:                      1296
-```
-
-The comparison board only has that default freedom for rows and columns.
-
-The base board has extra column freedom. In the base board, columns can be swapped when they are:
-
-- in the same 3-column stack, or
-- in the same position inside different stacks
-
-That second condition is the interesting one. It comes from the cyclic construction:
-
-```text
-1 2 3 | 4 5 6 | 7 8 9
-4 5 6 | 7 8 9 | 1 2 3
-7 8 9 | 1 2 3 | 4 5 6
-```
-
-Columns `1`, `4`, and `7` have matching structural roles. So do `2`, `5`, `8`, and `3`, `6`, `9`.
-
-The comparison board does not share that extra column pattern.
-
-## Working Notes
-
-`sudoku-4x4.js` enumerates every completed `4x4` Sudoku board and groups them into standard symmetry families.
-
-It also builds swap graphs for `4x4` boards and reports connected components, shortest-path distances, average distance, diameter, and family edge counts.
-
-`sudoku-structure.js` profiles two completed `9x9` boards:
-
-- a cyclic base grid
-- a common completed Sudoku grid with less visible regularity
-
-The first `9x9` observation is that the cyclic grid has extra column symmetry. The comparison grid has only the default column freedom.
-
-`sudoku-9x9-arbitrary-transformations.js` focuses on the main transformation question: arbitrary cell-piece swaps, with standard symmetry-equivalent endpoints filtered out.
-
-`sudoku-9x9-valid-patterns.js` focuses on a narrower valid-pattern question: which row and column permutations are reachable by single-swap steps where every intermediate board is still a completed Sudoku.
-
-`sudoku-9x9-optimization.js` turns those valid moves into role graphs, connected components, and worst-case step counts under single-swap and block-swap move vocabularies.
-
-`sudoku-9x9-role-graph-batch.js` runs the role-graph/distance profile over a small tracked batch of boards and reports progress counters plus signature groups.
-
-`sudoku-9x9-trade-target-batch.js` runs the same profile over cyclic-base two-symbol trade targets. It saves after each target and resumes from the latest output by stable target ID.
-
-`sudoku-9x9-trade-adjacency.js` takes those trade targets as sources and classifies where further structured trades land.
-
-`sudoku-9x9-trades.js` explores structured two-symbol trades. Treat this as later/special-case work because those trades are interpreted as forbidden cell-swap bridges when decomposed into individual cell swaps.
+- `sudoku-4x4.js`: complete `4x4` enumeration and family graph work.
+- `sudoku-structure.js`: early structural profiling.
+- `sudoku-9x9-valid-patterns.js`: valid row/column permutation work.
+- `sudoku-9x9-arbitrary-transformations.js`: older arbitrary transformation scan.
+- `sudoku-9x9-raw-cell-swap-depth.js`: older raw-depth scan.
+- `sudoku-9x9-trades.js` and trade batch scripts: cyclic-baseline and repeated number-pair research.

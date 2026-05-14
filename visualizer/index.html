@@ -3,53 +3,122 @@
   <head>
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1">
-    <title>Sudoku Transformation Visualizer</title>
+    <title>Sudoku Asymmetric Shuffle Scan</title>
     <link rel="stylesheet" href="styles.css">
   </head>
   <body>
-    <main class="app-shell">
-      <aside class="sidebar" aria-label="Controls">
-        <div class="title-block">
-          <h1>Sudoku Transformation Visualizer</h1>
-          <p id="summaryText">Arbitrary cell-swap transformations</p>
+    <main class="app">
+      <header class="topbar">
+        <div>
+          <p class="eyebrow">Asymmetric shuffle search</p>
+          <h1>Sudoku Shuffle Scan</h1>
         </div>
-
-        <section class="control-group" aria-label="View">
-          <h2>View</h2>
-          <div class="segmented vertical" data-control="view">
-            <button class="active" type="button" data-view="arbitrary-transformations">Arbitrary Transforms</button>
-            <button type="button" data-view="test-plan">Test Plan</button>
-          </div>
-        </section>
-
-        <section class="control-group" aria-label="Batch jobs">
-          <h2>Batch Jobs</h2>
-          <div id="jobList" class="job-list" aria-live="polite"></div>
-        </section>
-
-        <section class="metrics" aria-label="Metrics">
-          <h2>Metrics</h2>
-          <dl id="metricsList"></dl>
-        </section>
-      </aside>
-
-      <section class="workspace" aria-label="Visualization">
-        <div class="viz-header">
-          <div>
-            <h2 id="viewTitle">Arbitrary Transforms</h2>
-            <p id="viewSubtitle">Cell-swap endpoints classified after excluding standard Sudoku symmetries.</p>
+        <div class="top-actions">
+          <label class="source-picker">
+            <span>Source Board</span>
+            <select id="sourceSelect"></select>
+            <small>A solved board from the board-finding sample. Cyclic baseline boards are background findings, not the main view.</small>
+          </label>
+          <div class="job-controls" aria-label="Scan controls">
+            <div class="job-action compact">
+              <button id="stopScanButton" type="button">Stop Active Scan</button>
+              <small>Stops the selected-board scan currently running.</small>
+            </div>
+            <span id="jobStatusText">offline</span>
           </div>
         </div>
+      </header>
 
-        <div class="board-stage hidden">
-          <svg id="edgeLayer" class="edge-layer" viewBox="0 0 760 760" aria-hidden="true"></svg>
-          <div id="board" class="sudoku-board" aria-label="Sudoku board"></div>
+      <section class="workflow-panel recovery-only" aria-label="Recovery warning">
+        <article>
+          <span>Recovery</span>
+          <h2>Checkpointed Runs</h2>
+          <p id="recoveryText">Completed source/family records are reused when the same pattern scan starts again.</p>
+        </article>
+      </section>
+
+      <section class="dashboard">
+        <div class="board-panel">
+          <div class="panel-heading">
+            <h2 id="boardTitle">Board</h2>
+            <p id="boardMeta">Current source board</p>
+          </div>
+          <div class="replay-controls board-controls">
+            <button id="playDiscoveriesButton" type="button">Play</button>
+            <button id="prevMoveButton" type="button">Prev</button>
+            <button id="nextMoveButton" type="button">Next</button>
+            <button id="resetMoveButton" type="button">Reset</button>
+            <strong id="moveStepText">0 / 0</strong>
+          </div>
+          <div id="board" class="sudoku-board" aria-label="Current Sudoku board"></div>
+
+          <section class="replay-panel">
+            <div class="panel-heading">
+              <h2>Selected Discovery</h2>
+              <p id="replayMeta">A discovery is one shuffle pattern that reached a solved endpoint. Colors show the shuffle locations.</p>
+            </div>
+            <div id="discoveryDetails" class="discovery-details" aria-label="Selected discovery details"></div>
+            <div id="discoveryList" class="discovery-list" aria-label="Discovered examples"></div>
+            <div id="moveList" class="move-list"></div>
+          </section>
+
         </div>
-        <div id="dataPage" class="data-page hidden" aria-live="polite"></div>
+
+        <aside class="scan-panel">
+          <section class="nth-panel">
+            <div class="panel-heading">
+              <h2>N-th Pair Shuffles</h2>
+              <p>Size-based scans. N means how many separate square-pairs trade values.</p>
+            </div>
+            <div class="section-actions">
+              <button id="startOnePairButton" type="button">Scan Selected One-Pair</button>
+              <button id="stopOnePairButton" type="button">Stop One-Pair</button>
+              <button id="startTwoPairButton" type="button">Scan Selected Two-Pair</button>
+              <button id="stopTwoPairButton" type="button">Stop Two-Pair</button>
+            </div>
+            <div id="nthShuffleList" class="research-card-list"></div>
+          </section>
+
+          <section class="interesting-panel">
+            <div class="panel-heading">
+              <h2>Interesting Shuffles</h2>
+              <p>Pattern ideas worth tracking separately from simple size counts.</p>
+            </div>
+            <div class="section-actions">
+              <button id="startRepeatedPairButton" type="button">Scan Selected Repeated Number-Pair</button>
+              <button id="stopRepeatedPairButton" type="button">Stop Repeated Number-Pair Scan</button>
+            </div>
+            <div id="interestingSwapList" class="research-card-list"></div>
+          </section>
+
+          <section class="large-panel">
+            <div class="panel-heading">
+              <h2>Large Structured Shuffles</h2>
+              <p>High-N scans near the disjoint limit. These must be generated from structure, not brute force.</p>
+            </div>
+            <div class="section-actions">
+              <button type="button" disabled>Large Structured Scan Not Built Yet</button>
+            </div>
+            <div id="largeShuffleList" class="research-card-list"></div>
+          </section>
+
+          <section class="backtracking-panel">
+            <div class="panel-heading">
+              <h2>Board-to-Board Backtracking</h2>
+              <p>Planned comparison mode for learning movement between two solved boards.</p>
+            </div>
+            <div id="backtrackingList" class="research-card-list"></div>
+          </section>
+
+          <section id="summaryGrid" class="summary-grid" aria-label="Shuffle scan summary">
+          </section>
+
+        </aside>
       </section>
     </main>
 
-    <script src="data/arbitrary-transformations-data.js"></script>
+    <script src="data/solved-board-sample-data.js"></script>
+    <script src="data/asymmetric-sequences-data.js"></script>
     <script src="app.js"></script>
   </body>
 </html>

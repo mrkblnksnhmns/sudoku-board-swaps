@@ -1,640 +1,742 @@
 const SIZE = 9;
-const BOX = 3;
-const STAGE_SIZE = 760;
-const BOARD_INSET = 92;
-const BOARD_SIZE = STAGE_SIZE - BOARD_INSET * 2;
-const CELL_SIZE = BOARD_SIZE / SIZE;
+const COL_NAMES = "ABCDEFGHI";
+const MAX_DISJOINT_SWAPS = Math.floor((SIZE * SIZE) / 2);
+const SHUFFLE_COLOR_COUNT = 8;
+const PLAY_INTERVAL_MS = 900;
 
-const boards = {
-  base: {
-    name: "Cyclic Base",
-    grid: [
-      [1, 2, 3, 4, 5, 6, 7, 8, 9],
-      [4, 5, 6, 7, 8, 9, 1, 2, 3],
-      [7, 8, 9, 1, 2, 3, 4, 5, 6],
-      [2, 3, 4, 5, 6, 7, 8, 9, 1],
-      [5, 6, 7, 8, 9, 1, 2, 3, 4],
-      [8, 9, 1, 2, 3, 4, 5, 6, 7],
-      [3, 4, 5, 6, 7, 8, 9, 1, 2],
-      [6, 7, 8, 9, 1, 2, 3, 4, 5],
-      [9, 1, 2, 3, 4, 5, 6, 7, 8],
-    ],
-    endpointCounts: {
-      rows: 1296,
-      columns: 46656,
-    },
-    stepwiseCounts: {
-      rows: 216,
-      columns: 46656,
-    },
-    worstCase: {
-      rows: "6 single, 8 with block swaps",
-      columns: "12 single, 10 with block swaps",
-    },
-  },
-  comparison: {
-    name: "Comparison",
-    grid: [
-      [5, 3, 4, 6, 7, 8, 9, 1, 2],
-      [6, 7, 2, 1, 9, 5, 3, 4, 8],
-      [1, 9, 8, 3, 4, 2, 5, 6, 7],
-      [8, 5, 9, 7, 6, 1, 4, 2, 3],
-      [4, 2, 6, 8, 5, 3, 7, 9, 1],
-      [7, 1, 3, 9, 2, 4, 8, 5, 6],
-      [9, 6, 1, 5, 3, 7, 2, 8, 4],
-      [2, 8, 7, 4, 1, 9, 6, 3, 5],
-      [3, 4, 5, 2, 8, 6, 1, 7, 9],
-    ],
-    endpointCounts: {
-      rows: 1296,
-      columns: 1296,
-    },
-    stepwiseCounts: {
-      rows: 216,
-      columns: 216,
-    },
-    worstCase: {
-      rows: "6 single, 8 with block swaps",
-      columns: "6 single, 8 with block swaps",
-    },
-  },
-};
-
-const tradeExamples = [
-  {
-    id: "base-1-4-top",
-    board: "base",
-    label: "Base trade 1<->4, top band",
-    swaps: [
-      [[0, 0], [0, 3]],
-      [[1, 6], [1, 0]],
-      [[2, 3], [2, 6]],
-    ],
-    middleSwapIndex: 0,
-  },
-  {
-    id: "base-1-7-top",
-    board: "base",
-    label: "Base trade 1<->7, top band",
-    swaps: [
-      [[0, 0], [0, 6]],
-      [[1, 6], [1, 3]],
-      [[2, 3], [2, 0]],
-    ],
-    middleSwapIndex: 0,
-  },
-  {
-    id: "base-2-5-middle",
-    board: "base",
-    label: "Base trade 2<->5, middle band",
-    swaps: [
-      [[3, 0], [3, 3]],
-      [[4, 6], [4, 0]],
-      [[5, 3], [5, 6]],
-    ],
-    middleSwapIndex: 0,
-  },
-];
+let sampleData = window.SUDOKU_SOLVED_BOARD_SAMPLE;
+let asymmetricData = window.SUDOKU_ASYMMETRIC_SEQUENCES;
+let jobStatus = null;
+let discoveryPlaybackTimer = null;
 
 const state = {
-  view: "arbitrary-transformations",
-  board: "base",
-  layer: "trade",
-  tradeStep: "start",
-  tradeId: tradeExamples[0].id,
-  showDefaultEdges: true,
-  showExtraEdges: true,
-  showInvalidUnits: true,
-  batchData: window.SUDOKU_ROLE_GRAPH_BATCH,
-  tradeBatchData: window.SUDOKU_TRADE_TARGET_BATCH,
-  adjacencyBatchData: window.SUDOKU_TRADE_ADJACENCY,
-  forbiddenBatchData: window.SUDOKU_FORBIDDEN_NEIGHBORHOOD,
-  bridgeDepthData: window.SUDOKU_BRIDGE_DEPTH,
-  arbitraryData: window.SUDOKU_ARBITRARY_TRANSFORMATIONS,
-  jobStatus: null,
-  batchPollStatus: window.location.protocol === "file:" ? "snapshot" : "waiting",
-  tradeBatchPollStatus: window.location.protocol === "file:" ? "snapshot" : "waiting",
-  adjacencyBatchPollStatus: window.location.protocol === "file:" ? "snapshot" : "waiting",
-  forbiddenBatchPollStatus: window.location.protocol === "file:" ? "snapshot" : "waiting",
-  bridgeDepthPollStatus: window.location.protocol === "file:" ? "snapshot" : "waiting",
-  arbitraryPollStatus: window.location.protocol === "file:" ? "snapshot" : "waiting",
+  sourceId: null,
+  exampleIndex: 0,
+  moveStep: 0,
+  playing: false,
 };
 
-const boardEl = document.querySelector("#board");
-const edgeLayer = document.querySelector("#edgeLayer");
-const metricsList = document.querySelector("#metricsList");
-const summaryText = document.querySelector("#summaryText");
-const viewTitle = document.querySelector("#viewTitle");
-const viewSubtitle = document.querySelector("#viewSubtitle");
-const boardStage = document.querySelector(".board-stage");
-const dataPage = document.querySelector("#dataPage");
-const jobList = document.querySelector("#jobList");
+const sourceSelect = document.querySelector("#sourceSelect");
+const recoveryText = document.querySelector("#recoveryText");
+const boardTitle = document.querySelector("#boardTitle");
+const boardMeta = document.querySelector("#boardMeta");
+const board = document.querySelector("#board");
+const summaryGrid = document.querySelector("#summaryGrid");
+const nthShuffleList = document.querySelector("#nthShuffleList");
+const interestingSwapList = document.querySelector("#interestingSwapList");
+const largeShuffleList = document.querySelector("#largeShuffleList");
+const backtrackingList = document.querySelector("#backtrackingList");
+const jobStatusText = document.querySelector("#jobStatusText");
+const stopScanButton = document.querySelector("#stopScanButton");
+const startOnePairButton = document.querySelector("#startOnePairButton");
+const stopOnePairButton = document.querySelector("#stopOnePairButton");
+const startTwoPairButton = document.querySelector("#startTwoPairButton");
+const stopTwoPairButton = document.querySelector("#stopTwoPairButton");
+const startRepeatedPairButton = document.querySelector("#startRepeatedPairButton");
+const stopRepeatedPairButton = document.querySelector("#stopRepeatedPairButton");
+const discoveryDetails = document.querySelector("#discoveryDetails");
+const discoveryList = document.querySelector("#discoveryList");
+const replayMeta = document.querySelector("#replayMeta");
+const playDiscoveriesButton = document.querySelector("#playDiscoveriesButton");
+const prevMoveButton = document.querySelector("#prevMoveButton");
+const nextMoveButton = document.querySelector("#nextMoveButton");
+const resetMoveButton = document.querySelector("#resetMoveButton");
+const moveStepText = document.querySelector("#moveStepText");
+const moveList = document.querySelector("#moveList");
 
-function sorted(values) {
-  return [...values].sort((a, b) => a - b).join("");
+function isCyclicSource(source) {
+  return source?.id === "cyclic-base" || source?.id === "seed-cyclic-base";
 }
 
-function validateGrid(grid) {
-  const expected = "123456789";
-  for (let index = 0; index < SIZE; index += 1) {
-    if (sorted(grid[index]) !== expected) return false;
-    if (sorted(grid.map((row) => row[index])) !== expected) return false;
+function visibleSources() {
+  const sources = asymmetricData?.sources ?? [];
+  const nonCyclic = sources.filter((source) => !isCyclicSource(source));
+  return sortSources(nonCyclic.length ? nonCyclic : sources);
+}
+
+function sortSources(sources) {
+  return [...sources].sort((first, second) => {
+    const firstLabel = sourceSortLabel(first);
+    const secondLabel = sourceSortLabel(second);
+    const firstIsComparison = first?.id === "comparison" || first?.id === "seed-comparison";
+    const secondIsComparison = second?.id === "comparison" || second?.id === "seed-comparison";
+    if (firstIsComparison !== secondIsComparison) return firstIsComparison ? -1 : 1;
+    return firstLabel.localeCompare(secondLabel, undefined, { numeric: true, sensitivity: "base" })
+      || String(first?.id ?? "").localeCompare(String(second?.id ?? ""), undefined, { numeric: true, sensitivity: "base" });
+  });
+}
+
+function sourceSortLabel(source) {
+  if (source?.id === "comparison" || source?.id === "seed-comparison") return "comparison board";
+  return source?.label ?? source?.id ?? "source board";
+}
+
+function currentSource() {
+  const sources = visibleSources();
+  return sources.find((source) => source.id === state.sourceId) ?? sources[0] ?? null;
+}
+
+function setDefaultSource() {
+  const sources = visibleSources();
+  if (state.sourceId && sources.some((source) => source.id === state.sourceId)) return;
+  state.sourceId = sources[0]?.id ?? null;
+}
+
+function renderSourceOptions() {
+  const sources = visibleSources();
+  setDefaultSource();
+  sourceSelect.innerHTML = sources.map((source) => (
+    `<option value="${source.id}">${escapeHtml(displaySourceLabel(source))}</option>`
+  )).join("");
+  sourceSelect.value = state.sourceId ?? "";
+}
+
+function displaySourceLabel(source) {
+  const index = visibleSources().findIndex((visibleSource) => visibleSource.id === source?.id);
+  return index >= 0 ? String(index + 1) : "source board";
+}
+
+function sourceExplanation(source) {
+  if (source?.id === "comparison" || source?.id === "seed-comparison") {
+    return "A solved board used as the current visible pattern-finding example. The cyclic baseline is kept as background findings.";
   }
-
-  for (let row = 0; row < SIZE; row += BOX) {
-    for (let col = 0; col < SIZE; col += BOX) {
-      const values = [];
-      for (let r = row; r < row + BOX; r += 1) {
-        for (let c = col; c < col + BOX; c += 1) values.push(grid[r][c]);
-      }
-      if (sorted(values) !== expected) return false;
-    }
-  }
-
-  return true;
-}
-
-function cloneGrid(grid) {
-  return grid.map((row) => [...row]);
-}
-
-function swapRows(grid, a, b) {
-  const next = cloneGrid(grid);
-  [next[a], next[b]] = [next[b], next[a]];
-  return next;
-}
-
-function swapCols(grid, a, b) {
-  const next = cloneGrid(grid);
-  for (const row of next) [row[a], row[b]] = [row[b], row[a]];
-  return next;
-}
-
-function applyCellSwap(grid, first, second) {
-  const next = cloneGrid(grid);
-  const [r1, c1] = first;
-  const [r2, c2] = second;
-  [next[r1][c1], next[r2][c2]] = [next[r2][c2], next[r1][c1]];
-  return next;
-}
-
-function applyTradeStep(grid, trade, step) {
-  if (step === "start") return cloneGrid(grid);
-
-  let next = cloneGrid(grid);
-  const swapLimit = step === "middle" ? trade.middleSwapIndex + 1 : trade.swaps.length;
-  for (let index = 0; index < swapLimit; index += 1) {
-    next = applyCellSwap(next, trade.swaps[index][0], trade.swaps[index][1]);
-  }
-  return next;
-}
-
-function validSwapEdges(grid, axis) {
-  const edges = [];
-  for (let a = 0; a < SIZE; a += 1) {
-    for (let b = a + 1; b < SIZE; b += 1) {
-      const next = axis === "rows" ? swapRows(grid, a, b) : swapCols(grid, a, b);
-      if (!validateGrid(next)) continue;
-      edges.push({
-        a,
-        b,
-        kind: defaultSymmetryEdge(a, b) ? "default" : "extra",
-      });
-    }
-  }
-  return edges;
-}
-
-function defaultSymmetryEdge(a, b) {
-  return Math.floor(a / BOX) === Math.floor(b / BOX);
-}
-
-function currentTrade() {
-  return tradeExamples.find((trade) => trade.id === state.tradeId) ?? tradeExamples[0];
-}
-
-function invalidUnits(grid) {
-  const units = { rows: new Set(), cols: new Set(), boxes: new Set() };
-  const expected = "123456789";
-
-  for (let index = 0; index < SIZE; index += 1) {
-    if (sorted(grid[index]) !== expected) units.rows.add(index);
-    if (sorted(grid.map((row) => row[index])) !== expected) units.cols.add(index);
-  }
-
-  for (let row = 0; row < SIZE; row += BOX) {
-    for (let col = 0; col < SIZE; col += BOX) {
-      const values = [];
-      for (let r = row; r < row + BOX; r += 1) {
-        for (let c = col; c < col + BOX; c += 1) values.push(grid[r][c]);
-      }
-      if (sorted(values) !== expected) units.boxes.add(`${row / BOX},${col / BOX}`);
-    }
-  }
-
-  return units;
+  return "One solved source board from the local board-finding sample. The pattern scan tests shuffle rules starting from this board.";
 }
 
 function render() {
-  if (state.view !== "board") {
-    boardStage.classList.add("hidden");
-    dataPage.classList.remove("hidden");
-    edgeLayer.innerHTML = "";
-    renderDataPage();
-    syncControls();
+  const source = currentSource();
+  renderWorkflowText();
+
+  if (!source) {
+    boardTitle.textContent = "No Pattern Output";
+    boardMeta.textContent = "Load a solved board, then scan it case by case.";
+    summaryGrid.innerHTML = "";
+    renderBoard("");
+    renderReplay([]);
     return;
   }
 
-  boardStage.classList.remove("hidden");
-  dataPage.classList.add("hidden");
+  sourceSelect.value = source.id;
+  boardTitle.textContent = displaySourceLabel(source);
+  boardMeta.textContent = sourceExplanation(source);
 
-  const boardInfo = boards[state.board];
-  const trade = currentTrade();
-  const boardKey = state.layer === "trade" ? trade.board : state.board;
-  const baseGrid = boards[boardKey].grid;
-  const grid = state.layer === "trade" ? applyTradeStep(baseGrid, trade, state.tradeStep) : baseGrid;
-  const invalid = invalidUnits(grid);
-
-  renderBoard(grid, invalid);
-  renderEdges(grid, trade, invalid);
-  renderText(boardInfo, trade, grid);
-  syncControls();
+  renderSummary(source);
+  renderNthPairShuffles(source);
+  renderInterestingSwaps(source);
+  renderLargeStructuredShuffles();
+  renderBacktrackingPrep();
+  renderReplay(examplesForSource(source));
 }
 
-function renderDataPage() {
-  if (state.view === "arbitrary-transformations") renderArbitraryTransformationsPage();
-  if (state.view === "test-plan") renderTestPlanPage();
+function renderWorkflowText() {
+  const runningJob = runningJobRecord();
+  recoveryText.textContent = runningJob
+    ? `${runningJob.label} is running. Progress is written to JSON checkpoints while it runs.`
+    : "If power is lost, rerun the same scan for that board. Completed board/type records are reused; an unfinished shuffle type restarts.";
 }
 
-function renderRoleBatchPage() {
-  const batch = state.batchData;
-  summaryText.textContent = "Role graph batch";
-  viewTitle.textContent = "Role Batch";
-  viewSubtitle.textContent = "Saved profiles for board-specific row and column role graphs.";
+function renderSummary(source) {
+  const visibleSummary = summarizeVisibleSources();
+  const rows = [
+    ["Visible Boards", visibleSummary.sourceCount, "Solved source boards currently shown in this UI."],
+    ["Max Disjoint", MAX_DISJOINT_SWAPS, "Largest possible square-pair shuffle if every cell is used at most once."],
+    ["Genuine", visibleSummary.genuineEndpoints, "Solved endpoints that are not just standard symmetry copies."],
+    ["Types", visibleSummary.sequenceTypeCount, "Distinct shuffle pattern records found in the scan output."],
+  ];
 
-  if (!batch) {
-    dataPage.innerHTML = emptyState("Role batch data has not been generated yet.");
-    renderMetrics([...batchMetrics()]);
-    return;
-  }
-
-  dataPage.innerHTML = `
-    <div class="card-grid">
-      ${statusCard("Processed", `${batch.processedCount}/${batch.collectedBoardCount}`, batch.complete)}
-      ${statusCard("Signature Groups", String(batch.groups.length), batch.complete)}
-      ${statusCard("Updated", shortDate(batch.updatedAt), batch.complete)}
+  summaryGrid.innerHTML = rows.map(([label, value, help]) => `
+    <div>
+      <span>${escapeHtml(label)}</span>
+      <strong>${escapeHtml(value)}</strong>
+      <p>${escapeHtml(help)}</p>
     </div>
-    ${progressBlock(batch.processedCount, batch.collectedBoardCount)}
-    ${groupTable(batch.groups, "Role graph signature groups")}
-  `;
-  renderMetrics([...batchMetrics()]);
-}
-
-function renderTradeBatchPage() {
-  const batch = state.tradeBatchData;
-  summaryText.textContent = "Trade target batch";
-  viewTitle.textContent = "Trade Targets";
-  viewSubtitle.textContent = "Structured forbidden move endpoints generated from cyclic-base two-symbol trades.";
-
-  if (!batch) {
-    dataPage.innerHTML = emptyState("Trade target data has not been generated yet.");
-    renderMetrics([...tradeBatchMetrics()]);
-    return;
-  }
-
-  const current = batch.currentTarget
-    ? `${batch.currentTarget.index}/${batch.currentTarget.count}: ${escapeHtml(batch.currentTarget.label)}`
-    : "idle";
-
-  dataPage.innerHTML = `
-    <div class="card-grid">
-      ${statusCard("Processed", `${batch.processedCount}/${batch.config.targetCount}`, batch.complete)}
-      ${statusCard("Signature Groups", String(batch.groups.length), batch.complete)}
-      ${statusCard("Current Target", current, batch.complete)}
-    </div>
-    ${progressBlock(batch.processedCount, batch.config.targetCount)}
-    ${tradeProfileTable(batch.profiles ?? [])}
-    ${groupTable(batch.groups, "Trade target signature groups")}
-  `;
-  renderMetrics([...batchMetrics()]);
-}
-
-function renderAdjacencyBatchPage() {
-  const batch = state.adjacencyBatchData;
-  summaryText.textContent = "Trade adjacency batch";
-  viewTitle.textContent = "Adjacency Graph";
-  viewSubtitle.textContent = "Structured trade-to-trade connectivity for cyclic-base trade targets.";
-
-  if (!batch) {
-    dataPage.innerHTML = emptyState("Trade adjacency data has not been generated yet.");
-    renderMetrics([...adjacencyBatchMetrics()]);
-    return;
-  }
-
-  const current = batch.currentSource
-    ? `${batch.currentSource.index}/${batch.currentSource.count}: ${escapeHtml(batch.currentSource.label)}`
-    : "idle";
-
-  dataPage.innerHTML = `
-    <div class="card-grid">
-      ${statusCard("Processed", `${batch.processedCount}/${batch.config.sourceCount}`, batch.complete)}
-      ${statusCard("Current Source", current, batch.complete)}
-      ${statusCard("Summary", `${batch.summary.self} / ${batch.summary.base} / ${batch.summary.knownTradeTarget} / ${batch.summary.newBoard}`, batch.complete)}
-    </div>
-    ${progressBlock(batch.processedCount, batch.config.sourceCount)}
-    ${adjacencySummaryTable(batch.sources ?? [])}
-  `;
-  renderMetrics([...adjacencyBatchMetrics()]);
-}
-
-function renderForbiddenNeighborhoodPage() {
-  const batch = state.forbiddenBatchData;
-  summaryText.textContent = "Forbidden neighborhood batch";
-  viewTitle.textContent = "Forbidden Neighborhood";
-  viewSubtitle.textContent = "Structured trade neighborhoods around seed boards and trade targets.";
-
-  if (!batch) {
-    dataPage.innerHTML = emptyState("Forbidden neighborhood data has not been generated yet.");
-    renderMetrics([...forbiddenBatchMetrics()]);
-    return;
-  }
-
-  const current = batch.currentSource
-    ? `${batch.currentSource.index}/${batch.currentSource.count}: ${escapeHtml(batch.currentSource.label)}`
-    : "idle";
-
-  dataPage.innerHTML = `
-    <div class="card-grid">
-      ${statusCard("Processed", `${batch.processedCount}/${batch.config.sourceCount}`, batch.complete)}
-      ${statusCard("Current Source", current, batch.complete)}
-      ${statusCard("Total Trades", String(batch.summary?.totalTrades ?? 0), batch.complete)}
-    </div>
-    ${progressBlock(batch.processedCount, batch.config.sourceCount)}
-    ${forbiddenNeighborhoodSummaryTable(batch.sources ?? [])}
-    ${groupTable(batch.groups ?? [], "Forbidden neighborhood signature groups")}
-  `;
-  renderMetrics([...forbiddenBatchMetrics()]);
-}
-
-function renderBridgeDepthPage() {
-  const batch = state.bridgeDepthData;
-  summaryText.textContent = "Bridge depth batch";
-  viewTitle.textContent = "Bridge Depth";
-  viewSubtitle.textContent = "Depth-2 forbidden bridges across seed boards and a small trade frontier.";
-
-  if (!batch) {
-    dataPage.innerHTML = emptyState("Bridge depth data has not been generated yet.");
-    renderMetrics([...bridgeDepthMetrics()]);
-    return;
-  }
-
-  const current = batch.currentSource
-    ? `${batch.currentSource.index}/${batch.currentSource.count}: ${escapeHtml(batch.currentSource.label)}`
-    : "idle";
-
-  dataPage.innerHTML = `
-    <div class="card-grid">
-      ${statusCard("Processed", `${batch.processedCount}/${batch.config.sourceCount}`, batch.complete)}
-      ${statusCard("Current Source", current, batch.complete)}
-      ${statusCard("Nontrivial Sources", String(batch.summary?.nontrivialSources ?? 0), batch.complete)}
-    </div>
-    ${progressBlock(batch.processedCount, batch.config.sourceCount)}
-    ${bridgeDepthSummaryTable(batch.sources ?? [])}
-    ${groupTable(batch.groups ?? [], "Bridge depth signature groups")}
-  `;
-  renderMetrics([...bridgeDepthMetrics()]);
-}
-
-function renderArbitraryTransformationsPage() {
-  const batch = state.arbitraryData;
-  summaryText.textContent = "Arbitrary cell-piece transformations";
-  viewTitle.textContent = "Arbitrary Transforms";
-  viewSubtitle.textContent = "Cell-swap endpoints classified after excluding standard Sudoku symmetries.";
-
-  if (!batch) {
-    dataPage.innerHTML = emptyState("Arbitrary transformation data has not been generated yet.");
-    renderMetrics([...arbitraryMetrics()]);
-    return;
-  }
-
-  dataPage.innerHTML = `
-    <div class="card-grid">
-      ${statusCard("Sources", String(batch.summary?.sources ?? batch.profiles?.length ?? 0), true)}
-      ${statusCard("Genuine at 2 Swaps", String(batch.summary?.genuineAtTwoSwaps ?? 0), true)}
-      ${statusCard("Genuine Trade Sources", String(batch.summary?.genuineInTwoSymbolTrades ?? 0), true)}
-    </div>
-    <div class="data-card">
-      <h3>Definition</h3>
-      <p>${escapeHtml(batch.definition?.transformation ?? "")}</p>
-      <p>${escapeHtml(batch.definition?.excluded ?? "")}</p>
-    </div>
-    ${arbitrarySummaryTable(batch.profiles ?? [])}
-    ${jobLogBlock()}
-  `;
-  renderMetrics([...arbitraryMetrics()]);
-}
-
-function renderTestPlanPage() {
-  summaryText.textContent = "Experiment queue";
-  viewTitle.textContent = "Test Plan";
-  viewSubtitle.textContent = "Commands for the arbitrary cell-swap transformation model.";
-
-  dataPage.innerHTML = `
-    <div class="card-grid">
-      ${statusCard("Arbitrary", state.arbitraryData ? `${state.arbitraryData.profiles.length}/${state.arbitraryData.config.sourceCount}` : "not generated", Boolean(state.arbitraryData))}
-    </div>
-    <div class="data-card command-list">
-      <h3>Runnable Tests</h3>
-      ${commandItem("Visualizer server", "node serve-visualizer.js", "Serves the dashboard and polls saved JSON data.")}
-      ${commandItem("Big frontier scan", "node sudoku-9x9-arbitrary-transformations.js --frontier", "Serial, checkpointed scan over the seed boards plus cyclic-base trade-target frontier.")}
-    </div>
-  `;
-  renderMetrics([...arbitraryMetrics()]);
-}
-
-function statusCard(label, value, complete) {
-  const statusClass = complete ? "" : " running";
-  const statusText = complete ? "complete" : "running";
-  return `
-    <div class="data-card">
-      <h3>${escapeHtml(label)}</h3>
-      <div class="metric-large">${escapeHtml(value)}</div>
-      <span class="status-pill${statusClass}">${statusText}</span>
-    </div>
-  `;
-}
-
-function progressBlock(done, total) {
-  const percent = total > 0 ? Math.min(100, Math.round((done / total) * 100)) : 0;
-  return `
-    <div class="data-card">
-      <h3>Progress</h3>
-      <div class="progress-track"><div class="progress-fill" style="width:${percent}%"></div></div>
-      <p>${done}/${total} (${percent}%)</p>
-    </div>
-  `;
-}
-
-function groupTable(groups = [], title) {
-  const rows = groups.slice(0, 12).map((group, index) => `
-    <tr>
-      <td>${index + 1}</td>
-      <td>${group.count}</td>
-      <td>${escapeHtml((group.examples ?? []).join("; "))}</td>
-    </tr>
   `).join("");
-
-  return `
-    <table class="data-table">
-      <thead><tr><th colspan="3">${escapeHtml(title)}</th></tr></thead>
-      <tbody>
-        <tr><th>#</th><th>Boards</th><th>Examples</th></tr>
-        ${rows || "<tr><td colspan=\"3\">No groups yet.</td></tr>"}
-      </tbody>
-    </table>
-  `;
 }
 
-function tradeProfileTable(profiles = []) {
-  const rows = profiles.slice(-8).reverse().map((profile) => `
-    <tr>
-      <td>${escapeHtml(profile.label)}</td>
-      <td>${profile.trade.size}</td>
-      <td>${escapeHtml(profile.paritySignature)}</td>
-      <td>${profile.row.edgeCount}/${profile.col.edgeCount}</td>
-    </tr>
+function renderInterestingSwaps(source = currentSource()) {
+  const tradeFamily = source?.operationFamilies?.find((family) => family.id === "two-symbol-balanced-trade") ?? null;
+  const tradeGenuine = tradeFamily?.classCounts?.genuine ?? 0;
+  const tradeStats = statsForFamily(tradeFamily);
+  const tradeStatus = familyStatusLabel(tradeFamily, "repeated-number-pair-shuffles");
+
+  const rows = [
+    {
+      label: "Repeated number-pair shuffle",
+      status: tradeFamily ? `${tradeGenuine} genuine; ${tradeStatus}` : "not run yet",
+      stats: tradeStats,
+      body: "This belongs here because it is not just a size count. Several square-pairs reuse the same two numbers, and the discovery is the location shape: rows, columns, boxes, bands, and stacks.",
+    },
+  ];
+
+  interestingSwapList.innerHTML = rows.map((row) => `
+    <article class="research-card">
+      <div>
+        <strong>${escapeHtml(row.label)}</strong>
+        <span>${escapeHtml(row.status)}</span>
+      </div>
+      <p>${escapeHtml(row.body)}</p>
+      ${row.stats ? cardStatsHtml(row.stats) : ""}
+      ${progressBarHtml(tradeFamily?.progress?.percent ?? 0)}
+    </article>
   `).join("");
-
-  return `
-    <table class="data-table">
-      <thead><tr><th colspan="4">Latest processed trade targets</th></tr></thead>
-      <tbody>
-        <tr><th>Target</th><th>Cells</th><th>Parity</th><th>Row/Col Edges</th></tr>
-        ${rows || "<tr><td colspan=\"4\">No processed targets yet.</td></tr>"}
-      </tbody>
-    </table>
-  `;
 }
 
-function adjacencySummaryTable(sources = []) {
-  const rows = sources.slice(-10).reverse().map((source) => `
-    <tr>
-      <td>${escapeHtml(source.label)}</td>
-      <td>${source.outgoingCount ?? 0}</td>
-      <td>${escapeHtml(JSON.stringify(source.classCounts ?? {}))}</td>
-    </tr>
-  `).join("");
-
+function progressBarHtml(percent) {
+  const safePercent = Math.max(0, Math.min(100, Number(percent) || 0));
   return `
-    <table class="data-table">
-      <thead><tr><th colspan="3">Latest adjacency sources</th></tr></thead>
-      <tbody>
-        <tr><th>Source</th><th>Outgoing</th><th>Classes</th></tr>
-        ${rows || "<tr><td colspan=\"3\">No adjacency data yet.</td></tr>"}
-      </tbody>
-    </table>
-  `;
-}
-
-function forbiddenNeighborhoodSummaryTable(sources = []) {
-  const rows = sources.slice(-10).reverse().map((source) => `
-    <tr>
-      <td>${escapeHtml(source.label)}</td>
-      <td>${escapeHtml(source.sourceKind ?? "seed")}</td>
-      <td>${source.totalTrades ?? 0}</td>
-      <td>${source.uniqueTargetCount ?? 0}</td>
-      <td>${source.minimumSize ?? 0}</td>
-      <td>${source.minimumSwapDepth ?? 0}</td>
-    </tr>
-  `).join("");
-
-  return `
-    <table class="data-table">
-      <thead><tr><th colspan="6">Latest forbidden-neighborhood sources</th></tr></thead>
-      <tbody>
-        <tr><th>Source</th><th>Kind</th><th>Trades</th><th>Unique Targets</th><th>Min Size</th><th>Min Depth</th></tr>
-        ${rows || "<tr><td colspan=\"6\">No forbidden-neighborhood data yet.</td></tr>"}
-      </tbody>
-    </table>
-  `;
-}
-
-function bridgeDepthSummaryTable(sources = []) {
-  const rows = sources.slice(-10).reverse().map((source) => `
-    <tr>
-      <td>${escapeHtml(source.label)}</td>
-      <td>${escapeHtml(source.sourceKind ?? "seed")}</td>
-      <td>${source.bridgeCount ?? 0}</td>
-      <td>${source.uniqueTargetCount ?? 0}</td>
-      <td>${source.nontrivialTargetCount ?? 0}</td>
-      <td>${source.hasNontrivialBridge ? "yes" : "no"}</td>
-    </tr>
-  `).join("");
-
-  return `
-    <table class="data-table">
-      <thead><tr><th colspan="6">Latest bridge-depth sources</th></tr></thead>
-      <tbody>
-        <tr><th>Source</th><th>Kind</th><th>Bridges</th><th>Targets</th><th>Nontrivial</th><th>Has Bridge</th></tr>
-        ${rows || "<tr><td colspan=\"6\">No bridge-depth data yet.</td></tr>"}
-      </tbody>
-    </table>
-  `;
-}
-
-function arbitrarySummaryTable(profiles = []) {
-  const rows = profiles.map((profile) => `
-    <tr>
-      <td>${escapeHtml(profile.label)}</td>
-      <td>${profile.oneSwap.uniqueTargets}</td>
-      <td>${profile.oneSwap.classCounts.genuine}</td>
-      <td>${profile.twoSwap.uniqueTargets}</td>
-      <td>${profile.twoSwap.classCounts.genuine}</td>
-      <td>${profile.twoSymbolTrades.scanned ? profile.twoSymbolTrades.uniqueTargets : "not scanned"}</td>
-      <td>${profile.twoSymbolTrades.scanned ? profile.twoSymbolTrades.classCounts.genuine : "not scanned"}</td>
-      <td>${profile.twoSymbolTrades.scanned ? profile.twoSymbolTrades.minimumGenuineSwapDepth : "not scanned"}</td>
-    </tr>
-  `).join("");
-
-  return `
-    <table class="data-table">
-      <thead><tr><th colspan="8">Arbitrary transformation summary</th></tr></thead>
-      <tbody>
-        <tr><th>Source</th><th>1-Swap Targets</th><th>1-Swap Genuine</th><th>2-Swap Targets</th><th>2-Swap Genuine</th><th>Trade Targets</th><th>Trade Genuine</th><th>Min Trade Depth</th></tr>
-        ${rows || "<tr><td colspan=\"8\">No arbitrary transformation data yet.</td></tr>"}
-      </tbody>
-    </table>
-  `;
-}
-
-function jobLogBlock() {
-  const job = primaryJob();
-  if (!job?.logTail?.length) return "";
-
-  return `
-    <div class="data-card command-list">
-      <h3>Job Log</h3>
-      ${job.logTail.slice(-8).map((line) => `<code>${escapeHtml(line)}</code>`).join("")}
+    <div class="mini-progress" aria-label="${safePercent}% complete">
+      <span style="width: ${safePercent}%"></span>
     </div>
   `;
 }
 
-function commandItem(title, command, description) {
+function renderNthPairShuffles(source) {
+  const familyById = new Map((source.operationFamilies ?? []).map((family) => [family.id, family]));
+  const onePairStats = statsForFamily(familyById.get("exact-disjoint-cell-swap-depth-1"));
+  const twoPairStats = statsForFamily(familyById.get("exact-disjoint-cell-swap-depth-2"));
+  const rows = [
+    {
+      label: "One-pair shuffle",
+      familyId: "exact-disjoint-cell-swap-depth-1",
+      stats: onePairStats,
+      body: "One square-pair trades values. It touches 2 cells and is the smallest possible real shuffle.",
+    },
+    {
+      label: "Two-pair shuffle",
+      familyId: "exact-disjoint-cell-swap-depth-2",
+      stats: twoPairStats,
+      body: "Two square-pairs trade values. It touches 4 cells, and no cell can be reused.",
+    },
+    {
+      label: "Three-pair shuffle",
+      familyId: "exact-disjoint-cell-swap-depth-3",
+      status: "planned next scan",
+      body: "Three square-pairs trade values. It touches 6 cells. Raw size is 4,868,103,240 candidates per board, about 975x the two-pair scan, so it needs balance filters.",
+    },
+  ];
+
+  nthShuffleList.innerHTML = rows.map((row) => {
+    const family = familyById.get(row.familyId);
+    const status = row.status ?? (family ? `${family.classCounts?.genuine ?? 0} genuine; ${familyStatusLabel(family, jobIdForFamily(row.familyId))}` : "not run yet");
+    const percent = family?.progress?.percent ?? 0;
+    return `
+      <article class="research-card">
+        <div>
+          <strong>${escapeHtml(row.label)}</strong>
+          <span>${escapeHtml(status)}</span>
+        </div>
+        <p>${escapeHtml(row.body)}</p>
+        ${row.stats ? cardStatsHtml(row.stats) : ""}
+        ${progressBarHtml(percent)}
+      </article>
+    `;
+  }).join("");
+}
+
+function jobIdForFamily(familyId) {
+  if (familyId === "exact-disjoint-cell-swap-depth-1") return "one-pair-shuffles";
+  if (familyId === "exact-disjoint-cell-swap-depth-2") return "two-pair-shuffles";
+  if (familyId === "two-symbol-balanced-trade") return "repeated-number-pair-shuffles";
+  return null;
+}
+
+function familyStatusLabel(family, jobId = null) {
+  const status = family?.status ?? "pending";
+  const jobState = jobId ? jobStatus?.jobs?.[jobId]?.state : null;
+  if (status === "running" && jobStatus && jobState !== "running") {
+    return jobState === "stopped" || jobState === "interrupted" ? jobState : "interrupted";
+  }
+  return status;
+}
+
+function statsForFamily(family) {
+  if (!family) return null;
+  return {
+    candidatesChecked: family.progress?.checked ?? 0,
+    uniqueValidEndpoints: family.uniqueValidEndpoints ?? 0,
+    genuineEndpoints: family.classCounts?.genuine ?? 0,
+    sequenceTypes: family.sequenceTypeCount ?? 0,
+    runTimeMs: familyRunTimeMs(family),
+  };
+}
+
+function cardStatsHtml(stats) {
+  const rows = [
+    ["Checked", formatNumber(stats.candidatesChecked)],
+    ["Unique", formatNumber(stats.uniqueValidEndpoints)],
+    ["Genuine", formatNumber(stats.genuineEndpoints)],
+    ["Types", formatNumber(stats.sequenceTypes)],
+    ["Time", formatDuration(stats.runTimeMs)],
+  ];
+
   return `
-    <div class="command-item">
-      <h3>${escapeHtml(title)}</h3>
-      <p>${escapeHtml(description)}</p>
-      <code>${escapeHtml(command)}</code>
-    </div>
+    <dl class="card-stat-list">
+      ${rows.map(([label, value]) => `
+        <div>
+          <dt>${escapeHtml(label)}</dt>
+          <dd>${escapeHtml(value)}</dd>
+        </div>
+      `).join("")}
+    </dl>
   `;
 }
 
-function emptyState(message) {
-  return `<div class="data-card"><h3>No Data</h3><p>${escapeHtml(message)}</p></div>`;
+function familyRunTimeMs(family) {
+  if (!family?.startedAt || !family?.completedAt) return 0;
+  const started = Date.parse(family.startedAt);
+  const completed = Date.parse(family.completedAt);
+  return Number.isFinite(started) && Number.isFinite(completed) && completed >= started
+    ? completed - started
+    : 0;
 }
 
-function shortDate(value) {
-  return value ? new Date(value).toLocaleTimeString() : "unknown";
+function formatNumber(value) {
+  return Number(value || 0).toLocaleString();
+}
+
+function formatDuration(ms) {
+  if (!ms) return "not available";
+  const seconds = ms / 1000;
+  if (seconds < 60) return `about ${Math.round(seconds)} seconds`;
+  const minutes = seconds / 60;
+  if (minutes < 60) return `about ${minutes.toFixed(1)} minutes`;
+  return `about ${(minutes / 60).toFixed(1)} hours`;
+}
+
+function renderLargeStructuredShuffles() {
+  const rows = [
+    {
+      label: "Balanced large-N shuffle",
+      status: "planned lane",
+      body: `Search near the ${MAX_DISJOINT_SWAPS} square-pair limit by choosing balanced location rules first, then testing endpoints.`,
+    },
+    {
+      label: "Symmetry rejection",
+      status: "required filter",
+      body: "Reject row, column, band, stack, transpose, mirror, and digit-rename aggregates before calling a large shuffle genuine.",
+    },
+  ];
+
+  largeShuffleList.innerHTML = rows.map((row) => `
+    <article class="research-card">
+      <div>
+        <strong>${escapeHtml(row.label)}</strong>
+        <span>${escapeHtml(row.status)}</span>
+      </div>
+      <p>${escapeHtml(row.body)}</p>
+    </article>
+  `).join("");
+}
+
+function renderBacktrackingPrep() {
+  const rows = [
+    {
+      label: "One representative per family",
+      status: "target reduction",
+      body: "Start with one solved board from each standard-symmetry family, then later refine toward true shuffle-disjoint families.",
+    },
+    {
+      label: "Pairwise movement search",
+      status: "planned",
+      body: "Choose two completed boards and backtrack possible square-pair trades that explain how one could move toward the other.",
+    },
+    {
+      label: "40-down search",
+      status: "structured only",
+      body: "The 40 square-pair limit is useful for structured high-N hypotheses. Raw high-to-low brute force is too large, so this needs constraints before search.",
+    },
+    {
+      label: "Inference filter",
+      status: "required",
+      body: "If the movement is just a standard symmetry, classify it separately; keep only genuine asymmetric explanations for discoveries.",
+    },
+  ];
+
+  backtrackingList.innerHTML = rows.map((row) => `
+    <article class="research-card">
+      <div>
+        <strong>${escapeHtml(row.label)}</strong>
+        <span>${escapeHtml(row.status)}</span>
+      </div>
+      <p>${escapeHtml(row.body)}</p>
+    </article>
+  `).join("");
+}
+
+function summarizeVisibleSources() {
+  const out = {
+    sourceCount: visibleSources().length,
+    completeSources: 0,
+    attemptedSequences: 0,
+    uniqueValidEndpoints: 0,
+    genuineEndpoints: 0,
+    genuineEndpointFamilies: 0,
+    sequenceTypeCount: 0,
+  };
+
+  for (const source of visibleSources()) {
+    const sourceTotals = summarizeSource(source);
+    if ((source.operationFamilies ?? []).every((family) => family.status === "complete")) out.completeSources += 1;
+    out.attemptedSequences += sourceTotals.attemptedSequences;
+    out.uniqueValidEndpoints += sourceTotals.uniqueValidEndpoints;
+    out.genuineEndpoints += sourceTotals.genuineEndpoints;
+    out.genuineEndpointFamilies += sourceTotals.genuineEndpointFamilies;
+    out.sequenceTypeCount += sourceTotals.sequenceTypeCount;
+  }
+
+  return out;
+}
+
+function summarizeSource(source) {
+  const out = {
+    attemptedSequences: 0,
+    uniqueValidEndpoints: 0,
+    genuineEndpoints: 0,
+    genuineEndpointFamilies: 0,
+    sequenceTypeCount: 0,
+  };
+
+  for (const family of source.operationFamilies ?? []) {
+    out.attemptedSequences += family.attemptedSequences ?? 0;
+    out.uniqueValidEndpoints += family.uniqueValidEndpoints ?? 0;
+    out.genuineEndpoints += family.classCounts?.genuine ?? 0;
+    out.genuineEndpointFamilies += family.genuineEndpointFamilies ?? 0;
+    out.sequenceTypeCount += family.sequenceTypeCount ?? 0;
+  }
+  return out;
+}
+
+function scanTypeName(family) {
+  const id = family?.id ?? family?.familyId;
+  if (id === "exact-disjoint-cell-swap-depth-1") return "One-pair shuffle";
+  if (id === "exact-disjoint-cell-swap-depth-2") return "Two-pair shuffle";
+  if (id === "two-symbol-balanced-trade") return "Repeated number-pair shuffle";
+  return family?.label ?? family?.familyLabel ?? id ?? "shuffle type";
+}
+
+function examplesForSource(source) {
+  const examples = [];
+  for (const family of source.operationFamilies ?? []) {
+    for (const type of family.sequenceTypes ?? []) {
+      for (const example of type.examples ?? []) {
+        const sourceBoard = example.sourceBoard ?? source.board;
+        const shape = example.shape ?? locationShapeForMoves(sourceBoard, example.moves);
+        examples.push({
+          familyLabel: scanTypeName(family),
+          sourceLabel: displaySourceLabel(source),
+          moves: example.moves,
+          shape,
+          sourceBoard,
+          endpointBoard: example.endpointBoard,
+          className: example.className,
+        });
+      }
+    }
+  }
+  return examples;
+}
+
+function renderReplay(examples) {
+  if (state.exampleIndex >= examples.length) state.exampleIndex = 0;
+  const example = examples[state.exampleIndex] ?? null;
+  const moves = example?.moves ?? [];
+  if (state.moveStep > moves.length) state.moveStep = moves.length;
+
+  const replay = example
+    ? replayBoard(example.sourceBoard, moves, state.moveStep)
+    : { boardString: currentSource()?.board ?? "", highlights: new Map() };
+
+  renderBoard(replay.boardString, replay.highlights);
+  replayMeta.textContent = example
+    ? `${example.className}; ${shuffleCountLabel(moves.length)}; step ${state.moveStep} keeps every applied shuffle location highlighted.`
+    : "No discovered asymmetric example for this visible source board yet.";
+  discoveryDetails.innerHTML = example ? discoveryDetailsHtml(example) : "<p>No selected discovery yet.</p>";
+  renderDiscoveryList(examples);
+  moveStepText.textContent = `${state.moveStep} / ${moves.length}`;
+  playDiscoveriesButton.disabled = examples.length === 0;
+  playDiscoveriesButton.textContent = state.playing ? "Pause" : "Play";
+  prevMoveButton.disabled = !example || state.moveStep === 0;
+  nextMoveButton.disabled = !example || state.moveStep >= moves.length;
+  resetMoveButton.disabled = !example || state.moveStep === 0;
+
+  moveList.innerHTML = moves.length
+    ? moves.map((move, index) => `
+      <button class="move-chip shuffle-color-${index % SHUFFLE_COLOR_COUNT} ${index < state.moveStep ? "applied" : ""}" type="button" data-step="${index + 1}">
+        ${escapeHtml(move)}
+      </button>
+    `).join("")
+    : "";
+}
+
+function renderDiscoveryList(examples) {
+  discoveryList.innerHTML = examples.length
+    ? examples.map((example, index) => `
+      <button class="discovery-row ${index === state.exampleIndex ? "selected" : ""}" type="button" data-example="${index}">
+        <strong>Discovery ${index + 1}</strong>
+        <span>${escapeHtml(displayLocationShape(example.shape) ?? example.familyLabel)}</span>
+        <em>${escapeHtml(example.shape?.repeatedDigitPairKey ?? "mixed number-pairs")}</em>
+      </button>
+    `).join("")
+    : "<p>No discovered asymmetric examples for this board yet.</p>";
+}
+
+function discoveryDetailsHtml(example) {
+  const rows = [
+    ["Source board", example.sourceLabel],
+    ["Shuffle type", example.familyLabel],
+    ["Endpoint class", example.className],
+    ["Square-pairs", shuffleCountLabel(example.moves.length)],
+    ["Number-pairs", formatDigitPairCounts(example.shape)],
+    ["Shuffle locations", displayLocationShape(example.shape)],
+    ["Rows touched", formatTouched(example.shape, "rows")],
+    ["Columns touched", formatTouched(example.shape, "cols")],
+    ["Boxes touched", formatTouched(example.shape, "boxes")],
+    ["Bands touched", formatTouched(example.shape, "bands")],
+    ["Stacks touched", formatTouched(example.shape, "stacks")],
+  ];
+
+  return `
+    <dl class="discovery-detail-grid">
+      ${rows.map(([label, value]) => `
+        <div>
+          <dt>${escapeHtml(label)}</dt>
+          <dd>${escapeHtml(value ?? "unknown")}</dd>
+        </div>
+      `).join("")}
+    </dl>
+    <p>The scanner applies these square-pair trades to the source board. The final board remains solved and is not a standard symmetry copy of the source.</p>
+  `;
+}
+
+function shuffleCountLabel(count) {
+  return `${count} ${count === 1 ? "square-pair" : "square-pairs"}`;
+}
+
+function displayLocationShape(shape) {
+  if (!shape?.locationShape) return "unknown";
+  return shape.locationShape
+    .replaceAll(" swaps", " square-pairs")
+    .replaceAll(" swap", " square-pair");
+}
+
+function formatDigitPairCounts(shape) {
+  const entries = Object.entries(shape?.digitPairCounts ?? {});
+  if (entries.length === 0) return "unknown";
+  return entries.map(([pair, count]) => `${pair} x${count}`).join(", ");
+}
+
+function formatTouched(shape, key) {
+  const values = shape?.touched?.[key] ?? [];
+  return values.length ? values.join(", ") : "none";
+}
+
+function renderBoard(boardString, highlights = new Map()) {
+  board.innerHTML = "";
+  for (let index = 0; index < boardString.length; index += 1) {
+    const highlight = highlights.get(index);
+    const cell = document.createElement("div");
+    const classes = ["cell"];
+    if (highlight) {
+      classes.push("shuffle-cell", `shuffle-color-${highlight.pairIndex % SHUFFLE_COLOR_COUNT}`);
+      if (highlight.latest) classes.push("latest-shuffle");
+      cell.dataset.shuffle = String(highlight.pairIndex + 1);
+    }
+    cell.className = classes.join(" ");
+    cell.textContent = boardString[index];
+    board.appendChild(cell);
+  }
+}
+
+function replayBoard(startBoard, moves, step) {
+  const values = [...startBoard].map(Number);
+  const highlights = new Map();
+  for (let index = 0; index < step; index += 1) {
+    const [first, second] = pairFromNotation(moves[index]);
+    [values[first], values[second]] = [values[second], values[first]];
+    const highlight = { pairIndex: index, latest: index === step - 1 };
+    highlights.set(first, highlight);
+    highlights.set(second, highlight);
+  }
+  return {
+    boardString: values.join(""),
+    highlights,
+  };
+}
+
+function parseCellName(name) {
+  const col = COL_NAMES.indexOf(name[0].toUpperCase());
+  const row = Number(name.slice(1)) - 1;
+  if (col < 0 || row < 0 || row >= SIZE) return null;
+  return row * SIZE + col;
+}
+
+function pairFromNotation(move) {
+  const parts = move.split("<->").map(parseCellName);
+  return parts.includes(null) ? [0, 0] : parts;
+}
+
+function boxIndexForCell(cell) {
+  const row = Math.floor(cell / SIZE);
+  const col = cell % SIZE;
+  return Math.floor(row / 3) * 3 + Math.floor(col / 3);
+}
+
+function countMap(values) {
+  const counts = new Map();
+  for (const value of values) counts.set(value, (counts.get(value) ?? 0) + 1);
+  return Object.fromEntries([...counts.entries()].sort((a, b) => a[0].localeCompare(b[0])));
+}
+
+function uniqueSorted(values) {
+  return [...new Set(values)].sort((a, b) => a - b);
+}
+
+function digitPairForMove(boardString, move) {
+  const [first, second] = pairFromNotation(move);
+  return [Number(boardString[first]), Number(boardString[second])]
+    .sort((a, b) => a - b)
+    .join("<->");
+}
+
+function locationShapeForMoves(boardString, moves) {
+  const pairs = moves.map(pairFromNotation);
+  const touchedCells = pairs.flat();
+  const rows = uniqueSorted(touchedCells.map((cell) => Math.floor(cell / SIZE)));
+  const cols = uniqueSorted(touchedCells.map((cell) => cell % SIZE));
+  const boxes = uniqueSorted(touchedCells.map(boxIndexForCell));
+  const bands = uniqueSorted(rows.map((row) => Math.floor(row / 3)));
+  const stacks = uniqueSorted(cols.map((col) => Math.floor(col / 3)));
+  const digitPairs = moves.map((move) => digitPairForMove(boardString, move));
+  const digitPairCounts = countMap(digitPairs);
+  const digitPairKeys = Object.keys(digitPairCounts);
+
+  return {
+    digitPairs,
+    digitPairCounts,
+    uniqueDigitPairCount: digitPairKeys.length,
+    repeatedDigitPair: digitPairKeys.length === 1,
+    repeatedDigitPairKey: digitPairKeys.length === 1 ? digitPairKeys[0] : null,
+    locationShape: `${moves.length} square-pairs / ${rows.length} rows / ${cols.length} cols / ${boxes.length} boxes / ${bands.length} bands / ${stacks.length} stacks`,
+    touched: {
+      rows: rows.map((row) => row + 1),
+      cols: cols.map((col) => col + 1),
+      boxes: boxes.map((box) => box + 1),
+      bands: bands.map((band) => band + 1),
+      stacks: stacks.map((stack) => stack + 1),
+    },
+  };
+}
+
+function stopDiscoveryPlayback() {
+  if (discoveryPlaybackTimer) clearInterval(discoveryPlaybackTimer);
+  discoveryPlaybackTimer = null;
+  state.playing = false;
+}
+
+function setDiscoveryPlayback(playing) {
+  stopDiscoveryPlayback();
+  if (playing) {
+    state.playing = true;
+    discoveryPlaybackTimer = setInterval(advanceDiscoveryPlayback, PLAY_INTERVAL_MS);
+  }
+  render();
+}
+
+function advanceDiscoveryPlayback() {
+  const source = currentSource();
+  const examples = source ? examplesForSource(source) : [];
+  if (examples.length === 0) {
+    setDiscoveryPlayback(false);
+    return;
+  }
+
+  if (state.exampleIndex >= examples.length) state.exampleIndex = 0;
+  const example = examples[state.exampleIndex];
+  const moves = example?.moves ?? [];
+
+  if (state.moveStep < moves.length) {
+    state.moveStep += 1;
+  } else {
+    state.exampleIndex = (state.exampleIndex + 1) % examples.length;
+    state.moveStep = 0;
+  }
+  render();
+}
+
+function runningJobRecord() {
+  return Object.values(jobStatus?.jobs ?? {}).find((job) => job.state === "running") ?? null;
+}
+
+async function refreshAsymmetricData() {
+  try {
+    const response = await fetch(`data/asymmetric-sequences.latest.json?ts=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) return;
+    asymmetricData = await response.json();
+    if (!state.sourceId || !visibleSources().some((source) => source.id === state.sourceId)) setDefaultSource();
+    renderSourceOptions();
+    render();
+  } catch {
+    // Opening index.html directly can still use the generated data script.
+  }
+}
+
+async function refreshSampleData() {
+  try {
+    const response = await fetch(`data/solved-board-sample.latest.json?ts=${Date.now()}`, { cache: "no-store" });
+    if (!response.ok) return;
+    sampleData = await response.json();
+    render();
+  } catch {
+    // Opening index.html directly can still use the generated data script.
+  }
+}
+
+async function refreshJobs() {
+  try {
+    const response = await fetch("/api/jobs", { cache: "no-store" });
+    if (!response.ok) return;
+    jobStatus = await response.json();
+    const running = runningJobRecord();
+    jobStatusText.textContent = running
+      ? `${running.label}: running`
+      : "ready";
+    updateJobButtons(running);
+    render();
+  } catch {
+    jobStatusText.textContent = "offline";
+    updateJobButtons(null);
+  }
+}
+
+function updateJobButtons(running) {
+  setJobButtonState(startOnePairButton, jobStatus?.jobs?.["one-pair-shuffles"]?.state ?? "offline");
+  setJobButtonState(startTwoPairButton, jobStatus?.jobs?.["two-pair-shuffles"]?.state ?? "offline");
+  setJobButtonState(startRepeatedPairButton, jobStatus?.jobs?.["repeated-number-pair-shuffles"]?.state ?? "offline");
+  setJobButtonState(stopOnePairButton, running?.id === "one-pair-shuffles" ? "running" : "idle");
+  setJobButtonState(stopTwoPairButton, running?.id === "two-pair-shuffles" ? "running" : "idle");
+  setJobButtonState(stopRepeatedPairButton, running?.id === "repeated-number-pair-shuffles" ? "running" : "idle");
+  setJobButtonState(stopScanButton, running ? "running" : "idle");
+  stopScanButton.disabled = !running;
+  stopOnePairButton.disabled = running?.id !== "one-pair-shuffles";
+  stopTwoPairButton.disabled = running?.id !== "two-pair-shuffles";
+  stopRepeatedPairButton.disabled = running?.id !== "repeated-number-pair-shuffles";
+}
+
+function setJobButtonState(button, stateName) {
+  button.dataset.state = stateName;
+  button.setAttribute("aria-label", `${button.textContent.trim()}: ${stateName}`);
+}
+
+async function postJob(jobId, action) {
+  try {
+    const sourceParam = action === "start" && state.sourceId ? `?source=${encodeURIComponent(state.sourceId)}` : "";
+    await fetch(`/api/jobs/${jobId}/${action}${sourceParam}`, { method: "POST" });
+    await refreshJobs();
+    await refreshSampleData();
+    await refreshAsymmetricData();
+  } catch {
+    jobStatusText.textContent = "server unavailable";
+  }
 }
 
 function escapeHtml(value) {
@@ -646,525 +748,67 @@ function escapeHtml(value) {
     .replaceAll("'", "&#039;");
 }
 
-function renderBoard(grid, invalid) {
-  const trade = currentTrade();
-  const tradeCells = new Set(trade.swaps.flat().map(([row, col]) => `${row},${col}`));
-
-  boardEl.innerHTML = "";
-  for (let row = 0; row < SIZE; row += 1) {
-    for (let col = 0; col < SIZE; col += 1) {
-      const cell = document.createElement("div");
-      cell.className = "cell";
-      cell.textContent = grid[row][col];
-
-      if (state.layer !== "trade") {
-        const linked = cellHasVisibleRoleEdge(row, col);
-        if (linked === "extra") cell.classList.add("extra-linked");
-        if (linked === "default") cell.classList.add("default-linked");
-      }
-
-      if (state.layer === "trade" && tradeCells.has(`${row},${col}`)) {
-        cell.classList.add(state.tradeStep === "final" ? "final-cell" : "trade-cell");
-      }
-
-      if (
-        state.layer === "trade"
-        && state.showInvalidUnits
-        && (invalid.rows.has(row) || invalid.cols.has(col) || invalid.boxes.has(`${Math.floor(row / BOX)},${Math.floor(col / BOX)}`))
-      ) {
-        cell.classList.add("invalid-unit");
-      }
-
-      boardEl.appendChild(cell);
-    }
-  }
-}
-
-function cellHasVisibleRoleEdge(row, col) {
-  const axis = state.layer;
-  if (axis !== "rows" && axis !== "columns") return null;
-
-  const edges = validSwapEdges(boards[state.board].grid, axis);
-  const index = axis === "rows" ? row : col;
-  const matching = edges.filter((edge) => edge.a === index || edge.b === index);
-  if (state.showExtraEdges && matching.some((edge) => edge.kind === "extra")) return "extra";
-  if (state.showDefaultEdges && matching.some((edge) => edge.kind === "default")) return "default";
-  return null;
-}
-
-function renderEdges(grid, trade, invalid) {
-  edgeLayer.innerHTML = "";
-
-  if (state.layer === "trade") {
-    if (state.showInvalidUnits) renderInvalidUnitLines(invalid);
-    renderTradeEdges(trade);
-    renderAxisNodes();
-    return;
-  }
-
-  const edges = validSwapEdges(grid, state.layer);
-  for (const edge of edges) {
-    if (edge.kind === "default" && !state.showDefaultEdges) continue;
-    if (edge.kind === "extra" && !state.showExtraEdges) continue;
-    drawRoleEdge(edge.a, edge.b, state.layer, edge.kind);
-  }
-  renderAxisNodes();
-}
-
-function renderAxisNodes() {
-  for (let index = 0; index < SIZE; index += 1) {
-    const top = boardToStage(index, -0.58);
-    const left = boardToStage(-0.58, index);
-    drawNode(top.x, top.y, `C${index + 1}`);
-    drawNode(left.x, left.y, `R${index + 1}`);
-  }
-}
-
-function renderInvalidUnitLines(invalid) {
-  for (const row of invalid.rows) {
-    const start = boardToStage(-0.1, row);
-    const end = boardToStage(9.1, row);
-    drawLine(start, end, "invalid-unit-line");
-  }
-
-  for (const col of invalid.cols) {
-    const start = boardToStage(col, -0.1);
-    const end = boardToStage(col, 9.1);
-    drawLine(start, end, "invalid-unit-line");
-  }
-}
-
-function renderTradeEdges(trade) {
-  const visibleSwaps = state.tradeStep === "middle"
-    ? trade.swaps.slice(0, trade.middleSwapIndex + 1)
-    : trade.swaps;
-
-  if (state.tradeStep === "start") return;
-
-  for (const [first, second] of visibleSwaps) {
-    const start = cellCenter(first[0], first[1]);
-    const end = cellCenter(second[0], second[1]);
-    drawCurve(start, end, "trade", 0.18);
-  }
-}
-
-function drawRoleEdge(a, b, axis, kind) {
-  const horizontalOffset = kind === "extra" ? 0.38 : 0.18;
-  const verticalOffset = kind === "extra" ? 0.38 : 0.18;
-
-  if (axis === "columns") {
-    const start = boardToStage(a, -0.58);
-    const end = boardToStage(b, -0.58);
-    drawCurve(start, end, kind, -verticalOffset);
-  } else {
-    const start = boardToStage(-0.58, a);
-    const end = boardToStage(-0.58, b);
-    drawCurve(start, end, kind, horizontalOffset);
-  }
-}
-
-function drawNode(x, y, label) {
-  const group = document.createElementNS("http://www.w3.org/2000/svg", "g");
-  const circle = document.createElementNS("http://www.w3.org/2000/svg", "circle");
-  const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
-  circle.setAttribute("class", "axis-node");
-  circle.setAttribute("cx", x);
-  circle.setAttribute("cy", y);
-  circle.setAttribute("r", 18);
-  text.setAttribute("class", "axis-label");
-  text.setAttribute("x", x);
-  text.setAttribute("y", y + 1);
-  text.textContent = label;
-  group.append(circle, text);
-  edgeLayer.appendChild(group);
-}
-
-function drawLine(start, end, kind) {
-  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  path.setAttribute("class", `edge ${kind}`);
-  path.setAttribute("d", `M ${start.x} ${start.y} L ${end.x} ${end.y}`);
-  edgeLayer.prepend(path);
-}
-
-function drawCurve(start, end, kind, lift) {
-  const dx = end.x - start.x;
-  const dy = end.y - start.y;
-  const distance = Math.sqrt(dx * dx + dy * dy);
-  const normal = Math.abs(dx) > Math.abs(dy)
-    ? { x: 0, y: lift * distance }
-    : { x: lift * distance, y: 0 };
-  const cx = (start.x + end.x) / 2 + normal.x;
-  const cy = (start.y + end.y) / 2 + normal.y;
-  const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-  path.setAttribute("class", `edge ${kind}`);
-  path.setAttribute("d", `M ${start.x} ${start.y} Q ${cx} ${cy} ${end.x} ${end.y}`);
-  edgeLayer.appendChild(path);
-}
-
-function cellCenter(row, col) {
-  return boardToStage(col, row);
-}
-
-function boardToStage(col, row) {
-  return {
-    x: BOARD_INSET + CELL_SIZE * (col + 0.5),
-    y: BOARD_INSET + CELL_SIZE * (row + 0.5),
-  };
-}
-
-function renderText(boardInfo, trade, grid) {
-  const activeBoard = state.layer === "trade" ? boards[trade.board] : boardInfo;
-  const valid = validateGrid(grid);
-  summaryText.textContent = `${activeBoard.name} - ${valid ? "valid" : "invalid intermediate"}`;
-  viewTitle.textContent = "Operation View";
-  viewSubtitle.textContent = state.layer === "trade"
-    ? `${trade.label}; step: ${state.tradeStep}`
-    : "Arbitrary cell swaps that produce completed Sudoku endpoints.";
-
-  if (state.layer === "trade") {
-    renderMetrics([
-      ["Board", activeBoard.name],
-      ["Step valid", valid ? "yes" : "no"],
-      ["Swap pairs", trade.swaps.length],
-      ["Highlighted cells", new Set(trade.swaps.flat().map(([row, col]) => `${row},${col}`)).size],
-      ...arbitraryMetrics(),
-    ]);
-    return;
-  }
-
-  const edges = validSwapEdges(activeBoard.grid, state.layer);
-  const defaultEdges = edges.filter((edge) => edge.kind === "default").length;
-  const extraEdges = edges.filter((edge) => edge.kind === "extra").length;
-
-  renderMetrics([
-    ["Board", activeBoard.name],
-    ["Valid swaps", edges.length],
-    ["Default edges", defaultEdges],
-    ["Extra edges", extraEdges],
-    ["Valid endpoints", activeBoard.endpointCounts[state.layer]],
-    ["Stepwise endpoints", activeBoard.stepwiseCounts[state.layer]],
-    ["Worst case", activeBoard.worstCase[state.layer]],
-    ...batchMetrics(),
-  ]);
-}
-
-function batchMetrics() {
-  const batch = state.batchData;
-  if (!batch) return [["Batch data", "not generated"]];
-
-  return [
-    ["Batch processed", `${batch.processedCount}/${batch.collectedBoardCount}`],
-    ["Batch complete", batch.complete ? "yes" : "no"],
-    ["Signature groups", batch.groups.length],
-    ["Data mode", state.batchPollStatus],
-    ...tradeBatchMetrics(),
-    ...adjacencyBatchMetrics(),
-    ...forbiddenBatchMetrics(),
-    ...bridgeDepthMetrics(),
-    ...arbitraryMetrics(),
-  ];
-}
-
-function adjacencyBatchMetrics() {
-  const batch = state.adjacencyBatchData;
-  if (!batch) return [["Adjacency batch", "not generated"]];
-
-  const current = batch.currentSource
-    ? `${batch.currentSource.index}/${batch.currentSource.count}`
-    : "idle";
-
-  return [
-    ["Adjacency processed", `${batch.processedCount}/${batch.config.sourceCount}`],
-    ["Adjacency complete", batch.complete ? "yes" : "no"],
-    ["Adjacency current", current],
-    ["Adjacency mode", state.adjacencyBatchPollStatus],
-  ];
-}
-
-function forbiddenBatchMetrics() {
-  const batch = state.forbiddenBatchData;
-  if (!batch) return [["Forbidden batch", "not generated"]];
-
-  const current = batch.currentSource
-    ? `${batch.currentSource.index}/${batch.currentSource.count}`
-    : "idle";
-
-  return [
-    ["Forbidden processed", `${batch.processedCount}/${batch.config.sourceCount}`],
-    ["Forbidden complete", batch.complete ? "yes" : "no"],
-    ["Forbidden current", current],
-    ["Forbidden mode", state.forbiddenBatchPollStatus],
-  ];
-}
-
-function bridgeDepthMetrics() {
-  const batch = state.bridgeDepthData;
-  if (!batch) return [["Bridge batch", "not generated"]];
-
-  const current = batch.currentSource
-    ? `${batch.currentSource.index}/${batch.currentSource.count}`
-    : "idle";
-
-  return [
-    ["Bridge processed", `${batch.processedCount}/${batch.config.sourceCount}`],
-    ["Bridge complete", batch.complete ? "yes" : "no"],
-    ["Bridge current", current],
-    ["Bridge mode", state.bridgeDepthPollStatus],
-  ];
-}
-
-function arbitraryMetrics() {
-  const batch = state.arbitraryData;
-  if (!batch) return [["Arbitrary data", "not generated"]];
-  const job = primaryJob();
-
-  return [
-    ["Processed sources", `${batch.processedCount ?? batch.profiles.length}/${batch.config.sourceCount}`],
-    ["Source mode", batch.config.sourceMode ?? "unknown"],
-    ["Batch complete", batch.complete ? "yes" : "no"],
-    ["Genuine 2-swap sources", batch.summary?.genuineAtTwoSwaps ?? 0],
-    ["Genuine trade sources", batch.summary?.genuineInTwoSymbolTrades ?? 0],
-    ["Batch job", job ? job.state : "unknown"],
-    ["Arbitrary mode", state.arbitraryPollStatus],
-  ];
-}
-
-function tradeBatchMetrics() {
-  const batch = state.tradeBatchData;
-  if (!batch) return [["Trade batch", "not generated"]];
-
-  const current = batch.currentTarget
-    ? `${batch.currentTarget.index}/${batch.currentTarget.count}`
-    : "idle";
-
-  return [
-    ["Trade processed", `${batch.processedCount}/${batch.config.targetCount}`],
-    ["Trade complete", batch.complete ? "yes" : "no"],
-    ["Trade groups", batch.groups.length],
-    ["Trade current", current],
-    ["Trade mode", state.tradeBatchPollStatus],
-  ];
-}
-
-function startBatchPolling() {
-  if (window.location.protocol === "file:") return;
-
-  async function pollJson(url) {
-    const response = await fetch(`${url}?ts=${Date.now()}`, { cache: "no-store" });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    return response.json();
-  }
-
-  async function pollRoleBatch() {
-    try {
-      state.batchData = await pollJson("data/role-graph-batch.latest.json");
-      state.batchPollStatus = state.batchData.complete ? "live complete" : "live updating";
-      render();
-    } catch {
-      state.batchPollStatus = "waiting for JSON";
-      render();
-    }
-  }
-
-  async function pollTradeBatch() {
-    try {
-      state.tradeBatchData = await pollJson("data/trade-target-batch.latest.json");
-      state.tradeBatchPollStatus = state.tradeBatchData.complete ? "live complete" : "live updating";
-      render();
-    } catch {
-      state.tradeBatchPollStatus = "waiting for JSON";
-      render();
-    }
-  }
-
-  async function pollAdjacencyBatch() {
-    try {
-      state.adjacencyBatchData = await pollJson("data/trade-adjacency.latest.json");
-      state.adjacencyBatchPollStatus = state.adjacencyBatchData.complete ? "live complete" : "live updating";
-      render();
-    } catch {
-      state.adjacencyBatchPollStatus = "waiting for JSON";
-      render();
-    }
-  }
-
-  async function pollForbiddenBatch() {
-    try {
-      state.forbiddenBatchData = await pollJson("data/forbidden-neighborhood.latest.json");
-      state.forbiddenBatchPollStatus = state.forbiddenBatchData.complete ? "live complete" : "live updating";
-      render();
-    } catch {
-      state.forbiddenBatchPollStatus = "waiting for JSON";
-      render();
-    }
-  }
-
-  async function pollBridgeDepthBatch() {
-    try {
-      state.bridgeDepthData = await pollJson("data/bridge-depth.latest.json");
-      state.bridgeDepthPollStatus = state.bridgeDepthData.complete ? "live complete" : "live updating";
-      render();
-    } catch {
-      state.bridgeDepthPollStatus = "waiting for JSON";
-      render();
-    }
-  }
-
-  async function pollArbitraryTransformations() {
-    try {
-      state.arbitraryData = await pollJson("data/arbitrary-transformations.latest.json");
-      state.arbitraryPollStatus = "live complete";
-      render();
-    } catch {
-      state.arbitraryPollStatus = "waiting for JSON";
-      render();
-    }
-  }
-
-  async function pollJobs() {
-    try {
-      const response = await fetch(`/api/jobs?ts=${Date.now()}`, { cache: "no-store" });
-      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-      state.jobStatus = await response.json();
-      renderJobStatus();
-      render();
-    } catch {
-      state.jobStatus = null;
-      renderJobStatus();
-    }
-  }
-
-  pollArbitraryTransformations();
-  pollJobs();
-  window.setInterval(pollArbitraryTransformations, 3000);
-  window.setInterval(pollJobs, 3000);
-}
-
-function primaryJob() {
-  const jobs = state.jobStatus?.jobs ?? {};
-  return jobs["arbitrary-frontier"] ?? Object.values(jobs)[0] ?? null;
-}
-
-async function runJobAction(jobId, action) {
-  try {
-    const response = await fetch(`/api/jobs/${jobId}/${action}`, { method: "POST" });
-    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-    state.jobStatus = await response.json();
-    renderJobStatus();
-    render();
-  } catch {
-    renderJobStatus("server unavailable");
-  }
-}
-
-function renderJobStatus(message = null) {
-  const jobs = Object.values(state.jobStatus?.jobs ?? {});
-  if (message) {
-    jobList.innerHTML = `<p class="job-status">${escapeHtml(message)}</p>`;
-    return;
-  }
-
-  if (jobs.length === 0) {
-    jobList.innerHTML = "<p class=\"job-status\">No jobs loaded.</p>";
-    return;
-  }
-
-  jobList.innerHTML = jobs.map((job) => `
-    <div class="job-row">
-      <div>
-        <strong>${escapeHtml(job.label)}</strong>
-        <span>${escapeHtml(job.state)}</span>
-      </div>
-      <div class="job-actions">
-        <button type="button" data-job-action="start" data-job-id="${escapeHtml(job.id)}" ${job.state === "running" ? "disabled" : ""}>Start</button>
-        <button type="button" data-job-action="stop" data-job-id="${escapeHtml(job.id)}" ${job.state !== "running" ? "disabled" : ""}>Stop</button>
-      </div>
-    </div>
-  `).join("");
-}
-
-function renderMetrics(items) {
-  metricsList.innerHTML = "";
-  for (const [label, value] of items) {
-    const row = document.createElement("div");
-    const dt = document.createElement("dt");
-    const dd = document.createElement("dd");
-    dt.textContent = label;
-    dd.textContent = value;
-    row.append(dt, dd);
-    metricsList.appendChild(row);
-  }
-}
-
-function syncControls() {
-  document.querySelectorAll("[data-view]").forEach((button) => {
-    button.classList.toggle("active", button.dataset.view === state.view);
-  });
-  document.querySelectorAll("[data-board]").forEach((button) => {
-    button.classList.toggle("active", button.dataset.board === state.board);
-  });
-  document.querySelectorAll("[data-layer]").forEach((button) => {
-    button.classList.toggle("active", button.dataset.layer === state.layer);
-  });
-  document.querySelectorAll("[data-step]").forEach((button) => {
-    button.classList.toggle("active", button.dataset.step === state.tradeStep);
-  });
-  const showDefaultEdges = document.querySelector("#showDefaultEdges");
-  const showExtraEdges = document.querySelector("#showExtraEdges");
-  const showInvalidUnits = document.querySelector("#showInvalidUnits");
-  if (showDefaultEdges) showDefaultEdges.checked = state.showDefaultEdges;
-  if (showExtraEdges) showExtraEdges.checked = state.showExtraEdges;
-  if (showInvalidUnits) showInvalidUnits.checked = state.showInvalidUnits;
-}
-
-function setupControls() {
-  document.querySelectorAll("[data-board]").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.board = button.dataset.board;
-      render();
-    });
-  });
-
-  document.querySelectorAll("[data-view]").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.view = button.dataset.view;
-      render();
-    });
-  });
-
-  document.querySelectorAll("[data-layer]").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.layer = button.dataset.layer;
-      render();
-    });
-  });
-
-  document.querySelectorAll("[data-step]").forEach((button) => {
-    button.addEventListener("click", () => {
-      state.tradeStep = button.dataset.step;
-      render();
-    });
-  });
-
-  document.querySelector("#showDefaultEdges")?.addEventListener("change", (event) => {
-    state.showDefaultEdges = event.target.checked;
-    render();
-  });
-  document.querySelector("#showExtraEdges")?.addEventListener("change", (event) => {
-    state.showExtraEdges = event.target.checked;
-    render();
-  });
-  document.querySelector("#showInvalidUnits")?.addEventListener("change", (event) => {
-    state.showInvalidUnits = event.target.checked;
-    render();
-  });
-  jobList.addEventListener("click", (event) => {
-    const button = event.target.closest("[data-job-action]");
-    if (!button) return;
-    runJobAction(button.dataset.jobId, button.dataset.jobAction);
-  });
-}
-
-setupControls();
+sourceSelect.addEventListener("change", (event) => {
+  stopDiscoveryPlayback();
+  state.sourceId = event.target.value;
+  state.exampleIndex = 0;
+  state.moveStep = 0;
+  render();
+});
+
+playDiscoveriesButton.addEventListener("click", () => {
+  setDiscoveryPlayback(!state.playing);
+});
+
+prevMoveButton.addEventListener("click", () => {
+  stopDiscoveryPlayback();
+  state.moveStep = Math.max(0, state.moveStep - 1);
+  render();
+});
+
+nextMoveButton.addEventListener("click", () => {
+  stopDiscoveryPlayback();
+  state.moveStep += 1;
+  render();
+});
+
+resetMoveButton.addEventListener("click", () => {
+  stopDiscoveryPlayback();
+  state.moveStep = 0;
+  render();
+});
+
+moveList.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-step]");
+  if (!button) return;
+  stopDiscoveryPlayback();
+  state.moveStep = Number(button.dataset.step);
+  render();
+});
+
+discoveryList.addEventListener("click", (event) => {
+  const button = event.target.closest("[data-example]");
+  if (!button) return;
+  stopDiscoveryPlayback();
+  state.exampleIndex = Number(button.dataset.example) || 0;
+  state.moveStep = 0;
+  render();
+});
+
+startOnePairButton.addEventListener("click", () => postJob("one-pair-shuffles", "start"));
+stopOnePairButton.addEventListener("click", () => postJob("one-pair-shuffles", "stop"));
+startTwoPairButton.addEventListener("click", () => postJob("two-pair-shuffles", "start"));
+stopTwoPairButton.addEventListener("click", () => postJob("two-pair-shuffles", "stop"));
+startRepeatedPairButton.addEventListener("click", () => postJob("repeated-number-pair-shuffles", "start"));
+stopRepeatedPairButton.addEventListener("click", () => postJob("repeated-number-pair-shuffles", "stop"));
+stopScanButton.addEventListener("click", () => {
+  const running = runningJobRecord();
+  if (running?.id) postJob(running.id, "stop");
+});
+
+renderSourceOptions();
 render();
-startBatchPolling();
+refreshJobs();
+setInterval(refreshJobs, 3000);
+setInterval(refreshSampleData, 6000);
+setInterval(refreshAsymmetricData, 3000);

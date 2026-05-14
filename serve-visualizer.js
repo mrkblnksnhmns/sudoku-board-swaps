@@ -7,10 +7,20 @@ const PORT = Number(process.env.PORT ?? process.argv[2] ?? 8080);
 const ROOT = __dirname;
 const JOB_STATUS_JSON = path.join(ROOT, "data", "job-status.latest.json");
 const JOBS = {
-  "arbitrary-frontier": {
-    label: "Big arbitrary frontier scan",
+  "one-pair-shuffles": {
+    label: "One-pair shuffle scan",
     command: process.execPath,
-    args: ["sudoku-9x9-arbitrary-transformations.js", "--frontier"],
+    args: (source) => ["sudoku-9x9-asymmetric-sequences.js", `--source=${source}`, "--max-exact-depth=1", "--no-two-symbol-trades"],
+  },
+  "two-pair-shuffles": {
+    label: "Two-pair shuffle scan",
+    command: process.execPath,
+    args: (source) => ["sudoku-9x9-asymmetric-sequences.js", `--source=${source}`, "--min-exact-depth=2", "--max-exact-depth=2", "--no-two-symbol-trades"],
+  },
+  "repeated-number-pair-shuffles": {
+    label: "Repeated number-pair shuffle scan",
+    command: process.execPath,
+    args: (source) => ["sudoku-9x9-asymmetric-sequences.js", `--source=${source}`, "--max-exact-depth=0"],
   },
 };
 const runningJobs = new Map();
@@ -95,9 +105,10 @@ function appendJobLog(jobId, line) {
   writeJson(JOB_STATUS_JSON, status);
 }
 
-function startJob(jobId) {
+function startJob(jobId, source) {
   const config = JOBS[jobId];
   if (!config) return { status: 404, body: { error: "unknown job" } };
+  if (!source) return { status: 400, body: { error: "missing source board" } };
   if (runningJobs.has(jobId)) return { status: 409, body: { error: "job already running", jobId } };
   if (runningJobs.size > 0) {
     return {
@@ -109,7 +120,8 @@ function startJob(jobId) {
     };
   }
 
-  const child = spawn(config.command, config.args, {
+  const args = typeof config.args === "function" ? config.args(source) : config.args;
+  const child = spawn(config.command, args, {
     cwd: ROOT,
     stdio: ["ignore", "pipe", "pipe"],
   });
@@ -117,6 +129,7 @@ function startJob(jobId) {
   runningJobs.set(jobId, { child, pid: child.pid, startedAt });
 
   appendJobLog(jobId, `started ${startedAt}`);
+  appendJobLog(jobId, `selected source ${source}`);
   child.stdout.on("data", (chunk) => {
     for (const line of String(chunk).trim().split(/\r?\n/).filter(Boolean)) appendJobLog(jobId, line);
   });
@@ -158,7 +171,8 @@ function stopJob(jobId) {
 }
 
 function handleApi(request, response) {
-  const urlPath = request.url.split("?")[0];
+  const parsedUrl = new URL(request.url, `http://${request.headers.host ?? "localhost"}`);
+  const urlPath = parsedUrl.pathname;
 
   if (request.method === "GET" && urlPath === "/api/jobs") {
     sendJson(response, 200, persistJobStatus());
@@ -168,7 +182,7 @@ function handleApi(request, response) {
   const match = urlPath.match(/^\/api\/jobs\/([^/]+)\/(start|stop)$/);
   if (request.method === "POST" && match) {
     const [, jobId, action] = match;
-    const result = action === "start" ? startJob(jobId) : stopJob(jobId);
+    const result = action === "start" ? startJob(jobId, parsedUrl.searchParams.get("source")) : stopJob(jobId);
     sendJson(response, result.status, result.body);
     return true;
   }
